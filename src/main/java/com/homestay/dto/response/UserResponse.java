@@ -11,10 +11,14 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResponse {
+    String id;
     String username;
     //    @JsonIgnore
-//    String password;
+    String password;
+    String fullName;
+    String status;
     String email;
     String phone;
     LocalDate dob;
@@ -24,7 +28,7 @@ public class UserResponse {
 
     String address;
 
-    Set<String> roles;
+    Set<RoleResponse> roles;
     Set<String> homestays;
     Set<String> bookings;
 }

@@ -41,6 +41,9 @@ public class RoleService {
                 .map(role -> RoleResponse.builder()
                         .name(role.getName())
                         .description(role.getDescription())
+                        .users(role.getUsers().stream()
+                                .map(user -> user.getUsername())
+                                .toList())
                         .permissions(role.getPermissions().stream()
                                 .map(Permission::getName)
                                 .toList())
@@ -63,6 +66,9 @@ public class RoleService {
         return RoleResponse.builder()
                 .name(role.getName())
                 .description(role.getDescription())
+                .users(role.getUsers().stream()
+                        .map(user -> user.getUsername())
+                        .toList())
                 .permissions(request.getPermissions())
                 .build();
     }

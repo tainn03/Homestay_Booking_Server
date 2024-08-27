@@ -2,7 +2,7 @@ package com.homestay.controller;
 
 import com.homestay.dto.ApiResponse;
 import com.homestay.dto.request.UserRequest;
-import com.homestay.model.User;
+import com.homestay.dto.response.UserResponse;
 import com.homestay.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -22,8 +22,8 @@ public class UserController {
     UserService userService;
 
     @PostMapping
-    public ApiResponse<User> createUser(@Valid @RequestBody UserRequest request) {
-        return ApiResponse.<User>builder()
+    public ApiResponse<UserResponse> createUser(@Valid @RequestBody UserRequest request) {
+        return ApiResponse.<UserResponse>builder()
                 .code(1000)
                 .message("Success")
                 .result(userService.createUser(request))
@@ -31,8 +31,8 @@ public class UserController {
     }
 
     @GetMapping
-    public ApiResponse<List<User>> getAllUsers() {
-        return ApiResponse.<List<User>>builder()
+    public ApiResponse<List<UserResponse>> getAllUsers() {
+        return ApiResponse.<List<UserResponse>>builder()
                 .code(1000)
                 .message("Success")
                 .result(userService.getAllUsers())
@@ -40,8 +40,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<?> getUserById(@PathVariable String id) {
-        return ApiResponse.builder()
+    public ApiResponse<UserResponse> getUserById(@PathVariable String id) {
+        return ApiResponse.<UserResponse>builder()
                 .code(1000)
                 .message("Success")
                 .result(userService.getUserById(id))
@@ -49,8 +49,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<User> updateUser(@PathVariable String id, @Valid @RequestBody UserRequest request) {
-        return ApiResponse.<User>builder()
+    public ApiResponse<UserResponse> updateUser(@PathVariable String id, @Valid @RequestBody UserRequest request) {
+        return ApiResponse.<UserResponse>builder()
                 .code(1000)
                 .message("Success")
                 .result(userService.updateUser(id, request))
@@ -58,8 +58,12 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<?> deleteUser(@PathVariable String id) {
-        return null;
+    public ApiResponse<UserResponse> deleteUser(@PathVariable String id) {
+        return ApiResponse.<UserResponse>builder()
+                .code(1000)
+                .message("Success")
+                .result(userService.deleteUser(id))
+                .build();
     }
 
     @GetMapping("/{id}/bookings")
@@ -72,4 +76,6 @@ public class UserController {
     public ApiResponse<?> updateUserStatus(@PathVariable String id, @RequestBody Object status) {
         return null;
     }
+
+    
 }

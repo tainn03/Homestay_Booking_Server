@@ -27,6 +27,8 @@ public class UserRequest {
     @NotBlank(message = "INVALID_FULL_NAME_BLANK")
     String fullName;
 
+    String status;
+
     @NotBlank(message = "INVALID_EMAIL_BLANK")
     @Email(message = "INVALID_EMAIL_PATTERN")
     String email;
