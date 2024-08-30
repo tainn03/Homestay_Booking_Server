@@ -21,9 +21,6 @@ public class UserController {
     @Autowired
     UserService userService;
 
-    // http://localhost:8080/api/users
-    // POST
-
     @PostMapping
     public ApiResponse<UserResponse> createUser(@Valid @RequestBody UserRequest request) {
         return ApiResponse.<UserResponse>builder()
@@ -32,7 +29,7 @@ public class UserController {
                 .result(userService.createUser(request))
                 .build();
     }
-    
+
     @GetMapping
     public ApiResponse<List<UserResponse>> getAllUsers() {
         return ApiResponse.<List<UserResponse>>builder()

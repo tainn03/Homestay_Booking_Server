@@ -5,7 +5,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.GenericGenerator;
 
-import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
@@ -22,8 +21,9 @@ public class Homestay {
     String id;
     String name;
     String email;
-    LocalDate standardCheckIn;
-    LocalDate standardCheckOut;
+    String standardCheckIn;
+    String standardCheckOut;
+
     String phone;
     String description;
     String type;
@@ -53,4 +53,8 @@ public class Homestay {
     @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Room> rooms;
 
+    @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    Set<Review> reviews;
+
+    double price = 0.0;
 }

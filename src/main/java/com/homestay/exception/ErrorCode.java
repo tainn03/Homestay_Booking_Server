@@ -19,6 +19,10 @@ public enum ErrorCode {
     USER_ALREADY_EXISTS(400, "User already exists", HttpStatus.BAD_REQUEST), // 400
     ROLE_NOT_FOUND(404, "Role not found", HttpStatus.NOT_FOUND),  // 404
     USER_NOT_FOUND(404, "User not found", HttpStatus.NOT_FOUND), // 404
+    HOMESTAY_NOT_FOUND(404, "Homestay not found", HttpStatus.NOT_FOUND), // 404
+    DISCOUNT_NOT_FOUND(404, "Discount not found", HttpStatus.NOT_FOUND), // 404
+    ROOM_NOT_FOUND(404, "Room not found", HttpStatus.NOT_FOUND), // 404
+    REVIEW_NOT_FOUND(404, "Review not found", HttpStatus.NOT_FOUND), // 404
 
     INVALID_USERNAME_BLANK(400, "Username must not be blank", HttpStatus.BAD_REQUEST), // 400
     INVALID_USERNAME_SIZE(400, "Username must be at least 6 characters", HttpStatus.BAD_REQUEST), // 400
@@ -35,6 +39,13 @@ public enum ErrorCode {
     INVALID_GENDER_BLANK(400, "Gender must not be blank", HttpStatus.BAD_REQUEST), // 400
 
     INVALID_ROLE_NAME_BLANK(400, "Role name must not be blank", HttpStatus.BAD_REQUEST), // 400
+
+    INVALID_NAME_BLANK(400, "Name must not be blank", HttpStatus.BAD_REQUEST), // 400
+    INVALID_CHECKIN_PATTERN(400, "Invalid check-in pattern", HttpStatus.BAD_REQUEST), // 400
+    INVALID_CHECKOUT_PATTERN(400, "Invalid check-out pattern", HttpStatus.BAD_REQUEST), // 400
+    INVALID_USER_ID_BLANK(400, "User ID must not be blank", HttpStatus.BAD_REQUEST), // 400
+
+
     ;
 
     int code;

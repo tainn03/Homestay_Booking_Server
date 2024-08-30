@@ -104,6 +104,12 @@ public class UserService {
                                         .description(role.getDescription())
                                         .build())
                                 .collect(Collectors.toSet()))
+                        .homestays(user.getHomestays().stream()
+                                .map(homestay -> homestay.getName())
+                                .collect(Collectors.toSet()))
+                        .bookings(user.getBookings().stream()
+                                .map(booking -> booking.getId())
+                                .collect(Collectors.toSet()))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -131,6 +137,12 @@ public class UserService {
                 .gender(user.getGender())
                 .address(user.getAddress())
                 .roles(roleResponses)
+                .homestays(user.getHomestays().stream()
+                        .map(homestay -> homestay.getName())
+                        .collect(Collectors.toSet()))
+                .bookings(user.getBookings().stream()
+                        .map(booking -> booking.getId())
+                        .collect(Collectors.toSet()))
                 .build();
     }
 
@@ -141,10 +153,9 @@ public class UserService {
         user.setUsername(request.getUsername());
         user.setPassword(request.getPassword());
         user.setFullName(request.getFullName());
-        user.setStatus(request.getStatus());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
-        user.setDob(LocalDate.parse(request.getDob()));
+        user.setDob(request.getDob() != null ? LocalDate.parse(request.getDob()) : null);
         user.setGender(request.getGender());
         user.setAddress(request.getAddress());
 
@@ -175,6 +186,12 @@ public class UserService {
                 .gender(updatedUser.getGender())
                 .address(updatedUser.getAddress())
                 .roles(roleResponses)
+                .homestays(updatedUser.getHomestays().stream()
+                        .map(homestay -> homestay.getName())
+                        .collect(Collectors.toSet()))
+                .bookings(updatedUser.getBookings().stream()
+                        .map(booking -> booking.getId())
+                        .collect(Collectors.toSet()))
                 .build();
     }
 

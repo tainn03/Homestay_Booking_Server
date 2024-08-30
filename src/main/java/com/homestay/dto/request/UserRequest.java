@@ -39,7 +39,7 @@ public class UserRequest {
 
     @NotBlank(message = "INVALID_DOB_BLANK")
     @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "INVALID_DOB_PATTERN")
-    String dob;
+    String dob; // Keep as String for validation
 
     @NotBlank(message = "INVALID_GENDER_BLANK")
     String gender;
