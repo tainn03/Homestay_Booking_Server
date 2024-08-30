@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
@@ -21,7 +22,10 @@ public class Room {
     String id;
 
     String name;
+    double price;
     int size;
+    LocalDate checkIn;
+    LocalDate checkOut;
     String description;
 
     @ManyToOne

@@ -14,8 +14,12 @@ public class RoomResponse {
     String id;
 
     String name;
+    double price;
     int size;
     String description;
+
+    String checkIn;
+    String checkOut;
 
     String homestayName;
 

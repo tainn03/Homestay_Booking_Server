@@ -23,6 +23,10 @@ public enum ErrorCode {
     DISCOUNT_NOT_FOUND(404, "Discount not found", HttpStatus.NOT_FOUND), // 404
     ROOM_NOT_FOUND(404, "Room not found", HttpStatus.NOT_FOUND), // 404
     REVIEW_NOT_FOUND(404, "Review not found", HttpStatus.NOT_FOUND), // 404
+    BOOKING_NOT_FOUND(404, "Booking not found", HttpStatus.NOT_FOUND), // 404
+
+    CHECKIN_AFTER_CHECKOUT(400, "Check-in date must be before check-out date", HttpStatus.BAD_REQUEST), // 400
+    NO_AVAILABLE_ROOMS(400, "No available rooms", HttpStatus.BAD_REQUEST), // 400
 
     INVALID_USERNAME_BLANK(400, "Username must not be blank", HttpStatus.BAD_REQUEST), // 400
     INVALID_USERNAME_SIZE(400, "Username must be at least 6 characters", HttpStatus.BAD_REQUEST), // 400
@@ -48,6 +52,15 @@ public enum ErrorCode {
     INVALID_ROOM_SIZE_BLANK(400, "Room size must not be blank", HttpStatus.BAD_REQUEST), // 400
     INVALID_ROOM_SIZE_NEGATIVE(400, "Room size must be greater than 0", HttpStatus.BAD_REQUEST), // 400
     INVALID_HOMESTAY_ID_BLANK(400, "Homestay ID must not be blank", HttpStatus.BAD_REQUEST), // 400
+
+    INVALID_CHECKIN_BLANK(400, "Check-in date must not be blank", HttpStatus.BAD_REQUEST), // 400
+    INVALID_CHECKOUT_BLANK(400, "Check-out date must not be blank", HttpStatus.BAD_REQUEST), // 400
+    INVALID_TOTAL_BLANK(400, "Total must not be blank", HttpStatus.BAD_REQUEST), // 400
+    INVALID_GUESTS_BLANK(400, "Guests must not be blank", HttpStatus.BAD_REQUEST), // 400
+    INVALID_ROOM_ID_BLANK(400, "Room ID must not be blank", HttpStatus.BAD_REQUEST), // 400
+    INVALID_PAYMENT_BLANK(400, "Payment must not be blank", HttpStatus.BAD_REQUEST), // 400
+    INVALID_PRICE_NEGATIVE(400, "Price must be greater than 0", HttpStatus.BAD_REQUEST), // 400
+
 
     ;
 
