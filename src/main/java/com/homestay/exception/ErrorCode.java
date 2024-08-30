@@ -45,6 +45,9 @@ public enum ErrorCode {
     INVALID_CHECKOUT_PATTERN(400, "Invalid check-out pattern", HttpStatus.BAD_REQUEST), // 400
     INVALID_USER_ID_BLANK(400, "User ID must not be blank", HttpStatus.BAD_REQUEST), // 400
 
+    INVALID_ROOM_SIZE_BLANK(400, "Room size must not be blank", HttpStatus.BAD_REQUEST), // 400
+    INVALID_ROOM_SIZE_NEGATIVE(400, "Room size must be greater than 0", HttpStatus.BAD_REQUEST), // 400
+    INVALID_HOMESTAY_ID_BLANK(400, "Homestay ID must not be blank", HttpStatus.BAD_REQUEST), // 400
 
     ;
 
