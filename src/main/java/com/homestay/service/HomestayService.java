@@ -108,8 +108,8 @@ public class HomestayService {
                         .guests(savedHomestay.getGuests())
                         .bedrooms(savedHomestay.getBedrooms())
                         .bathrooms(savedHomestay.getBathrooms())
-                        .rooms(savedHomestay.getRooms().stream().map(room -> room.getId()).collect(Collectors.toSet()))
-                        .reviews(savedHomestay.getReviews().stream().map(review -> review.getId()).collect(Collectors.toSet()))
+                        .rooms(savedHomestay.getRooms().stream().map(room -> room.getName()).collect(Collectors.toSet()))
+                        .reviews(savedHomestay.getReviews().stream().map(review -> review.getComment()).collect(Collectors.toSet()))
                         .build()
                 ).collect(Collectors.toList());
     }
@@ -138,8 +138,8 @@ public class HomestayService {
                 .guests(savedHomestay.getGuests())
                 .bedrooms(savedHomestay.getBedrooms())
                 .bathrooms(savedHomestay.getBathrooms())
-                .rooms(savedHomestay.getRooms().stream().map(room -> room.getId()).collect(Collectors.toSet()))
-                .reviews(savedHomestay.getReviews().stream().map(review -> review.getId()).collect(Collectors.toSet()))
+                .rooms(savedHomestay.getRooms().stream().map(room -> room.getName()).collect(Collectors.toSet()))
+                .reviews(savedHomestay.getReviews().stream().map(review -> review.getComment()).collect(Collectors.toSet()))
                 .build();
     }
 
@@ -209,8 +209,8 @@ public class HomestayService {
                 .guests(updatedHomestay.getGuests())
                 .bedrooms(updatedHomestay.getBedrooms())
                 .bathrooms(updatedHomestay.getBathrooms())
-                .rooms(updatedHomestay.getRooms().stream().map(room -> room.getId()).collect(Collectors.toSet()))
-                .reviews(updatedHomestay.getReviews().stream().map(review -> review.getId()).collect(Collectors.toSet()))
+                .rooms(updatedHomestay.getRooms().stream().map(room -> room.getName()).collect(Collectors.toSet()))
+                .reviews(updatedHomestay.getReviews().stream().map(review -> review.getComment()).collect(Collectors.toSet()))
                 .build();
     }
 

@@ -21,9 +21,9 @@ public class Room {
     String id;
 
     String name;
+    double price;
     int size;
     String description;
-    double price;
 
     @ManyToOne
     @JoinColumn(name = "homestay_id", nullable = false)
