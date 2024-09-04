@@ -20,7 +20,7 @@ import static lombok.AccessLevel.PRIVATE;
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE)
 public class RoomController {
-    @Autowired
+    @Autowired(required = true)
     RoomService roomService;
 
     @PostMapping

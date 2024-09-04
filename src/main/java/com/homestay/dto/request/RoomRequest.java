@@ -2,7 +2,6 @@ package com.homestay.dto.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -22,14 +21,6 @@ public class RoomRequest {
     int size;
 
     String description;
-
-    @NotBlank(message = "INVALID_CHECKIN_BLANK")
-    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "INVALID_CHECKIN_PATTERN")
-    String checkIn;
-
-    @NotBlank(message = "INVALID_CHECKOUT_BLANK")
-    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "INVALID_CHECKOUT_PATTERN")
-    String checkOut;
 
     @NotBlank(message = "INVALID_HOMESTAY_ID_BLANK")
     String homestayId;

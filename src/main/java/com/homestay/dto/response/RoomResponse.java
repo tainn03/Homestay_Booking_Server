@@ -18,9 +18,6 @@ public class RoomResponse {
     int size;
     String description;
 
-    String checkIn;
-    String checkOut;
-
     String homestayName;
 
     Set<String> amenities;

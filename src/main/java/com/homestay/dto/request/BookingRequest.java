@@ -32,6 +32,7 @@ public class BookingRequest {
     @NotBlank(message = "INVALID_USER_ID_BLANK")
     String userId;
 
+
 //    String roomId;
 
     //    @NotBlank(message = "Payment must not be blank")

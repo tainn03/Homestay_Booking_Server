@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,22 +34,22 @@ public class BookingService {
     @Autowired
     private UserRepository userRepository;
 
-    public BookingResponse createBooking(@Valid BookingRequest request) {
+    public BookingResponse createBooking(@Valid BookingRequest request, String homestayId) {
         // Validate check-in and check-out dates
         if (LocalDate.parse(request.getCheckIn()).isAfter(LocalDate.parse(request.getCheckOut()))) {
             throw new BusinessException(ErrorCode.CHECKIN_AFTER_CHECKOUT);
         }
 
         // Find available rooms
-        List<Room> availableRooms = roomRepository.findAvailableRooms(LocalDate.parse(request.getCheckIn()), LocalDate.parse(request.getCheckOut()));
+        List<Room> availableRooms = roomRepository.findAvailableRoomsByHomestayId(homestayId, LocalDate.parse(request.getCheckIn()), LocalDate.parse(request.getCheckOut()));
         if (availableRooms.isEmpty()) {
             throw new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS);
         }
 
-        // Select the first available room (or implement a more complex selection logic)
+        // Select the first available room (smaller rooms are preferred)
         Room selectedRoom = availableRooms.stream()
                 .filter(room -> room.getSize() >= request.getGuests())
-                .findFirst()
+                .min(Comparator.comparingInt(Room::getSize))
                 .orElseThrow(() -> new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS));
 
         // Calculate total cost based on the number of days
@@ -99,6 +100,7 @@ public class BookingService {
                         .note(booking.getNote())
                         .user(booking.getUser().getUsername())
                         .roomName(booking.getRoom().getName())
+                        .homestayName(booking.getRoom().getHomestay().getName())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -116,41 +118,17 @@ public class BookingService {
                 .note(booking.getNote())
                 .user(booking.getUser().getUsername())
                 .roomName(booking.getRoom().getName())
+                .homestayName(booking.getRoom().getHomestay().getName())
                 .build();
     }
 
-    public BookingResponse updateBooking(String id, @Valid BookingRequest request) {
-        // Validate check-in and check-out dates
-        if (LocalDate.parse(request.getCheckIn()).isAfter(LocalDate.parse(request.getCheckOut()))) {
-            throw new BusinessException(ErrorCode.CHECKIN_AFTER_CHECKOUT);
-        }
-
+    public BookingResponse updateBooking(String id, String status) {
         // Find the existing booking
         Booking existingBooking = bookingRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.BOOKING_NOT_FOUND));
 
-        // Find available rooms
-        List<Room> availableRooms = roomRepository.findAvailableRooms(LocalDate.parse(request.getCheckIn()), LocalDate.parse(request.getCheckOut()));
-        if (availableRooms.isEmpty()) {
-            throw new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS);
-        }
-
-        // Select the first available room (or implement a more complex selection logic)
-        Room selectedRoom = availableRooms.get(0);
-
-        // Calculate total cost based on the number of days
-        long days = ChronoUnit.DAYS.between(LocalDate.parse(request.getCheckIn()), LocalDate.parse(request.getCheckOut()));
-        double totalCost = days * selectedRoom.getPrice();
-
         // Update the booking details
-        existingBooking.setCheckIn(LocalDate.parse(request.getCheckIn()));
-        existingBooking.setCheckOut(LocalDate.parse(request.getCheckOut()));
-        existingBooking.setStatus(request.getStatus());
-        existingBooking.setTotal(totalCost);
-        existingBooking.setGuests(request.getGuests());
-        existingBooking.setNote(request.getNote());
-        existingBooking.setRoom(selectedRoom);
-//        existingBooking.setPayment(request.getPayment());
+        existingBooking.setStatus(status);
 
         // Save the updated booking
         bookingRepository.save(existingBooking);
@@ -166,6 +144,7 @@ public class BookingService {
                 .note(existingBooking.getNote())
                 .user(existingBooking.getUser().getUsername())
                 .roomName(existingBooking.getRoom().getName())
+                .homestayName(existingBooking.getRoom().getHomestay().getName())
 //                .payment(existingBooking.getPayment())
                 .build();
     }

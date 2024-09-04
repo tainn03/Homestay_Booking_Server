@@ -13,8 +13,9 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,13 +31,16 @@ public class RoomService {
         Homestay homestay = homestayRepository.findById(request.getHomestayId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
 
+        Room existingRoom = roomRepository.findByNameAndHomestayId(request.getName(), request.getHomestayId());
+        if (Optional.ofNullable(existingRoom).isPresent()) {
+            throw new BusinessException(ErrorCode.ROOM_ALREADY_EXISTS);
+        }
+
         Room room = Room.builder()
                 .name(request.getName())
                 .price(request.getPrice())
                 .size(request.getSize())
                 .description(request.getDescription())
-                .checkIn(LocalDate.parse(request.getCheckIn()))
-                .checkOut(LocalDate.parse(request.getCheckOut()))
                 .homestay(homestay)
                 .build();
         Room savedRoom = roomRepository.save(room);
@@ -47,8 +51,6 @@ public class RoomService {
                 .price(savedRoom.getPrice())
                 .size(savedRoom.getSize())
                 .description(savedRoom.getDescription())
-                .checkIn(savedRoom.getCheckIn().toString())
-                .checkOut(savedRoom.getCheckOut().toString())
                 .homestayName(savedRoom.getHomestay().getName())
 //                .amenities(savedRoom.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
 //                .bookings(savedRoom.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
@@ -63,11 +65,9 @@ public class RoomService {
                         .price(room.getPrice())
                         .size(room.getSize())
                         .description(room.getDescription())
-                        .checkIn(room.getCheckIn().toString())
-                        .checkOut(room.getCheckOut().toString())
                         .homestayName(room.getHomestay().getName())
 //                        .amenities(room.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
-//                        .bookings(room.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
+                        .bookings(room.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
                         .build())
                 .toList();
     }
@@ -81,12 +81,11 @@ public class RoomService {
                 .price(room.getPrice())
                 .size(room.getSize())
                 .description(room.getDescription())
-                .checkIn(room.getCheckIn().toString())
-                .checkOut(room.getCheckOut().toString())
                 .homestayName(room.getHomestay().getName())
 //                .amenities(room.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
-//                .bookings(room.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
+                .bookings(room.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
                 .build();
+
     }
 
     public RoomResponse updateRoom(String id, RoomRequest request) {
@@ -99,8 +98,6 @@ public class RoomService {
         room.setPrice(request.getPrice());
         room.setSize(request.getSize());
         room.setDescription(request.getDescription());
-        room.setCheckIn(LocalDate.parse(request.getCheckIn()));
-        room.setCheckOut(LocalDate.parse(request.getCheckOut()));
         room.setHomestay(homestay);
         Room updatedRoom = roomRepository.save(room);
 
@@ -110,11 +107,9 @@ public class RoomService {
                 .price(updatedRoom.getPrice())
                 .size(updatedRoom.getSize())
                 .description(updatedRoom.getDescription())
-                .checkIn(updatedRoom.getCheckIn().toString())
-                .checkOut(updatedRoom.getCheckOut().toString())
                 .homestayName(updatedRoom.getHomestay().getName())
 //                .amenities(updatedRoom.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
-//                .bookings(updatedRoom.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
+                .bookings(updatedRoom.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
                 .build();
     }
 

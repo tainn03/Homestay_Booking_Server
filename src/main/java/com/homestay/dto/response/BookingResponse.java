@@ -22,6 +22,7 @@ public class BookingResponse {
     String user;
 
     String roomName;
+    String homestayName;
 
     String payment;
 }

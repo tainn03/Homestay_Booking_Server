@@ -23,9 +23,9 @@ public class BookingController {
     BookingService bookingService;
 
     // CRUD methods: Create, Read, Update, Delete
-    @PostMapping
-    public ResponseEntity<ApiResponse<BookingResponse>> createBooking(@Valid @RequestBody BookingRequest request) {
-        BookingResponse response = bookingService.createBooking(request);
+    @PostMapping("/{homestayId}")
+    public ResponseEntity<ApiResponse<BookingResponse>> createBooking(@Valid @RequestBody BookingRequest request, @PathVariable String homestayId) {
+        BookingResponse response = bookingService.createBooking(request, homestayId);
         return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
     }
 
@@ -42,8 +42,8 @@ public class BookingController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<BookingResponse>> updateBooking(@PathVariable String id, @Valid @RequestBody BookingRequest request) {
-        BookingResponse response = bookingService.updateBooking(id, request);
+    public ResponseEntity<ApiResponse<BookingResponse>> updateBooking(@PathVariable String id, @RequestBody String status) {
+        BookingResponse response = bookingService.updateBooking(id, status);
         return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
     }
 

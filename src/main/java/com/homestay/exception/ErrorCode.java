@@ -24,6 +24,7 @@ public enum ErrorCode {
     ROOM_NOT_FOUND(404, "Room not found", HttpStatus.NOT_FOUND), // 404
     REVIEW_NOT_FOUND(404, "Review not found", HttpStatus.NOT_FOUND), // 404
     BOOKING_NOT_FOUND(404, "Booking not found", HttpStatus.NOT_FOUND), // 404
+    ROOM_ALREADY_EXISTS(400, "Room already exists", HttpStatus.BAD_REQUEST), // 400
 
     CHECKIN_AFTER_CHECKOUT(400, "Check-in date must be before check-out date", HttpStatus.BAD_REQUEST), // 400
     NO_AVAILABLE_ROOMS(400, "No available rooms", HttpStatus.BAD_REQUEST), // 400
