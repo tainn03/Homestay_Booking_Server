@@ -222,4 +222,36 @@ public class HomestayService {
 
         return "Homestay deleted successfully";
     }
+
+
+    public List<HomestayResponse> getHomestaysByUserId(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        List<Homestay> homestays = homestayRepository.findByUser(user);
+        return homestays.stream()
+                .map(savedHomestay -> HomestayResponse.builder()
+                        .id(savedHomestay.getId())
+                        .name(savedHomestay.getName())
+                        .email(savedHomestay.getEmail())
+                        .standardCheckIn(savedHomestay.getStandardCheckIn())
+                        .standardCheckOut(savedHomestay.getStandardCheckOut())
+                        .price(savedHomestay.getPrice())
+                        .phone(savedHomestay.getPhone())
+                        .description(savedHomestay.getDescription())
+                        .type(savedHomestay.getType())
+                        .status(savedHomestay.getStatus())
+                        .user(savedHomestay.getUser().getUsername())
+                        .discounts(savedHomestay.getDiscounts().stream().map(discount -> discount.getId()).collect(Collectors.toSet()))
+                        .address(savedHomestay.getAddress())
+                        .longitude(savedHomestay.getLongitude())
+                        .latitude(savedHomestay.getLatitude())
+                        .addressDetail(savedHomestay.getAddressDetail())
+                        .guests(savedHomestay.getGuests())
+                        .bedrooms(savedHomestay.getBedrooms())
+                        .bathrooms(savedHomestay.getBathrooms())
+                        .rooms(savedHomestay.getRooms().stream().map(room -> room.getName()).collect(Collectors.toSet()))
+                        .reviews(savedHomestay.getReviews().stream().map(review -> review.getComment()).collect(Collectors.toSet()))
+                        .build()
+                ).collect(Collectors.toList());
+    }
 }

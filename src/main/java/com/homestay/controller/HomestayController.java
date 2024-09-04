@@ -2,9 +2,7 @@ package com.homestay.controller;
 
 import com.homestay.dto.ApiResponse;
 import com.homestay.dto.request.HomestayRequest;
-import com.homestay.dto.request.ReviewRequest;
 import com.homestay.dto.response.HomestayResponse;
-import com.homestay.dto.response.ReviewResponse;
 import com.homestay.service.HomestayService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -56,22 +54,11 @@ public class HomestayController {
         return ResponseEntity.ok(new ApiResponse<>(1000, "Success", "Homestay deleted successfully"));
     }
 
-    // Additional methods: searchHomestays, getHomestayReviews, addReviewToHomestay
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<HomestayResponse>>> searchHomestays(@RequestParam String location, @RequestParam double minPrice, @RequestParam double maxPrice) {
-        List<HomestayResponse> response = null;
+    // Additional methods: get homestay by name, get homestay near a location
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<ApiResponse<List<HomestayResponse>>> getHomestaysByUserId(@PathVariable String userId) {
+        List<HomestayResponse> response = homestayService.getHomestaysByUserId(userId);
         return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
     }
 
-    @GetMapping("/{id}/reviews")
-    public ResponseEntity<ApiResponse<List<ReviewResponse>>> getHomestayReviews(@PathVariable String id) {
-        List<ReviewResponse> response = null;
-        return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
-    }
-
-    @PostMapping("/{id}/reviews")
-    public ResponseEntity<ApiResponse<ReviewResponse>> addReviewToHomestay(@PathVariable String id, @RequestBody ReviewRequest request) {
-        ReviewResponse response = null;
-        return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
-    }
 }

@@ -4,8 +4,10 @@ import com.homestay.dto.request.RoomRequest;
 import com.homestay.dto.response.RoomResponse;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
+import com.homestay.model.Amenity;
 import com.homestay.model.Homestay;
 import com.homestay.model.Room;
+import com.homestay.repository.AmenityRepository;
 import com.homestay.repository.HomestayRepository;
 import com.homestay.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +15,10 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +30,9 @@ public class RoomService {
 
     @Autowired
     HomestayRepository homestayRepository;
+
+    @Autowired
+    AmenityRepository amenityRepository;
 
     public RoomResponse createRoom(RoomRequest request) {
         Homestay homestay = homestayRepository.findById(request.getHomestayId())
@@ -66,7 +73,7 @@ public class RoomService {
                         .size(room.getSize())
                         .description(room.getDescription())
                         .homestayName(room.getHomestay().getName())
-//                        .amenities(room.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
+                        .amenities(room.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
                         .bookings(room.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
                         .build())
                 .toList();
@@ -82,7 +89,7 @@ public class RoomService {
                 .size(room.getSize())
                 .description(room.getDescription())
                 .homestayName(room.getHomestay().getName())
-//                .amenities(room.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
+                .amenities(room.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
                 .bookings(room.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
                 .build();
 
@@ -93,12 +100,14 @@ public class RoomService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
         Homestay homestay = homestayRepository.findById(request.getHomestayId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+        Set<Amenity> amenities = new HashSet<>(amenityRepository.findAllById(request.getAmenityIds()));
 
         room.setName(request.getName());
         room.setPrice(request.getPrice());
         room.setSize(request.getSize());
         room.setDescription(request.getDescription());
         room.setHomestay(homestay);
+        room.setAmenities(amenities); // Update amenities
         Room updatedRoom = roomRepository.save(room);
 
         return RoomResponse.builder()
@@ -108,7 +117,7 @@ public class RoomService {
                 .size(updatedRoom.getSize())
                 .description(updatedRoom.getDescription())
                 .homestayName(updatedRoom.getHomestay().getName())
-//                .amenities(updatedRoom.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
+                .amenities(updatedRoom.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
                 .bookings(updatedRoom.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
                 .build();
     }
@@ -117,5 +126,22 @@ public class RoomService {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
         roomRepository.delete(room);
+    }
+
+    public List<RoomResponse> getRoomsByHomestayId(String homestayId) {
+        Homestay homestay = homestayRepository.findById(homestayId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+        return roomRepository.findByHomestayId(homestayId).stream()
+                .map(room -> RoomResponse.builder()
+                        .id(room.getId())
+                        .name(room.getName())
+                        .price(room.getPrice())
+                        .size(room.getSize())
+                        .description(room.getDescription())
+                        .homestayName(room.getHomestay().getName())
+                        .amenities(room.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
+                        .bookings(room.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
+                        .build())
+                .toList();
     }
 }

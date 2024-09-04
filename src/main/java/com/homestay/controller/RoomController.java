@@ -53,9 +53,9 @@ public class RoomController {
         return ResponseEntity.ok(new ApiResponse<>(1000, "Success", "Room deleted successfully"));
     }
 
-    @GetMapping("/availability")
-    public ApiResponse<?> checkRoomAvailability(@RequestParam String startDate, @RequestParam String endDate) {
-        return null;
+    @GetMapping("/homestay/{homestayId}")
+    public ResponseEntity<ApiResponse<List<RoomResponse>>> getRoomsByHomestayId(@PathVariable String homestayId) {
+        List<RoomResponse> response = roomService.getRoomsByHomestayId(homestayId);
+        return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
     }
-
 }
