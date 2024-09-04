@@ -63,6 +63,7 @@ public enum ErrorCode {
     INVALID_ROOM_ID_BLANK(400, "Room ID must not be blank", HttpStatus.BAD_REQUEST), // 400
     INVALID_PAYMENT_BLANK(400, "Payment must not be blank", HttpStatus.BAD_REQUEST), // 400
     INVALID_PRICE_NEGATIVE(400, "Price must be greater than 0", HttpStatus.BAD_REQUEST), // 400
+    CHECKIN_CHECKOUT_IN_PAST(400, "Check-in and check-out dates must be in the future", HttpStatus.BAD_REQUEST), // 400
 
 
     ;

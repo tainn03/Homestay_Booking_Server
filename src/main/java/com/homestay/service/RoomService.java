@@ -15,6 +15,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -143,5 +144,35 @@ public class RoomService {
                         .bookings(room.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
                         .build())
                 .toList();
+    }
+
+    public List<RoomResponse> getAvailableRoomsOfHomestayFromCheckInCheckOut(String homestayId, LocalDate checkIn, LocalDate checkOut) {
+        if (checkIn.isAfter(checkOut)) {
+            throw new BusinessException(ErrorCode.CHECKIN_AFTER_CHECKOUT);
+        }
+        // validate date not in the past
+        if (checkIn.isBefore(LocalDate.now()) || checkOut.isBefore(LocalDate.now())) {
+            throw new BusinessException(ErrorCode.CHECKIN_CHECKOUT_IN_PAST);
+        }
+        Homestay homestay = homestayRepository.findById(homestayId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+
+        List<Room> availableRooms = homestay.getRooms().stream()
+                .filter(room -> room.getBookings().stream()
+                        .noneMatch(booking -> (checkIn.isBefore(booking.getCheckOut()) && checkOut.isAfter(booking.getCheckIn()))))
+                .collect(Collectors.toList());
+
+        return availableRooms.stream()
+                .map(room -> RoomResponse.builder()
+                        .id(room.getId())
+                        .name(room.getName())
+                        .price(room.getPrice())
+                        .size(room.getSize())
+                        .description(room.getDescription())
+                        .homestayName(homestay.getName())
+                        .amenities(room.getAmenities().stream().map(Amenity::getName).collect(Collectors.toSet()))
+                        .bookings(room.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
+                        .build())
+                .collect(Collectors.toList());
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -56,6 +57,12 @@ public class RoomController {
     @GetMapping("/homestay/{homestayId}")
     public ResponseEntity<ApiResponse<List<RoomResponse>>> getRoomsByHomestayId(@PathVariable String homestayId) {
         List<RoomResponse> response = roomService.getRoomsByHomestayId(homestayId);
+        return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
+    }
+
+    @GetMapping("/homestay/{homestayId}/available")
+    public ResponseEntity<ApiResponse<List<RoomResponse>>> getAvailableRoomsOfHomestayFromCheckInCheckOut(@PathVariable String homestayId, @RequestParam LocalDate checkIn, @RequestParam LocalDate checkOut) {
+        List<RoomResponse> response = roomService.getAvailableRoomsOfHomestayFromCheckInCheckOut(homestayId, checkIn, checkOut);
         return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
     }
 }

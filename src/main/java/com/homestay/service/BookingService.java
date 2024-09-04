@@ -8,6 +8,7 @@ import com.homestay.exception.ErrorCode;
 import com.homestay.model.Booking;
 import com.homestay.model.Room;
 import com.homestay.repository.BookingRepository;
+import com.homestay.repository.HomestayRepository;
 import com.homestay.repository.RoomRepository;
 import com.homestay.repository.UserRepository;
 import jakarta.validation.Valid;
@@ -30,14 +31,26 @@ public class BookingService {
     @Autowired
     BookingRepository bookingRepository;
     @Autowired
-    private RoomRepository roomRepository;
+    RoomRepository roomRepository;
     @Autowired
-    private UserRepository userRepository;
+    UserRepository userRepository;
+    @Autowired
+    HomestayRepository homestayRepository;
 
     public BookingResponse createBooking(@Valid BookingRequest request, String homestayId) {
         // Validate check-in and check-out dates
         if (LocalDate.parse(request.getCheckIn()).isAfter(LocalDate.parse(request.getCheckOut()))) {
             throw new BusinessException(ErrorCode.CHECKIN_AFTER_CHECKOUT);
+        }
+
+        // validate date in the past
+        if (LocalDate.parse(request.getCheckIn()).isBefore(LocalDate.now()) || LocalDate.parse(request.getCheckOut()).isBefore(LocalDate.now())) {
+            throw new BusinessException(ErrorCode.CHECKIN_CHECKOUT_IN_PAST);
+        }
+
+        // Validate the Homestay
+        if (!homestayRepository.existsById(homestayId)) {
+            throw new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND);
         }
 
         // Find available rooms
@@ -83,6 +96,7 @@ public class BookingService {
                 .note(booking.getNote())
                 .user(booking.getUser().getUsername())
                 .roomName(booking.getRoom().getName())
+                .homestayName(booking.getRoom().getHomestay().getName())
 //                .payment(booking.getPayment())
                 .build();
     }
