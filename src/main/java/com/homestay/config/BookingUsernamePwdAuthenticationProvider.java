@@ -1,5 +1,7 @@
 package com.homestay.config;
 
+import com.homestay.exception.BusinessException;
+import com.homestay.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,6 +25,11 @@ public class BookingUsernamePwdAuthenticationProvider implements AuthenticationP
         String pwd = authentication.getCredentials().toString();
         // Kiểm tra thông tin đăng nhập của người dùng với thông tin trong database
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+        // Kiểm tra mật khẩu đã mã hóa với mật khẩu đã mã hóa trong database
+        if (!passwordEncoder.matches(pwd, userDetails.getPassword())) {
+            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
+        }
 
         // Nếu thông tin đăng nhập không chính xác thì trả về null, ngược lại trả về thông tin đăng nhập của người dùng
         return new UsernamePasswordAuthenticationToken(username, pwd, userDetails.getAuthorities());

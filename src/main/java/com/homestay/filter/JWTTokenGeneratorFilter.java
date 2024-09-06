@@ -54,7 +54,7 @@ public class JWTTokenGeneratorFilter extends OncePerRequestFilter { // Chỉ t�
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        // luôn tạo token JWT khi người dùng đăng nhập thành công
         return !request.getServletPath().equals("/api/users/login");
-        // Filter này chỉ được kích hoạt khi request đến /user, tức là khi người dùng đăng nhập.
     }
 }

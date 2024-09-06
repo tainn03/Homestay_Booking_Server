@@ -3,6 +3,7 @@ package com.homestay.config;
 import com.homestay.exception.CustomAccessDeniedHandler;
 import com.homestay.exception.CustomBasicAuthenticationEntryPoint;
 import com.homestay.filter.JWTTokenGeneratorFilter;
+import com.homestay.filter.JWTTokenValidatorFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,11 +45,11 @@ public class ProjectSecurityConfig {
                 .csrf((csrf) -> csrf.disable())
 
                 .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class) // Thêm filter để tạo JWT token vào filter chain
-//                .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class) // Thêm filter để kiểm tra JWT token vào filter chain
+                .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class) // Thêm filter để kiểm tra JWT token vào filter chain
 
                 .authorizeHttpRequests((authorizeRequests) -> authorizeRequests
-//                        .requestMatchers((request) -> request.getServletPath().equals("/api/users/login")).permitAll()
-                                .anyRequest().permitAll()
+                        .requestMatchers((request) -> request.getServletPath().equals("/api/users/login")).permitAll()
+                        .anyRequest().permitAll()
                 );
 
         http.formLogin(withDefaults());
