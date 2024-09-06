@@ -1,12 +1,21 @@
 package com.homestay.config;
 
+import com.homestay.exception.CustomAccessDeniedHandler;
+import com.homestay.exception.CustomBasicAuthenticationEntryPoint;
+import com.homestay.filter.JWTTokenGeneratorFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -31,13 +40,20 @@ public class ProjectSecurityConfig {
                         return config;
                     }
                 }))
+
                 .csrf((csrf) -> csrf.disable())
-                .authorizeRequests(authorizeRequests ->
-                        authorizeRequests.anyRequest().permitAll()
+
+                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class) // Thêm filter để tạo JWT token vào filter chain
+//                .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class) // Thêm filter để kiểm tra JWT token vào filter chain
+
+                .authorizeHttpRequests((authorizeRequests) -> authorizeRequests
+//                        .requestMatchers((request) -> request.getServletPath().equals("/api/users/login")).permitAll()
+                                .anyRequest().permitAll()
                 );
 
         http.formLogin(withDefaults());
-        http.httpBasic(withDefaults());
+        http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+        http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
     }
 
@@ -46,8 +62,22 @@ public class ProjectSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-//    @Bean   // Hàm này dùng để kiểm tra mật khẩu có bị rò rỉ (compromised) hay không
-//    public CompromisedPasswordChecker compromisedPasswordChecker() {
-//        return new HaveIBeenPwnedRestApiPasswordChecker();
-//    }
+    @Bean   // Hàm này dùng để kiểm tra mật khẩu có bị rò rỉ (compromised) hay không
+    public CompromisedPasswordChecker compromisedPasswordChecker() {
+        return new HaveIBeenPwnedRestApiPasswordChecker();
+    }
+
+    @Bean
+    // Hàm này dùng để tạo ra một AuthenticationManager để xác thực thông tin đăng nhập dựa trên username và password đã mã hóa
+    public AuthenticationManager authenticationManager(
+            UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+        // Tạo ra một AuthenticationProvider để xác thực thông tin đăng nhập dựa trên username và password đã mã hóa
+        BookingUsernamePwdAuthenticationProvider authenticationProvider =
+                new BookingUsernamePwdAuthenticationProvider(userDetailsService, passwordEncoder);
+
+        // Tạo ra một ProviderManager để quản lý các AuthenticationProvider được sử dụng để xác thực thông tin đăng nhập
+        ProviderManager providerManager = new ProviderManager(authenticationProvider);
+        providerManager.setEraseCredentialsAfterAuthentication(false); // Không xóa thông tin đăng nhập sau khi xác thực
+        return providerManager;
+    }
 }
