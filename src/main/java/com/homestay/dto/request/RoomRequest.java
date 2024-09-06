@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Set;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -25,7 +27,7 @@ public class RoomRequest {
     @NotBlank(message = "INVALID_HOMESTAY_ID_BLANK")
     String homestayId;
 
-//    Set<String> amenities;
-//
+    Set<String> amenityIds;
+
 //    Set<String> bookings;
 }

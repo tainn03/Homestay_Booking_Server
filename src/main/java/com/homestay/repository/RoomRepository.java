@@ -17,4 +17,6 @@ public interface RoomRepository extends JpaRepository<Room, String> {
     List<Room> findAvailableRoomsByHomestayId(String homestayId, LocalDate checkIn, LocalDate checkOut);
 
     Room findByNameAndHomestayId(String name, String homestayId);
+
+    List<Room> findByHomestayId(String homestayId);
 }

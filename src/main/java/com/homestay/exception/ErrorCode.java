@@ -25,6 +25,8 @@ public enum ErrorCode {
     REVIEW_NOT_FOUND(404, "Review not found", HttpStatus.NOT_FOUND), // 404
     BOOKING_NOT_FOUND(404, "Booking not found", HttpStatus.NOT_FOUND), // 404
     ROOM_ALREADY_EXISTS(400, "Room already exists", HttpStatus.BAD_REQUEST), // 400
+    AMENITY_ALREADY_EXISTS(400, "Amenity already exists", HttpStatus.BAD_REQUEST), // 400
+    AMENITY_NOT_FOUND(404, "Amenity not found", HttpStatus.NOT_FOUND), // 404
 
     CHECKIN_AFTER_CHECKOUT(400, "Check-in date must be before check-out date", HttpStatus.BAD_REQUEST), // 400
     NO_AVAILABLE_ROOMS(400, "No available rooms", HttpStatus.BAD_REQUEST), // 400
@@ -61,6 +63,7 @@ public enum ErrorCode {
     INVALID_ROOM_ID_BLANK(400, "Room ID must not be blank", HttpStatus.BAD_REQUEST), // 400
     INVALID_PAYMENT_BLANK(400, "Payment must not be blank", HttpStatus.BAD_REQUEST), // 400
     INVALID_PRICE_NEGATIVE(400, "Price must be greater than 0", HttpStatus.BAD_REQUEST), // 400
+    CHECKIN_CHECKOUT_IN_PAST(400, "Check-in and check-out dates must be in the future", HttpStatus.BAD_REQUEST), // 400
 
 
     ;

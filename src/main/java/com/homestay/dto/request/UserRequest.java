@@ -33,15 +33,15 @@ public class UserRequest {
     @Email(message = "INVALID_EMAIL_PATTERN")
     String email;
 
-    @NotBlank(message = "INVALID_PHONE_BLANK")
+    //    @NotBlank(message = "INVALID_PHONE_BLANK")
     @Pattern(regexp = "^\\+?[0-9]{10,}$", message = "INVALID_PHONE_PATTERN")
     String phone;
 
-    @NotBlank(message = "INVALID_DOB_BLANK")
+    //    @NotBlank(message = "INVALID_DOB_BLANK")
     @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "INVALID_DOB_PATTERN")
     String dob; // Keep as String for validation
 
-    @NotBlank(message = "INVALID_GENDER_BLANK")
+    //    @NotBlank(message = "INVALID_GENDER_BLANK")
     String gender;
 
     String address;

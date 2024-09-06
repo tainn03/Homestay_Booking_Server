@@ -1,5 +1,6 @@
 package com.homestay.service;
 
+import com.homestay.dto.request.LoginRequest;
 import com.homestay.dto.request.UserRequest;
 import com.homestay.dto.response.RoleResponse;
 import com.homestay.dto.response.UserResponse;
@@ -17,11 +18,13 @@ import lombok.experimental.FieldDefaults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,6 +39,9 @@ public class UserService {
     @Autowired
     RoleRepository roleRepository;
 
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
     public UserResponse createUser(UserRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new BusinessException(ErrorCode.USER_ALREADY_EXISTS);
@@ -49,7 +55,7 @@ public class UserService {
 
         User user = User.builder()
                 .username(request.getUsername())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .fullName(request.getFullName())
                 .status("ACTIVE")
                 .email(request.getEmail())
@@ -151,7 +157,7 @@ public class UserService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
@@ -219,5 +225,18 @@ public class UserService {
                 .address(user.getAddress())
                 .roles(roleResponses)
                 .build();
+    }
+
+    public String login(LoginRequest request) {
+        Optional<User> user = userRepository.findByUsername(request.getUsername());
+        if (user.isEmpty()) {
+            return "Tài khoản không tồn tại!";
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.get().getPassword())) {
+            return "Mật khẩu không đúng!";
+        }
+
+        return "Login successfully";
     }
 }
