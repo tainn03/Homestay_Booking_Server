@@ -14,10 +14,10 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Discount {
+public class Discount extends BaseEntity {
     @Id
-            @GeneratedValue(generator = "uuid", strategy = GenerationType.UUID)
-            @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @GeneratedValue(generator = "uuid", strategy = GenerationType.UUID)
+    @GenericGenerator(name = "uuid", strategy = "uuid2")
     String id;
     int percent;
     String description;

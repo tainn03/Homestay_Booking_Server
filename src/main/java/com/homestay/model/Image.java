@@ -12,7 +12,7 @@ import org.hibernate.annotations.GenericGenerator;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Image {
+public class Image extends BaseEntity {
     @Id
     @GeneratedValue(generator = "uuid", strategy = GenerationType.UUID)
     @GenericGenerator(name = "uuid", strategy = "uuid2")

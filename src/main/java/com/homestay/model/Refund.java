@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Refund {
+public class Refund extends BaseEntity {
     @Id
     @GeneratedValue(generator = "uuid", strategy = GenerationType.UUID)
     @GenericGenerator(name = "uuid", strategy = "uuid2")
@@ -23,7 +23,7 @@ public class Refund {
     @ManyToOne
     @JoinColumn(name = "payment_id", nullable = false)
     Payment payment;
-    
+
     int amount;
     LocalDate date;
     String status;

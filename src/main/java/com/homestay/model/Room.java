@@ -14,7 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Room {
+public class Room extends BaseEntity {
     @Id
     @GeneratedValue(generator = "uuid", strategy = GenerationType.UUID)
     @GenericGenerator(name = "uuid", strategy = "uuid2")
