@@ -19,6 +19,9 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +37,7 @@ public class AuthenticationService {
     JwtService jwtService;
     AuthenticationManager authenticationManager;
     TokenRepository tokenRepository;
+    UserDetailsService userDetailsService;
 
     public AuthenticationResponse register(RegisterRequest request) {
         new User();
@@ -87,6 +91,15 @@ public class AuthenticationService {
         response.setHeader("Refresh-Token", refreshToken);
         revokeAllUserTokens(user); // Thu hồi tất cả token cũ của user
         saveUserToken(user, jwtToken); // Lưu token mới
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities()
+        );
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+        // Log the authenticated user
+        System.out.println("Authenticated user: " + SecurityContextHolder.getContext().getAuthentication().getName());
+
 
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)

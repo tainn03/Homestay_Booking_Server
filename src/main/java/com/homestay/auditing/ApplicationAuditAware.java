@@ -1,15 +1,18 @@
 package com.homestay.auditing;
 
 import org.springframework.data.domain.AuditorAware;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-@Component("auditorAwareImpl")
 public class ApplicationAuditAware implements AuditorAware<String> {
     @Override
     public Optional<String> getCurrentAuditor() {
-        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication().getName());
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        System.out.println("Auditor username: " + authentication.getName());
+//        if (authentication == null || !authentication.isAuthenticated()) {
+//            return Optional.empty();
+//        }
+        return Optional.of("user");
     }
+
 }
