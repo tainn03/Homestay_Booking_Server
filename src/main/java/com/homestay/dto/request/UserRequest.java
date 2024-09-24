@@ -7,8 +7,6 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Set;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -46,7 +44,5 @@ public class UserRequest {
 
     String address;
 
-    Set<String> roles;
-//    Set<String> homestays;
-//    Set<String> bookings;
+    String role;
 }

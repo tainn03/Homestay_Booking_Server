@@ -19,8 +19,6 @@ public class HomestayResponse {
     String standardCheckOut;
     double price;
     String phone;
-    String description;
-    String type;
     String status;
 
     String user;
@@ -29,16 +27,10 @@ public class HomestayResponse {
 
 //    Set<Image> images;
 
-    String address;
     Double longitude;
     Double latitude;
     String addressDetail;
 
-    Integer guests;
-    Integer bedrooms;
-    Integer bathrooms;
-
     Set<String> rooms;
-
     Set<String> reviews;
 }

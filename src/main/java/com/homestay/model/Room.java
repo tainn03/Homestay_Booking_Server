@@ -23,7 +23,6 @@ public class Room {
     String name;
     double price;
     int size;
-    String description;
 
     @ManyToOne
     @JoinColumn(name = "homestay_id", nullable = false)
@@ -39,4 +38,7 @@ public class Room {
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Booking> bookings;
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    Set<Image> images;
 }

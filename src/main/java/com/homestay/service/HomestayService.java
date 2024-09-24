@@ -48,15 +48,9 @@ public class HomestayService {
                 .phone(request.getPhone())
                 .status("ACTIVE")
                 .user(user)
-                .description(request.getDescription())
-                .type(request.getType())
-                .address(request.getAddress())
                 .longitude(request.getLongitude())
                 .latitude(request.getLatitude())
                 .addressDetail(request.getAddressDetail())
-                .guests(request.getGuests())
-                .bedrooms(request.getBedrooms())
-                .bathrooms(request.getBathrooms())
                 .build();
 
         Homestay savedHomestay = homestayRepository.save(homestay);
@@ -69,18 +63,12 @@ public class HomestayService {
                 .standardCheckOut(savedHomestay.getStandardCheckOut())
                 .price(savedHomestay.getPrice())
                 .phone(savedHomestay.getPhone())
-                .description(savedHomestay.getDescription())
-                .type(savedHomestay.getType())
                 .status(savedHomestay.getStatus())
                 .user(savedHomestay.getUser().getUsername())
                 .discounts(null)
-                .address(savedHomestay.getAddress())
                 .longitude(savedHomestay.getLongitude())
                 .latitude(savedHomestay.getLatitude())
                 .addressDetail(savedHomestay.getAddressDetail())
-                .guests(savedHomestay.getGuests())
-                .bedrooms(savedHomestay.getBedrooms())
-                .bathrooms(savedHomestay.getBathrooms())
                 .rooms(null)
                 .reviews(null)
                 .build();
@@ -96,18 +84,12 @@ public class HomestayService {
                         .standardCheckOut(savedHomestay.getStandardCheckOut())
                         .price(savedHomestay.getPrice())
                         .phone(savedHomestay.getPhone())
-                        .description(savedHomestay.getDescription())
-                        .type(savedHomestay.getType())
                         .status(savedHomestay.getStatus())
                         .user(savedHomestay.getUser().getUsername())
                         .discounts(savedHomestay.getDiscounts().stream().map(discount -> discount.getId()).collect(Collectors.toSet()))
-                        .address(savedHomestay.getAddress())
                         .longitude(savedHomestay.getLongitude())
                         .latitude(savedHomestay.getLatitude())
                         .addressDetail(savedHomestay.getAddressDetail())
-                        .guests(savedHomestay.getGuests())
-                        .bedrooms(savedHomestay.getBedrooms())
-                        .bathrooms(savedHomestay.getBathrooms())
                         .rooms(savedHomestay.getRooms().stream().map(room -> room.getName()).collect(Collectors.toSet()))
                         .reviews(savedHomestay.getReviews().stream().map(review -> review.getComment()).collect(Collectors.toSet()))
                         .build()
@@ -126,18 +108,12 @@ public class HomestayService {
                 .standardCheckOut(savedHomestay.getStandardCheckOut())
                 .price(savedHomestay.getPrice())
                 .phone(savedHomestay.getPhone())
-                .description(savedHomestay.getDescription())
-                .type(savedHomestay.getType())
                 .status(savedHomestay.getStatus())
                 .user(savedHomestay.getUser().getUsername())
                 .discounts(savedHomestay.getDiscounts().stream().map(discount -> discount.getId()).collect(Collectors.toSet()))
-                .address(savedHomestay.getAddress())
                 .longitude(savedHomestay.getLongitude())
                 .latitude(savedHomestay.getLatitude())
                 .addressDetail(savedHomestay.getAddressDetail())
-                .guests(savedHomestay.getGuests())
-                .bedrooms(savedHomestay.getBedrooms())
-                .bathrooms(savedHomestay.getBathrooms())
                 .rooms(savedHomestay.getRooms().stream().map(room -> room.getName()).collect(Collectors.toSet()))
                 .reviews(savedHomestay.getReviews().stream().map(review -> review.getComment()).collect(Collectors.toSet()))
                 .build();
@@ -155,15 +131,9 @@ public class HomestayService {
         savedHomestay.setStandardCheckOut(request.getStandardCheckOut());
         savedHomestay.setPrice(request.getPrice());
         savedHomestay.setPhone(request.getPhone());
-        savedHomestay.setDescription(request.getDescription());
-        savedHomestay.setType(request.getType());
-        savedHomestay.setAddress(request.getAddress());
         savedHomestay.setLongitude(request.getLongitude());
         savedHomestay.setLatitude(request.getLatitude());
         savedHomestay.setAddressDetail(request.getAddressDetail());
-        savedHomestay.setGuests(request.getGuests());
-        savedHomestay.setBedrooms(request.getBedrooms());
-        savedHomestay.setBathrooms(request.getBathrooms());
         savedHomestay.setStatus(request.getStatus());
         savedHomestay.setUser(user);
 
@@ -197,18 +167,12 @@ public class HomestayService {
                 .standardCheckOut(updatedHomestay.getStandardCheckOut())
                 .price(updatedHomestay.getPrice())
                 .phone(updatedHomestay.getPhone())
-                .description(updatedHomestay.getDescription())
-                .type(updatedHomestay.getType())
                 .status(updatedHomestay.getStatus())
                 .user(updatedHomestay.getUser().getUsername())
                 .discounts(updatedHomestay.getDiscounts().stream().map(discount -> discount.getId()).collect(Collectors.toSet()))
-                .address(updatedHomestay.getAddress())
                 .longitude(updatedHomestay.getLongitude())
                 .latitude(updatedHomestay.getLatitude())
                 .addressDetail(updatedHomestay.getAddressDetail())
-                .guests(updatedHomestay.getGuests())
-                .bedrooms(updatedHomestay.getBedrooms())
-                .bathrooms(updatedHomestay.getBathrooms())
                 .rooms(updatedHomestay.getRooms().stream().map(room -> room.getName()).collect(Collectors.toSet()))
                 .reviews(updatedHomestay.getReviews().stream().map(review -> review.getComment()).collect(Collectors.toSet()))
                 .build();
@@ -237,18 +201,12 @@ public class HomestayService {
                         .standardCheckOut(savedHomestay.getStandardCheckOut())
                         .price(savedHomestay.getPrice())
                         .phone(savedHomestay.getPhone())
-                        .description(savedHomestay.getDescription())
-                        .type(savedHomestay.getType())
                         .status(savedHomestay.getStatus())
                         .user(savedHomestay.getUser().getUsername())
                         .discounts(savedHomestay.getDiscounts().stream().map(discount -> discount.getId()).collect(Collectors.toSet()))
-                        .address(savedHomestay.getAddress())
                         .longitude(savedHomestay.getLongitude())
                         .latitude(savedHomestay.getLatitude())
                         .addressDetail(savedHomestay.getAddressDetail())
-                        .guests(savedHomestay.getGuests())
-                        .bedrooms(savedHomestay.getBedrooms())
-                        .bathrooms(savedHomestay.getBathrooms())
                         .rooms(savedHomestay.getRooms().stream().map(room -> room.getName()).collect(Collectors.toSet()))
                         .reviews(savedHomestay.getReviews().stream().map(review -> review.getComment()).collect(Collectors.toSet()))
                         .build()

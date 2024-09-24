@@ -28,7 +28,7 @@ public class UserResponse {
 
     String address;
 
-    Set<RoleResponse> roles;
+    String role;
     Set<String> homestays;
     Set<String> bookings;
 }

@@ -13,13 +13,12 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Amenity {
+public class City {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     int id;
     String name;
-    String urlIcon;
 
-    @ManyToMany(mappedBy = "amenities")
-    Set<Room> rooms;
+    @OneToMany(mappedBy = "city")
+    Set<District> districts;
 }

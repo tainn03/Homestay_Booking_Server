@@ -23,11 +23,9 @@ public class Homestay {
     String email;
     String standardCheckIn;
     String standardCheckOut;
-
     String phone;
-    String description;
-    String type;
     String status;
+    double price = 0.0;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -39,16 +37,9 @@ public class Homestay {
     @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Image> images;
 
-
-    String address;
     Double longitude;
     Double latitude;
     String addressDetail;
-
-
-    Integer guests;
-    Integer bedrooms;
-    Integer bathrooms;
 
     @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Room> rooms;
@@ -56,5 +47,16 @@ public class Homestay {
     @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Review> reviews;
 
-    double price = 0.0;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "type_detail",
+            joinColumns = @JoinColumn(name = "homestay_id"),
+            inverseJoinColumns = @JoinColumn(name = "type_id")
+    )
+    Set<TypeHomestay> typeHomestays;
+
+    @ManyToOne
+    @JoinColumn(name = "district_id", nullable = false)
+    District district;
+
 }
