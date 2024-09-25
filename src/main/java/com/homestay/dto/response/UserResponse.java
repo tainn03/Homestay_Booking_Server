@@ -14,21 +14,23 @@ import java.util.Set;
 //@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResponse {
     String id;
-    String username;
-    //    @JsonIgnore
-    String password;
+    String email;
     String fullName;
     String status;
-    String email;
     String phone;
     LocalDate dob;
-
     String gender;
-
-
     String address;
-
+    String cccd;
+    String businessLicense;
+    String nationality;
+    String bankName;
+    String bankNum;
+    String bankUsername;
+    String urlAvatar;
     String role;
+
     Set<String> homestays;
     Set<String> bookings;
+    Set<String> reviews;
 }

@@ -1,9 +1,10 @@
 package com.homestay.service;
 
+import com.homestay.constants.TokenType;
+import com.homestay.dto.request.ChangePasswordRequest;
 import com.homestay.dto.request.LoginRequest;
 import com.homestay.dto.request.RegisterRequest;
 import com.homestay.dto.response.AuthenticationResponse;
-import com.homestay.enums.TokenType;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
 import com.homestay.model.Token;
@@ -24,7 +25,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
 
 @Service
@@ -45,6 +48,7 @@ public class AuthenticationService {
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .status("ACTIVE")
                 .role(roleRepository.findByRoleName("USER").orElseThrow(() -> new BusinessException(ErrorCode.ROLE_NOT_FOUND)))
                 .build();
         User savedUser = userRepository.save(user);
@@ -82,8 +86,12 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(LoginRequest request, HttpServletResponse response) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        if (user.getStatus() == null || !user.getStatus().equals("ACTIVE")) {
+            throw new BusinessException(ErrorCode.USER_NOT_ACTIVE);
+        }
+
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         String jwtToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
@@ -126,5 +134,19 @@ public class AuthenticationService {
                 response.setStatus(200);
             }
         }
+    }
+
+    @Transactional
+    public String changePassword(ChangePasswordRequest request, Principal connectedUser) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
+        }
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
+        }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        return "Password changed successfully";
     }
 }

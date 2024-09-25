@@ -15,7 +15,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TypeHomestay extends BaseEntity {
+public class TypeHomestay {
     @Id
     String name;
     String urlImage;

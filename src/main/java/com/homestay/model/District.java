@@ -13,7 +13,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class District extends BaseEntity {
+public class District {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     int id;

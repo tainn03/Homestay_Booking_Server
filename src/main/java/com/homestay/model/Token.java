@@ -1,6 +1,6 @@
 package com.homestay.model;
 
-import com.homestay.enums.TokenType;
+import com.homestay.constants.TokenType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

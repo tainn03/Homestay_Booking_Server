@@ -6,23 +6,29 @@ VALUES ('USER');
 INSERT INTO public.role (role_name)
 VALUES ('LANDLORD');
 
+-- USER TABLE
+INSERT INTO public.users (id, email, password, created_at, created_by, full_name, role, status)
+VALUES ('9e477280-942f-43cd-a181-db482c9be95f', 'admin@gmail.com',
+        '$2a$10$Z75d4vzIBCAotcC/4se50OINWCEuGFA5pe0z30ZZfGmWuV3JBcVL2', now(), 'Server', 'Admin Server', 'ADMIN',
+        'ACTIVE');
+
 -- PERMISSION TABLE
 INSERT INTO public.permission (permission, role_name)
-VALUES ('USER:READ', 'USER');
+VALUES ('USER:READ_PROFILE', 'USER');
 INSERT INTO public.permission (permission, role_name)
 VALUES ('USER:CREATE', 'USER');
 INSERT INTO public.permission (permission, role_name)
-VALUES ('USER:UPDATE', 'USER');
+VALUES ('USER:UPDATE_PROFILE', 'USER');
 INSERT INTO public.permission (permission, role_name)
 VALUES ('USER:DELETE', 'USER');
 INSERT INTO public.permission (permission, role_name)
-VALUES ('ADMIN:READ', 'ADMIN');
+VALUES ('ADMIN:READ_USER', 'ADMIN');
 INSERT INTO public.permission (permission, role_name)
-VALUES ('ADMIN:CREATE', 'ADMIN');
+VALUES ('ADMIN:CREATE_USER', 'ADMIN');
 INSERT INTO public.permission (permission, role_name)
-VALUES ('ADMIN:UPDATE', 'ADMIN');
+VALUES ('ADMIN:UPDATE_USER', 'ADMIN');
 INSERT INTO public.permission (permission, role_name)
-VALUES ('ADMIN:DELETE', 'ADMIN');
+VALUES ('ADMIN:DELETE_USER', 'ADMIN');
 INSERT INTO public.permission (permission, role_name)
 VALUES ('LANDLORD:READ', 'LANDLORD');
 INSERT INTO public.permission (permission, role_name)

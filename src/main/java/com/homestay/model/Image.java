@@ -18,18 +18,17 @@ public class Image extends BaseEntity {
     @GenericGenerator(name = "uuid", strategy = "uuid2")
     String id;
     String url;
-    String nameImage;
 
     @ManyToOne
-    @JoinColumn(name = "homestay_id", nullable = false)
+    @JoinColumn(name = "homestay_id")
     Homestay homestay;
 
     @ManyToOne
-    @JoinColumn(name = "room_id", nullable = false)
+    @JoinColumn(name = "room_id")
     Room room;
 
     @OneToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     User user;
 
 }

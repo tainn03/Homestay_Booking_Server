@@ -14,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PaymentMethod extends BaseEntity {
+public class PaymentMethod {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;

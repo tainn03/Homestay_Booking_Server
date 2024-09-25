@@ -25,7 +25,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     JwtService jwtService;
     UserDetailsService userDetailsService;
-    private final TokenRepository tokenRepository;
+    TokenRepository tokenRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -33,19 +33,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String userEmail;
 
-        // Nếu header không chứa token thì không cần làm gì cả
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) { // Cú pháp của header là Authorization: Bearer <token>
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
-        jwt = authHeader.substring(7); // Bỏ phần "Bearer " ra khỏi chuỗi jwt
+        jwt = authHeader.substring(7);
         userEmail = jwtService.extractUsername(jwt);
 
-        // Nếu email tồn tại hoặc người dùng chưa được xác thực thì set thông tin người dùng vào authentication
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
-            // Kiểm tra token hợp lệ trong database để tránh trường hợp dùng lại token đã thu hồi
             boolean isTokenValid = tokenRepository.findByToken(jwt)
                     .map(token -> !token.isExpired() && !token.isRevoked())
                     .orElse(false);
@@ -53,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities()
                 );
-                authToken.setDetails( // set thông tin người dùng vào authentication
+                authToken.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
                 SecurityContextHolder.getContext().setAuthentication(authToken);

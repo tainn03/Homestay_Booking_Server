@@ -1,5 +1,8 @@
 package com.homestay.config;
 
+import com.homestay.exception.CustomAccessDeniedHandler;
+import com.homestay.exception.CustomBasicAuthenticationEntryPoint;
+import com.homestay.filter.CsrfCookieFilter;
 import com.homestay.filter.JwtAuthenticationFilter;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -14,6 +18,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Collections;
@@ -24,17 +31,21 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @EnableWebSecurity
+@EnableMethodSecurity
 public class ProjectSecurityConfig {
     AuthenticationProvider authenticationProvider;
     JwtAuthenticationFilter jwtAuthenticationFilter;
     LogoutHandler logoutHandler;
+    String[] WHITE_LIST_URL = {
+            "/api/v1/auth/**",
+    };
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/api/v1/auth/**").permitAll()
+                                .requestMatchers(WHITE_LIST_URL).permitAll()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(smc -> smc.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -47,8 +58,12 @@ public class ProjectSecurityConfig {
                     config.setMaxAge(3600L);
                     return config;
                 }))
-                .csrf((csrf) -> csrf.disable())
+                .csrf((csrfConfig) -> csrfConfig // Chưa viết xác thực CSRF
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .logout(logout ->
                         logout.logoutUrl("/api/v1/auth/logout")
                                 .addLogoutHandler(logoutHandler)
@@ -57,7 +72,8 @@ public class ProjectSecurityConfig {
         ;
 
         http.formLogin(withDefaults());
-        http.httpBasic(withDefaults());
+        http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+        http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
     }
 

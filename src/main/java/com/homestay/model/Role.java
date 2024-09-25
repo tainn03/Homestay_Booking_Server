@@ -23,7 +23,7 @@ public class Role extends BaseEntity {
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<User> users;
 
-    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     Set<Permission> permissions;
 
     public List<SimpleGrantedAuthority> getAuthorities() {
