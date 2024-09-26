@@ -24,9 +24,9 @@ public class UserRequest {
 
     @NotBlank(message = "INVALID_FULL_NAME_BLANK")
     String fullName;
+
     String phone;
     String dob; // Keep as String for validation
-
     String gender;
     String address;
     String cccd;
