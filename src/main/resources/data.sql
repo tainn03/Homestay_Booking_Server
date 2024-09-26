@@ -11,6 +11,10 @@ INSERT INTO public.users (id, email, password, created_at, created_by, full_name
 VALUES ('9e477280-942f-43cd-a181-db482c9be95f', 'admin@gmail.com',
         '$2a$10$Z75d4vzIBCAotcC/4se50OINWCEuGFA5pe0z30ZZfGmWuV3JBcVL2', now(), 'Server', 'Admin Server', 'ADMIN',
         'ACTIVE');
+INSERT INTO public.users (id, email, password, created_at, created_by, full_name, role, status)
+VALUES ('9e477280-942f-43cd-a181-db484c9bd95f', 'landlord@gmail.com',
+        '$2a$10$Z75d4vzIBCAotcC/4se50OINWCEuGFA5pe0z30ZZfGmWuV3JBcVL2', now(), 'Server', 'Landlord Server', 'LANDLORD',
+        'ACTIVE');
 
 -- PERMISSION TABLE
 INSERT INTO public.permission (permission, role_name)
@@ -24,19 +28,21 @@ VALUES ('USER:DELETE', 'USER');
 INSERT INTO public.permission (permission, role_name)
 VALUES ('ADMIN:READ_USER', 'ADMIN');
 INSERT INTO public.permission (permission, role_name)
+VALUES ('ADMIN:READ_ALL_HOMESTAY', 'ADMIN');
+INSERT INTO public.permission (permission, role_name)
 VALUES ('ADMIN:CREATE_USER', 'ADMIN');
 INSERT INTO public.permission (permission, role_name)
 VALUES ('ADMIN:UPDATE_USER', 'ADMIN');
 INSERT INTO public.permission (permission, role_name)
 VALUES ('ADMIN:DELETE_USER', 'ADMIN');
 INSERT INTO public.permission (permission, role_name)
-VALUES ('LANDLORD:READ', 'LANDLORD');
+VALUES ('LANDLORD:READ_OWN_HOMESTAY', 'LANDLORD');
 INSERT INTO public.permission (permission, role_name)
-VALUES ('LANDLORD:CREATE', 'LANDLORD');
+VALUES ('LANDLORD:CREATE_HOMESTAY', 'LANDLORD');
 INSERT INTO public.permission (permission, role_name)
-VALUES ('LANDLORD:UPDATE', 'LANDLORD');
+VALUES ('LANDLORD:UPDATE_HOMESTAY', 'LANDLORD');
 INSERT INTO public.permission (permission, role_name)
-VALUES ('LANDLORD:DELETE', 'LANDLORD');
+VALUES ('LANDLORD:DELETE_HOMESTAY', 'LANDLORD');
 
 -- CITY TABLE
 INSERT INTO public.city (id, "name")

@@ -6,13 +6,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface HomestayRepository extends JpaRepository<Homestay, String> {
-    @Query("SELECT h FROM Homestay h WHERE h.user = ?1")
-    List<Homestay> findByUser(User user);
+    Optional<Homestay> findByEmail(String email);
 
-    Arrays findByUserId(String userId);
+    @Query("SELECT h FROM Homestay h WHERE h.user = ?1 AND h.status = ?2")
+    List<Homestay> findByUserAndStatus(User user, String status);
 }

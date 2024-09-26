@@ -21,16 +21,18 @@ public class HomestayResponse {
     String phone;
     String status;
 
-    String user;
+    String userEmail;
 
-    Set<String> discounts;
-
-//    Set<Image> images;
+    Set<String> discountIds;
+    Set<String> urlImages;
 
     Double longitude;
     Double latitude;
     String addressDetail;
 
-    Set<String> rooms;
-    Set<String> reviews;
+    Set<String> roomNames;
+    Set<String> reviewIds;
+    Set<String> typeHomestayNames;
+    String districtName;
+
 }

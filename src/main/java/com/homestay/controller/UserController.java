@@ -29,7 +29,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN:CREATE_USER')")
     public ApiResponse<UserResponse> createUser(@Valid @RequestBody UserRequest request) {
         return ApiResponse.<UserResponse>builder()
-                .code(1000)
+                .code(200)
                 .message("Success")
                 .result(userService.createUser(request))
                 .build();
@@ -39,7 +39,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN:READ_USER')")
     public ApiResponse<List<UserResponse>> getAllUsers() {
         return ApiResponse.<List<UserResponse>>builder()
-                .code(1000)
+                .code(200)
                 .message("Success")
                 .result(userService.getAllUsers())
                 .build();
@@ -49,7 +49,7 @@ public class UserController {
     @PreAuthorize("hasAnyAuthority('ADMIN:READ_USER', 'USER:READ_PROFILE')")
     public ApiResponse<UserResponse> profile() {
         return ApiResponse.<UserResponse>builder()
-                .code(1000)
+                .code(200)
                 .message("Success")
                 .result(userService.getProfile())
                 .build();
@@ -60,7 +60,7 @@ public class UserController {
     @PreAuthorize("#request.email == authentication.principal.username or hasAnyAuthority('ADMIN:UPDATE_USER', 'USER:UPDATE_PROFILE')")
     public ApiResponse<UserResponse> updateProfile(@Valid @RequestBody UpdateUserRequest request) {
         return ApiResponse.<UserResponse>builder()
-                .code(1000)
+                .code(200)
                 .message("Success")
                 .result(userService.updateProfile(request))
                 .build();
@@ -70,7 +70,7 @@ public class UserController {
     @PreAuthorize("#email == authentication.principal.username or hasAuthority('ADMIN:UPDATE_USER')")
     public ApiResponse<UserResponse> updateAvatar(@RequestBody MultipartFile avatar, String email) {
         return ApiResponse.<UserResponse>builder()
-                .code(1000)
+                .code(200)
                 .message("Success")
                 .result(userService.updateAvatar(avatar, email))
                 .build();
@@ -81,7 +81,7 @@ public class UserController {
     @PreAuthorize("#email == authentication.principal.username or hasAuthority('ADMIN:DELETE_USER')")
     public ApiResponse<String> deleteUser(@PathVariable String email) {
         return ApiResponse.<String>builder()
-                .code(1000)
+                .code(200)
                 .message("Success")
                 .result(userService.updateStatus(email, UserStatus.DELETED.name()))
                 .build();
@@ -91,7 +91,7 @@ public class UserController {
     @PutMapping("{id}/status")
     public ApiResponse<?> updateUserStatus(@PathVariable String id, @RequestBody String status) {
         return ApiResponse.builder()
-                .code(1000)
+                .code(200)
                 .message("Success")
                 .result(userService.updateStatus(id, status))
                 .build();

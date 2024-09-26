@@ -1,216 +1,178 @@
 package com.homestay.service;
 
+import com.homestay.constants.HomestayStatus;
 import com.homestay.dto.request.HomestayRequest;
 import com.homestay.dto.response.HomestayResponse;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
-import com.homestay.model.Homestay;
-import com.homestay.model.User;
-import com.homestay.repository.*;
+import com.homestay.mapper.HomestayMapper;
+import com.homestay.model.*;
+import com.homestay.repository.DistrictRepository;
+import com.homestay.repository.HomestayRepository;
+import com.homestay.repository.TypeHomestayRepository;
+import com.homestay.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
 public class HomestayService {
-    @Autowired
     HomestayRepository homestayRepository;
-
-    @Autowired
     UserRepository userRepository;
+    HomestayMapper homestayMapper;
+    TypeHomestayRepository typeHomestayRepository;
+    DistrictRepository districtRepository;
+    CloudinaryService cloudinaryService;
 
-    @Autowired
-    DiscountRepository discountRepository;
-
-    @Autowired
-    RoomRepository roomRepository;
-
-    @Autowired
-    private ReviewRepository reviewRepository;
 
     public HomestayResponse createHomestay(@Valid HomestayRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        if (homestayRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new BusinessException(ErrorCode.HOMESTAY_ALREADY_EXIST);
+        }
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
+        }
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        Homestay homestay = Homestay.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .standardCheckIn(request.getStandardCheckIn())
-                .standardCheckOut(request.getStandardCheckOut())
-                .price(request.getPrice())
-                .phone(request.getPhone())
-                .status("ACTIVE")
-                .user(user)
-                .longitude(request.getLongitude())
-                .latitude(request.getLatitude())
-                .addressDetail(request.getAddressDetail())
-                .build();
+        Homestay homestay = homestayMapper.toHomestay(request);
+        homestay.setStatus(HomestayStatus.ACTIVE.name());
+        Set<TypeHomestay> typeHomestays = new HashSet<>();
+        request.getTypeHomestays().forEach(typeHomestay -> {
+            TypeHomestay typeHomestay1 = typeHomestayRepository.findByName(typeHomestay)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.TYPE_HOMESTAY_NOT_FOUND));
+            typeHomestays.add(typeHomestay1);
+        });
+        homestay.setTypeHomestays(typeHomestays);
+        homestay.setDistrict(districtRepository.findByName(request.getDistrictName())
+                .orElseThrow(() -> new BusinessException(ErrorCode.DISTRICT_NOT_FOUND)));
+        homestay.setUser(userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)));
+        homestayRepository.save(homestay);
 
-        Homestay savedHomestay = homestayRepository.save(homestay);
+        HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
+        return toHomeStayResponseWithRelationship(homestay, homestayResponse);
+    }
 
-        return HomestayResponse.builder()
-                .id(savedHomestay.getId())
-                .name(savedHomestay.getName())
-                .email(savedHomestay.getEmail())
-                .standardCheckIn(savedHomestay.getStandardCheckIn())
-                .standardCheckOut(savedHomestay.getStandardCheckOut())
-                .price(savedHomestay.getPrice())
-                .phone(savedHomestay.getPhone())
-                .status(savedHomestay.getStatus())
-                .user(savedHomestay.getUser().getUsername())
-                .discounts(null)
-                .longitude(savedHomestay.getLongitude())
-                .latitude(savedHomestay.getLatitude())
-                .addressDetail(savedHomestay.getAddressDetail())
-                .rooms(null)
-                .reviews(null)
-                .build();
+    private HomestayResponse toHomeStayResponseWithRelationship(Homestay homestay, HomestayResponse homestayResponse) {
+        if (homestay.getImages() != null) {
+            homestayResponse.setUrlImages(homestay.getImages().stream().map(Image::getUrl).collect(Collectors.toSet()));
+        }
+        if (homestay.getDiscounts() != null) {
+            homestayResponse.setDiscountIds(homestay.getDiscounts().stream().map(Discount::getId).collect(Collectors.toSet()));
+        }
+        if (homestay.getRooms() != null) {
+            homestayResponse.setRoomNames(homestay.getRooms().stream().map(Room::getName).collect(Collectors.toSet()));
+        }
+        if (homestay.getReviews() != null) {
+            homestayResponse.setReviewIds(homestay.getReviews().stream().map(Review::getId).collect(Collectors.toSet()));
+        }
+        if (homestay.getTypeHomestays() != null) {
+            homestayResponse.setTypeHomestayNames(homestay.getTypeHomestays().stream().map(TypeHomestay::getName).collect(Collectors.toSet()));
+        }
+        if (homestay.getDistrict() != null) {
+            homestayResponse.setDistrictName(homestay.getDistrict().getName());
+        }
+        return homestayResponse;
     }
 
     public List<HomestayResponse> getAllHomestays() {
-        return homestayRepository.findAll().stream()
-                .map(savedHomestay -> HomestayResponse.builder()
-                        .id(savedHomestay.getId())
-                        .name(savedHomestay.getName())
-                        .email(savedHomestay.getEmail())
-                        .standardCheckIn(savedHomestay.getStandardCheckIn())
-                        .standardCheckOut(savedHomestay.getStandardCheckOut())
-                        .price(savedHomestay.getPrice())
-                        .phone(savedHomestay.getPhone())
-                        .status(savedHomestay.getStatus())
-                        .user(savedHomestay.getUser().getUsername())
-                        .discounts(savedHomestay.getDiscounts().stream().map(discount -> discount.getId()).collect(Collectors.toSet()))
-                        .longitude(savedHomestay.getLongitude())
-                        .latitude(savedHomestay.getLatitude())
-                        .addressDetail(savedHomestay.getAddressDetail())
-                        .rooms(savedHomestay.getRooms().stream().map(room -> room.getName()).collect(Collectors.toSet()))
-                        .reviews(savedHomestay.getReviews().stream().map(review -> review.getComment()).collect(Collectors.toSet()))
-                        .build()
-                ).collect(Collectors.toList());
+        List<Homestay> homestays = homestayRepository.findAll();
+        List<HomestayResponse> responses = homestays.stream()
+                .map(homestay -> {
+                    HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
+                    return toHomeStayResponseWithRelationship(homestay, response);
+                })
+                .collect(Collectors.toList());
+        return responses;
     }
 
-    public HomestayResponse getHomestayById(String id) {
-        Homestay savedHomestay = homestayRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
-
-        return HomestayResponse.builder()
-                .id(savedHomestay.getId())
-                .name(savedHomestay.getName())
-                .email(savedHomestay.getEmail())
-                .standardCheckIn(savedHomestay.getStandardCheckIn())
-                .standardCheckOut(savedHomestay.getStandardCheckOut())
-                .price(savedHomestay.getPrice())
-                .phone(savedHomestay.getPhone())
-                .status(savedHomestay.getStatus())
-                .user(savedHomestay.getUser().getUsername())
-                .discounts(savedHomestay.getDiscounts().stream().map(discount -> discount.getId()).collect(Collectors.toSet()))
-                .longitude(savedHomestay.getLongitude())
-                .latitude(savedHomestay.getLatitude())
-                .addressDetail(savedHomestay.getAddressDetail())
-                .rooms(savedHomestay.getRooms().stream().map(room -> room.getName()).collect(Collectors.toSet()))
-                .reviews(savedHomestay.getReviews().stream().map(review -> review.getComment()).collect(Collectors.toSet()))
-                .build();
-    }
-
-    public HomestayResponse updateHomestay(String id, @Valid HomestayRequest request) {
-        Homestay savedHomestay = homestayRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
-        User user = userRepository.findById(request.getUserId())
+    public List<HomestayResponse> getHomestayByOwner() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        List<Homestay> homestays = homestayRepository.findByUserAndStatus(user, HomestayStatus.ACTIVE.name());
+        List<HomestayResponse> responses = homestays.stream()
+                .map(homestay -> {
+                    HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
+                    return toHomeStayResponseWithRelationship(homestay, response);
+                })
+                .collect(Collectors.toList());
+        return responses;
+    }
 
-        savedHomestay.setName(request.getName());
-        savedHomestay.setEmail(request.getEmail());
-        savedHomestay.setStandardCheckIn(request.getStandardCheckIn());
-        savedHomestay.setStandardCheckOut(request.getStandardCheckOut());
-        savedHomestay.setPrice(request.getPrice());
-        savedHomestay.setPhone(request.getPhone());
-        savedHomestay.setLongitude(request.getLongitude());
-        savedHomestay.setLatitude(request.getLatitude());
-        savedHomestay.setAddressDetail(request.getAddressDetail());
-        savedHomestay.setStatus(request.getStatus());
-        savedHomestay.setUser(user);
-
-
-        if (request.getDiscounts() != null) {
-            savedHomestay.setDiscounts(request.getDiscounts().stream()
-                    .map(discountId -> discountRepository.findById(discountId)
-                            .orElseThrow(() -> new BusinessException(ErrorCode.DISCOUNT_NOT_FOUND)))
-                    .collect(Collectors.toSet()));
+    public HomestayResponse updateHomestay(HomestayRequest request) {
+        Homestay homestay = homestayRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
         }
-        if (request.getRooms() != null) {
-            savedHomestay.setRooms(request.getRooms().stream()
-                    .map(roomId -> roomRepository.findById(roomId)
-                            .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND)))
-                    .collect(Collectors.toSet()));
-        }
-        if (request.getReviews() != null) {
-            savedHomestay.setReviews(request.getReviews().stream()
-                    .map(reviewId -> reviewRepository.findById(reviewId)
-                            .orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND)))
-                    .collect(Collectors.toSet()));
-        }
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        homestayMapper.updateToHomestay(homestay, request);
 
-        Homestay updatedHomestay = homestayRepository.save(savedHomestay);
+        Set<TypeHomestay> typeHomestays = new HashSet<>();
+        request.getTypeHomestays().forEach(typeHomestay -> {
+            TypeHomestay typeHomestay1 = typeHomestayRepository.findByName(typeHomestay)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.TYPE_HOMESTAY_NOT_FOUND));
+            typeHomestays.add(typeHomestay1);
+        });
+        homestay.setTypeHomestays(typeHomestays);
 
-        return HomestayResponse.builder()
-                .id(updatedHomestay.getId())
-                .name(updatedHomestay.getName())
-                .email(updatedHomestay.getEmail())
-                .standardCheckIn(updatedHomestay.getStandardCheckIn())
-                .standardCheckOut(updatedHomestay.getStandardCheckOut())
-                .price(updatedHomestay.getPrice())
-                .phone(updatedHomestay.getPhone())
-                .status(updatedHomestay.getStatus())
-                .user(updatedHomestay.getUser().getUsername())
-                .discounts(updatedHomestay.getDiscounts().stream().map(discount -> discount.getId()).collect(Collectors.toSet()))
-                .longitude(updatedHomestay.getLongitude())
-                .latitude(updatedHomestay.getLatitude())
-                .addressDetail(updatedHomestay.getAddressDetail())
-                .rooms(updatedHomestay.getRooms().stream().map(room -> room.getName()).collect(Collectors.toSet()))
-                .reviews(updatedHomestay.getReviews().stream().map(review -> review.getComment()).collect(Collectors.toSet()))
-                .build();
+        homestay.setDistrict(districtRepository.findByName(request.getDistrictName())
+                .orElseThrow(() -> new BusinessException(ErrorCode.DISTRICT_NOT_FOUND)));
+
+        homestay.setUser(userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)));
+
+        homestayRepository.save(homestay);
+
+        HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
+        return toHomeStayResponseWithRelationship(homestay, homestayResponse);
     }
 
     public String deleteHomestay(String id) {
-        Homestay savedHomestay = homestayRepository.findById(id)
+        Homestay homestay = homestayRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
-
-        homestayRepository.delete(savedHomestay);
-
-        return "Homestay deleted successfully";
+        homestay.setStatus(HomestayStatus.DELETED.name());
+        homestayRepository.save(homestay);
+        return "Delete homestay successfully";
     }
 
+    @Transactional
+    public HomestayResponse updateHomestayPhoto(List<MultipartFile> photos, String id) {
+        Homestay homestay = homestayRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
 
-    public List<HomestayResponse> getHomestaysByUserId(String userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        List<Homestay> homestays = homestayRepository.findByUser(user);
-        return homestays.stream()
-                .map(savedHomestay -> HomestayResponse.builder()
-                        .id(savedHomestay.getId())
-                        .name(savedHomestay.getName())
-                        .email(savedHomestay.getEmail())
-                        .standardCheckIn(savedHomestay.getStandardCheckIn())
-                        .standardCheckOut(savedHomestay.getStandardCheckOut())
-                        .price(savedHomestay.getPrice())
-                        .phone(savedHomestay.getPhone())
-                        .status(savedHomestay.getStatus())
-                        .user(savedHomestay.getUser().getUsername())
-                        .discounts(savedHomestay.getDiscounts().stream().map(discount -> discount.getId()).collect(Collectors.toSet()))
-                        .longitude(savedHomestay.getLongitude())
-                        .latitude(savedHomestay.getLatitude())
-                        .addressDetail(savedHomestay.getAddressDetail())
-                        .rooms(savedHomestay.getRooms().stream().map(room -> room.getName()).collect(Collectors.toSet()))
-                        .reviews(savedHomestay.getReviews().stream().map(review -> review.getComment()).collect(Collectors.toSet()))
-                        .build()
-                ).collect(Collectors.toList());
+        // Xóa các ảnh cũ trên Cloudinary
+        List<Image> existingImages = homestay.getImages();
+        cloudinaryService.deleteFiles(existingImages.stream().map(Image::getUrl).collect(Collectors.toList()));
+        existingImages.clear();
+
+        // Upload các ảnh mới và lưu URL vào cơ sở dữ liệu
+        List<String> photoUrls = cloudinaryService.uploadFiles(photos);
+        for (String photoUrl : photoUrls) {
+            Image image = Image.builder()
+                    .url(photoUrl)
+                    .homestay(homestay)
+                    .build();
+            existingImages.add(image);
+        }
+
+        homestay.setImages(existingImages);
+        homestayRepository.save(homestay);
+
+        HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
+        return toHomeStayResponseWithRelationship(homestay, homestayResponse);
     }
 
 }

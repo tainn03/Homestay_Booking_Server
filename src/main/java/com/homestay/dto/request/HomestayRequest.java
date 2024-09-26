@@ -22,31 +22,18 @@ public class HomestayRequest {
     @Email(message = "INVALID_EMAIL_PATTERN")
     String email;
 
-    // example: 12:00
     @Pattern(regexp = "^\\d{2}:\\d{2}$", message = "INVALID_CHECKIN_PATTERN")
     String standardCheckIn;
 
     @Pattern(regexp = "^\\d{2}:\\d{2}$", message = "INVALID_CHECKOUT_PATTERN")
     String standardCheckOut;
 
-    @Pattern(regexp = "^\\+?[0-9]{10,}$", message = "Phone must be valid")
     String phone;
-
     double price;
-
-    @NotBlank(message = "INVALID_USER_ID_BLANK")
-    String userId;
-
-//    Set<Image> images;
-
     Double longitude;
     Double latitude;
     String addressDetail;
-    
-    // just for update method
-    String status;
-    Set<String> discounts;
-    Set<String> rooms;
 
-    Set<String> reviews;
+    Set<String> typeHomestays;
+    String districtName;
 }

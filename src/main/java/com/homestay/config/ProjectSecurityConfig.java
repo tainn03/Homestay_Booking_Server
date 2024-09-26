@@ -13,14 +13,13 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Collections;
@@ -38,10 +37,12 @@ public class ProjectSecurityConfig {
     LogoutHandler logoutHandler;
     String[] WHITE_LIST_URL = {
             "/api/v1/auth/**",
+            "/api/v1/homestays/public/**",
     };
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+        // Chưa viết xác thực CSRF
         http
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
@@ -58,9 +59,10 @@ public class ProjectSecurityConfig {
                     config.setMaxAge(3600L);
                     return config;
                 }))
-                .csrf((csrfConfig) -> csrfConfig // Chưa viết xác thực CSRF
-                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrf(AbstractHttpConfigurer::disable
+//                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+//                        .ignoringRequestMatchers(request -> "POST".equals(request.getMethod()))
+//                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)

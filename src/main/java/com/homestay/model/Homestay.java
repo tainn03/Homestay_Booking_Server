@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -35,7 +36,7 @@ public class Homestay extends BaseEntity {
     Set<Discount> discounts;
 
     @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<Image> images;
+    List<Image> images;
 
     Double longitude;
     Double latitude;

@@ -7,58 +7,80 @@ import com.homestay.service.HomestayService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
 
 @RestController
-@RequestMapping("/api/homestays")
+@RequestMapping("/api/v1/homestays")
 @RequiredArgsConstructor
-@FieldDefaults(level = PRIVATE)
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 public class HomestayController {
-    @Autowired
     HomestayService homestayService;
 
-    // CRUD methods: Create, Read, Update, Delete
+    // Chỉ có chủ nhà mới được phép tạo homestay, homestay đó thuộc sở hữu của chủ nhà
     @PostMapping
-    public ResponseEntity<ApiResponse<HomestayResponse>> createHomestay(@Valid @RequestBody HomestayRequest request) {
-        HomestayResponse response = homestayService.createHomestay(request);
-        return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
+    @PreAuthorize("hasAuthority('LANDLORD:CREATE_HOMESTAY')")
+    public ApiResponse<HomestayResponse> createHomestay(@Valid @RequestBody HomestayRequest request) {
+        return ApiResponse.<HomestayResponse>builder()
+                .code(200)
+                .message("Success")
+                .result(homestayService.createHomestay(request))
+                .build();
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<HomestayResponse>>> getAllHomestays() {
-        List<HomestayResponse> response = homestayService.getAllHomestays();
-        return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
+    @PreAuthorize("hasAuthority('ADMIN:READ_ALL_HOMESTAY')")
+    public ApiResponse<List<HomestayResponse>> getAllHomestays() {
+        return ApiResponse.<List<HomestayResponse>>builder()
+                .code(200)
+                .message("Success")
+                .result(homestayService.getAllHomestays())
+                .build();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<HomestayResponse>> getHomestayById(@PathVariable String id) {
-        HomestayResponse response = homestayService.getHomestayById(id);
-        return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
+    @GetMapping("/owner")
+    @PreAuthorize("hasAuthority('LANDLORD:READ_OWN_HOMESTAY') and isAuthenticated()")
+    public ApiResponse<List<HomestayResponse>> getHomestayByOwner() {
+        return ApiResponse.<List<HomestayResponse>>builder()
+                .code(200)
+                .message("Success")
+                .result(homestayService.getHomestayByOwner())
+                .build();
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<HomestayResponse>> updateHomestay(@PathVariable String id, @Valid @RequestBody HomestayRequest request) {
-        HomestayResponse response = homestayService.updateHomestay(id, request);
-        return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
+    @PutMapping
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
+    public ApiResponse<HomestayResponse> updateHomestayInfo(@Valid @RequestBody HomestayRequest request) {
+        return ApiResponse.<HomestayResponse>builder()
+                .code(200)
+                .message("Success")
+                .result(homestayService.updateHomestay(request))
+                .build();
+    }
+
+    @PutMapping("/photo/{id}")
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
+    public ApiResponse<HomestayResponse> updateHomestayPhoto(@RequestBody List<MultipartFile> photo, @PathVariable String id) {
+        return ApiResponse.<HomestayResponse>builder()
+                .code(200)
+                .message("Success")
+                .result(homestayService.updateHomestayPhoto(photo, id))
+                .build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> deleteHomestay(@PathVariable String id) {
-        homestayService.deleteHomestay(id);
-        return ResponseEntity.ok(new ApiResponse<>(1000, "Success", "Homestay deleted successfully"));
-    }
-
-    // Additional methods: get homestay by name, get homestay near a location
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<ApiResponse<List<HomestayResponse>>> getHomestaysByUserId(@PathVariable String userId) {
-        List<HomestayResponse> response = homestayService.getHomestaysByUserId(userId);
-        return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
+    @PreAuthorize("hasAuthority('LANDLORD:DELETE_HOMESTAY')")
+    public ApiResponse<String> deleteHomestay(@PathVariable String id) {
+        return ApiResponse.<String>builder()
+                .code(200)
+                .message("Success")
+                .result(homestayService.deleteHomestay(id))
+                .build();
     }
 
 }

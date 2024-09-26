@@ -17,6 +17,7 @@ public enum ErrorCode {
 
     INVALID_KEY(400, "Invalid key", HttpStatus.BAD_REQUEST), // 400
     USER_ALREADY_EXISTS(400, "User already exists", HttpStatus.BAD_REQUEST), // 400
+    HOMESTAY_ALREADY_EXIST(400, "Homestay already exists", HttpStatus.BAD_REQUEST), // 400
     ROLE_NOT_FOUND(404, "Role not found", HttpStatus.NOT_FOUND),  // 404
     USER_NOT_FOUND(404, "User not found", HttpStatus.NOT_FOUND), // 404
     USER_NOT_ACTIVE(400, "User is not active", HttpStatus.BAD_REQUEST), // 400
@@ -28,6 +29,8 @@ public enum ErrorCode {
     ROOM_ALREADY_EXISTS(400, "Room already exists", HttpStatus.BAD_REQUEST), // 400
     AMENITY_ALREADY_EXISTS(400, "Amenity already exists", HttpStatus.BAD_REQUEST), // 400
     AMENITY_NOT_FOUND(404, "Amenity not found", HttpStatus.NOT_FOUND), // 404
+    TYPE_HOMESTAY_NOT_FOUND(404, "Type homestay not found", HttpStatus.NOT_FOUND), // 404
+    DISTRICT_NOT_FOUND(404, "District not found", HttpStatus.NOT_FOUND), // 404
 
     CHECKIN_AFTER_CHECKOUT(400, "Check-in date must be before check-out date", HttpStatus.BAD_REQUEST), // 400
     NO_AVAILABLE_ROOMS(400, "No available rooms", HttpStatus.BAD_REQUEST), // 400

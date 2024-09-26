@@ -54,7 +54,7 @@ public class UserService {
 
     // Xem danh sách người dùng thì không cần các thông tin chi tiết như booking, homestay, review
     public List<UserResponse> getAllUsers() {
-        List<User> users = userRepository.findAllByStatus("ACTIVE");
+        List<User> users = userRepository.findAll();
         return users.stream()
                 .map(userMapper::toUserResponse)
                 .collect(Collectors.toList());
