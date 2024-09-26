@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Booking {
+public class Booking extends BaseEntity {
     @Id
     @GeneratedValue(generator = "uuid", strategy = GenerationType.UUID)
     @GenericGenerator(name = "uuid", strategy = "uuid2")

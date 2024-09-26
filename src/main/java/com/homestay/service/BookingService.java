@@ -1,8 +1,8 @@
 package com.homestay.service;
 
+import com.homestay.constants.BookingStatus;
 import com.homestay.dto.request.BookingRequest;
 import com.homestay.dto.response.BookingResponse;
-import com.homestay.enums.BookingStatus;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
 import com.homestay.model.Booking;

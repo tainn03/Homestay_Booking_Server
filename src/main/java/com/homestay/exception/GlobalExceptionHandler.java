@@ -27,19 +27,19 @@ public class GlobalExceptionHandler {
     ResponseEntity<ApiResponse> handleBusinessException(BusinessException e) {
         String enumKey = e.getErrorCode().name();
         ErrorCode errorCode = ErrorCode.INVALID_KEY;
+        ApiResponse response = new ApiResponse();
         try {
             errorCode = ErrorCode.valueOf(enumKey);
+            response.setCode(errorCode.getCode());
+            response.setMessage(errorCode.getMessage());
         } catch (IllegalArgumentException ex) {
-            // Do nothing
+
         }
-        ApiResponse response = new ApiResponse();
-        response.setCode(errorCode.getCode());
-        response.setMessage(errorCode.getMessage());
         return ResponseEntity
                 .status(errorCode.getStatusCode())
                 .body(response);
     }
-    
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ApiResponse> handleIllegalArgumentException(MethodArgumentNotValidException e) {
         String enumKey = e.getBindingResult().getFieldError().getDefaultMessage();
@@ -51,7 +51,7 @@ public class GlobalExceptionHandler {
         }
         ApiResponse response = new ApiResponse();
         response.setCode(errorCode.getCode());
-        response.setMessage(errorCode.getMessage());
+        response.setMessage(e.getMessage());
         return ResponseEntity.badRequest().body(response);
     }
 

@@ -13,17 +13,14 @@ import java.time.LocalDateTime;
 public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        // Lấy thời gian hiện tại
         LocalDateTime currentTimeStamp = LocalDateTime.now();
-        // Lấy thông tin lỗi xác thực
         String message = (authException != null && authException.getMessage() != null) ? authException.getMessage()
                 : "Unauthorized";
         String path = request.getRequestURI();
-        response.setHeader("eazybank-error-reason", "Authentication failed");
+        response.setHeader("business-error-reason", "Authentication failed");
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType("application/json;charset=UTF-8");
-
-        // Trả về thông báo lỗi khi xác thực không thành công
+        // Construct the JSON response
         String jsonResponse =
                 String.format("{\"timestamp\": \"%s\", \"status\": %d, \"error\": \"%s\", \"message\": \"%s\", \"path\": \"%s\"}",
                         currentTimeStamp, HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase(),

@@ -1,4 +1,4 @@
-package com.homestay.dto.request;
+package com.homestay.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class LoginRequest {
-    String email;
-    String password;
+public class AuthenticationResponse {
+    String accessToken;
+    String refreshToken;
 }

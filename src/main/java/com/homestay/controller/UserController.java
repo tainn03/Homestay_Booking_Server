@@ -1,8 +1,8 @@
 package com.homestay.controller;
 
-import com.homestay.constants.ApplicationConstant;
+import com.homestay.constants.UserStatus;
 import com.homestay.dto.ApiResponse;
-import com.homestay.dto.request.LoginRequestDTO;
+import com.homestay.dto.request.UpdateUserRequest;
 import com.homestay.dto.request.UserRequest;
 import com.homestay.dto.response.LoginResponseDTO;
 import com.homestay.dto.response.UserResponse;
@@ -13,15 +13,10 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -29,18 +24,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@PreAuthorize("hasAnyRole('ADMIN', 'USER', 'LANDLORD')")
 public class UserController {
-    @Autowired
     UserService userService;
     @Autowired
     AuthenticationManager authenticationManager;
     @Autowired
     Environment env; // final để không thay đổi giá trị của biến sau khi khởi tạo
 
+    // Hàm này để cho admin tạo một người dùng mới (khách hàng, chủ nhà)
     @PostMapping
+    @PreAuthorize("hasAuthority('ADMIN:CREATE_USER')")
     public ApiResponse<UserResponse> createUser(@Valid @RequestBody UserRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .code(1000)
@@ -50,6 +47,7 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN:READ_USER')")
     public ApiResponse<List<UserResponse>> getAllUsers() {
         return ApiResponse.<List<UserResponse>>builder()
                 .code(1000)
@@ -58,42 +56,56 @@ public class UserController {
                 .build();
     }
 
-    @GetMapping("/{id}")
-    public ApiResponse<UserResponse> getUserById(@PathVariable String id) {
+    @GetMapping("/profile")
+    @PreAuthorize("hasAnyAuthority('ADMIN:READ_USER', 'USER:READ_PROFILE')")
+    public ApiResponse<UserResponse> profile() {
         return ApiResponse.<UserResponse>builder()
                 .code(1000)
                 .message("Success")
-                .result(userService.getUserById(id))
+                .result(userService.getProfile())
                 .build();
     }
 
-    @PutMapping("/{id}")
-    public ApiResponse<UserResponse> updateUser(@PathVariable String id, @Valid @RequestBody UserRequest request) {
+    // Cập nhật thông tin của bản thân hoặc admin cập nhật thông tin của người dùng khác
+    @PutMapping("/profile")
+    @PreAuthorize("#request.email == authentication.principal.username or hasAnyAuthority('ADMIN:UPDATE_USER', 'USER:UPDATE_PROFILE')")
+    public ApiResponse<UserResponse> updateProfile(@Valid @RequestBody UpdateUserRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .code(1000)
                 .message("Success")
-                .result(userService.updateUser(id, request))
+                .result(userService.updateProfile(request))
                 .build();
     }
 
-    @DeleteMapping("/{id}")
-    public ApiResponse<UserResponse> deleteUser(@PathVariable String id) {
+    @PutMapping
+    @PreAuthorize("#email == authentication.principal.username or hasAuthority('ADMIN:UPDATE_USER')")
+    public ApiResponse<UserResponse> updateAvatar(@RequestBody MultipartFile avatar, String email) {
         return ApiResponse.<UserResponse>builder()
                 .code(1000)
                 .message("Success")
-                .result(userService.deleteUser(id))
+                .result(userService.updateAvatar(avatar, email))
                 .build();
     }
 
-    @GetMapping("/{id}/bookings")
-    public ApiResponse<?> getUserBookings(@PathVariable String id) {
-        return null;
+    // Chuyển đổi trạng thái người dùng sang delete
+    @DeleteMapping("/{email}")
+    @PreAuthorize("#email == authentication.principal.username or hasAuthority('ADMIN:DELETE_USER')")
+    public ApiResponse<String> deleteUser(@PathVariable String email) {
+        return ApiResponse.<String>builder()
+                .code(1000)
+                .message("Success")
+                .result(userService.updateStatus(email, UserStatus.DELETED.name()))
+                .build();
     }
 
-    // Hàm này để cập nhật trạng thái của user (active, inactive)
+    // Hàm này để cập nhật trạng thái của user (active, inactive, delete)
     @PutMapping("{id}/status")
-    public ApiResponse<?> updateUserStatus(@PathVariable String id, @RequestBody Object status) {
-        return null;
+    public ApiResponse<?> updateUserStatus(@PathVariable String id, @RequestBody String status) {
+        return ApiResponse.builder()
+                .code(1000)
+                .message("Success")
+                .result(userService.updateStatus(id, status))
+                .build();
     }
 
     @PostMapping("/login")

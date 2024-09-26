@@ -1,7 +1,7 @@
-package com.homestay.enums;
+package com.homestay.constants;
 
 public enum Roles {
     ADMIN,
-    CLIENT,
+    USER,
     LANDLORD
 }

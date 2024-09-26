@@ -33,23 +33,16 @@ public class HomestayRequest {
     String phone;
 
     double price;
-    String description;
-    String type;
 
     @NotBlank(message = "INVALID_USER_ID_BLANK")
     String userId;
 
 //    Set<Image> images;
 
-    String address;
     Double longitude;
     Double latitude;
     String addressDetail;
-
-    Integer guests;
-    Integer bedrooms;
-    Integer bathrooms;
-
+    
     // just for update method
     String status;
     Set<String> discounts;

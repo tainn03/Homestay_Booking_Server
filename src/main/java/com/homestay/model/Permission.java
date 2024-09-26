@@ -2,11 +2,10 @@ package com.homestay.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.Set;
 
 @Entity
 @Getter
@@ -17,10 +16,10 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Permission {
     @Id
-    String name;
-    String description;
+    String permission;
 
-    @ManyToMany(mappedBy = "permissions")
-    Set<Role> roles;
+    @ManyToOne
+    @JoinColumn(name = "role_name", nullable = false)
+    Role role;
 
 }

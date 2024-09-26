@@ -1,6 +1,8 @@
 package com.homestay.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,13 +15,11 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Amenity {
+public class TypeHomestay {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    int id;
     String name;
-    String urlIcon;
+    String urlImage;
 
-    @ManyToMany(mappedBy = "amenities")
-    Set<Room> rooms;
+    @ManyToMany(mappedBy = "typeHomestays")
+    Set<Homestay> homestays;
 }

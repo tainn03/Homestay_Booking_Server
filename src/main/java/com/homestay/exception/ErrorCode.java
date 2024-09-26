@@ -19,6 +19,7 @@ public enum ErrorCode {
     USER_ALREADY_EXISTS(400, "User already exists", HttpStatus.BAD_REQUEST), // 400
     ROLE_NOT_FOUND(404, "Role not found", HttpStatus.NOT_FOUND),  // 404
     USER_NOT_FOUND(404, "User not found", HttpStatus.NOT_FOUND), // 404
+    USER_NOT_ACTIVE(400, "User is not active", HttpStatus.BAD_REQUEST), // 400
     HOMESTAY_NOT_FOUND(404, "Homestay not found", HttpStatus.NOT_FOUND), // 404
     DISCOUNT_NOT_FOUND(404, "Discount not found", HttpStatus.NOT_FOUND), // 404
     ROOM_NOT_FOUND(404, "Room not found", HttpStatus.NOT_FOUND), // 404
@@ -32,6 +33,7 @@ public enum ErrorCode {
     NO_AVAILABLE_ROOMS(400, "No available rooms", HttpStatus.BAD_REQUEST), // 400
 
     INVALID_USERNAME_BLANK(400, "Username must not be blank", HttpStatus.BAD_REQUEST), // 400
+    INVALID_PASSWORD(400, "Invalid password", HttpStatus.BAD_REQUEST), // 400
     INVALID_USERNAME_SIZE(400, "Username must be at least 6 characters", HttpStatus.BAD_REQUEST), // 400
     INVALID_PASSWORD_BLANK(400, "Password must not be blank", HttpStatus.BAD_REQUEST), // 400
     INVALID_PASSWORD_SIZE(400, "Password must be at least 8 characters", HttpStatus.BAD_REQUEST), // 400
@@ -44,6 +46,9 @@ public enum ErrorCode {
     INVALID_DOB_BLANK(400, "Date of birth must not be blank", HttpStatus.BAD_REQUEST), // 400
     INVALID_DOB_PATTERN(400, "Invalid date of birth pattern", HttpStatus.BAD_REQUEST), // 400
     INVALID_GENDER_BLANK(400, "Gender must not be blank", HttpStatus.BAD_REQUEST), // 400
+    INVALID_CMND_PATTERN(400, "Invalid CMND pattern", HttpStatus.BAD_REQUEST), // 400
+    INVALID_BUSINESS_LICENSE_PATTERN(400, "Invalid business license pattern", HttpStatus.BAD_REQUEST), // 400
+    INVALID_BANK_NUM_PATTERN(400, "Invalid bank number pattern", HttpStatus.BAD_REQUEST), // 400
 
     INVALID_ROLE_NAME_BLANK(400, "Role name must not be blank", HttpStatus.BAD_REQUEST), // 400
 

@@ -1,4 +1,4 @@
-package com.homestay.enums;
+package com.homestay.constants;
 
 public enum BookingStatus {
     PENDING,

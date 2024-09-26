@@ -2,83 +2,80 @@ package com.homestay.config;
 
 import com.homestay.exception.CustomAccessDeniedHandler;
 import com.homestay.exception.CustomBasicAuthenticationEntryPoint;
-import com.homestay.filter.JWTTokenGeneratorFilter;
-import com.homestay.filter.JWTTokenValidatorFilter;
-import jakarta.servlet.http.HttpServletRequest;
+
+import com.homestay.filter.CsrfCookieFilter;
+import com.homestay.filter.JwtAuthenticationFilter;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.password.CompromisedPasswordChecker;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Collections;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
+@RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+@EnableWebSecurity
+@EnableMethodSecurity
 public class ProjectSecurityConfig {
+    AuthenticationProvider authenticationProvider;
+    JwtAuthenticationFilter jwtAuthenticationFilter;
+    LogoutHandler logoutHandler;
+    String[] WHITE_LIST_URL = {
+            "/api/v1/auth/**",
+    };
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(corsConfig -> corsConfig.configurationSource(new CorsConfigurationSource() {
-                    @Override
-                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-                        CorsConfiguration config = new CorsConfiguration();
-                        config.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-                        config.addAllowedMethod("*");
-                        config.addAllowedHeader("*");
-                        config.setMaxAge(3600L);
-                        return config;
-                    }
+                .authorizeRequests(authorizeRequests ->
+                        authorizeRequests
+                                .requestMatchers(WHITE_LIST_URL).permitAll()
+                                .anyRequest().authenticated()
+                )
+                .sessionManagement(smc -> smc.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider)
+                .cors(corsConfig -> corsConfig.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                    config.addAllowedMethod("*");
+                    config.addAllowedHeader("*");
+                    config.setMaxAge(3600L);
+                    return config;
                 }))
+                .csrf((csrfConfig) -> csrfConfig // Chưa viết xác thực CSRF
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .logout(logout ->
+                        logout.logoutUrl("/api/v1/auth/logout")
+                                .addLogoutHandler(logoutHandler)
+                                .logoutSuccessHandler((_, _, _) -> SecurityContextHolder.clearContext())
+                )
+        ;
 
-                .csrf((csrf) -> csrf.disable())
-
-                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class) // Thêm filter để tạo JWT token vào filter chain
-                .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class) // Thêm filter để kiểm tra JWT token vào filter chain
-
-                .authorizeHttpRequests((authorizeRequests) -> authorizeRequests
-                        .requestMatchers((request) -> request.getServletPath().equals("/api/users/login")).permitAll()
-                        .anyRequest().permitAll()
-                );
 
         http.formLogin(withDefaults());
         http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
         http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean   // Hàm này dùng để kiểm tra mật khẩu có bị rò rỉ (compromised) hay không
-    public CompromisedPasswordChecker compromisedPasswordChecker() {
-        return new HaveIBeenPwnedRestApiPasswordChecker();
-    }
-
-    @Bean
-    // Hàm này dùng để tạo ra một AuthenticationManager để xác thực thông tin đăng nhập dựa trên username và password đã mã hóa
-    public AuthenticationManager authenticationManager(
-            UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-        // Tạo ra một AuthenticationProvider để xác thực thông tin đăng nhập dựa trên username và password đã mã hóa
-        BookingUsernamePwdAuthenticationProvider authenticationProvider =
-                new BookingUsernamePwdAuthenticationProvider(userDetailsService, passwordEncoder);
-
-        // Tạo ra một ProviderManager để quản lý các AuthenticationProvider được sử dụng để xác thực thông tin đăng nhập
-        ProviderManager providerManager = new ProviderManager(authenticationProvider);
-        providerManager.setEraseCredentialsAfterAuthentication(false); // Không xóa thông tin đăng nhập sau khi xác thực
-        return providerManager;
     }
 }
