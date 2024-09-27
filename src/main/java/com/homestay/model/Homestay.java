@@ -3,7 +3,6 @@ package com.homestay.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.util.List;
 import java.util.Set;
@@ -15,11 +14,12 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Table(name = "homestay")
 public class Homestay extends BaseEntity {
     @Id
-    @GeneratedValue(generator = "uuid", strategy = GenerationType.UUID)
-    @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @GeneratedValue(strategy = GenerationType.UUID)
     String id;
+
     String name;
     String email;
     String standardCheckIn;

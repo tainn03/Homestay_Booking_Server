@@ -38,6 +38,7 @@ public class ProjectSecurityConfig {
     String[] WHITE_LIST_URL = {
             "/api/v1/auth/**",
             "/api/v1/homestays/public/**",
+            "/api/v1/general/**",
     };
 
     @Bean

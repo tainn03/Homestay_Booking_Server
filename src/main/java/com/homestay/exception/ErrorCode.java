@@ -23,6 +23,7 @@ public enum ErrorCode {
     USER_NOT_ACTIVE(400, "User is not active", HttpStatus.BAD_REQUEST), // 400
     HOMESTAY_NOT_FOUND(404, "Homestay not found", HttpStatus.NOT_FOUND), // 404
     DISCOUNT_NOT_FOUND(404, "Discount not found", HttpStatus.NOT_FOUND), // 404
+    CITY_NOT_FOUND(404, "City not found", HttpStatus.NOT_FOUND), // 404
     ROOM_NOT_FOUND(404, "Room not found", HttpStatus.NOT_FOUND), // 404
     REVIEW_NOT_FOUND(404, "Review not found", HttpStatus.NOT_FOUND), // 404
     BOOKING_NOT_FOUND(404, "Booking not found", HttpStatus.NOT_FOUND), // 404

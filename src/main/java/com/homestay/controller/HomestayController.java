@@ -83,4 +83,13 @@ public class HomestayController {
                 .build();
     }
 
+    @GetMapping("/public/search")
+    public ApiResponse<List<HomestayResponse>> searchHomestay(@RequestParam String transcript) {
+        return ApiResponse.<List<HomestayResponse>>builder()
+                .code(200)
+                .message("Success")
+                .result(homestayService.searchHomestays(transcript))
+                .build();
+    }
+
 }

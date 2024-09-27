@@ -1,5 +1,6 @@
 package com.homestay.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
@@ -20,6 +21,7 @@ public class TypeHomestay {
     String name;
     String urlImage;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "typeHomestays")
     Set<Homestay> homestays;
 }

@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 
@@ -47,12 +46,5 @@ public class AuthenticationController {
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request, Principal connectedUser) {
         String message = service.changePassword(request, connectedUser);
         return ResponseEntity.ok(message);
-    }
-
-    @PostMapping("/upload")
-    public ResponseEntity<String> uploadImage(@RequestBody MultipartFile request) {
-//        String url = cloudinaryService.uploadFile(request);
-        String url = request.getOriginalFilename();
-        return ResponseEntity.ok(url);
     }
 }
