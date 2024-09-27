@@ -25,7 +25,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
@@ -95,8 +94,6 @@ public class AuthenticationService {
         String jwtToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
-        response.setHeader("Refresh-Token", refreshToken);
         revokeAllUserTokens(user); // Thu hồi tất cả token cũ của user
         saveUserToken(user, jwtToken); // Lưu token mới
 
@@ -105,10 +102,6 @@ public class AuthenticationService {
                 userDetails, null, userDetails.getAuthorities()
         );
         SecurityContextHolder.getContext().setAuthentication(authToken);
-        // Log the authenticated user
-        System.out.println("Authenticated user: " + SecurityContextHolder.getContext().getAuthentication().getName());
-
-
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
@@ -136,7 +129,6 @@ public class AuthenticationService {
         }
     }
 
-    @Transactional
     public String changePassword(ChangePasswordRequest request, Principal connectedUser) {
         User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {

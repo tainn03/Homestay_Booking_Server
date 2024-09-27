@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -26,6 +27,7 @@ public class CloudinaryService {
     Cloudinary cloudinary;
     ExecutorService executorService = Executors.newFixedThreadPool(10);
 
+    @Transactional
     public List<String> uploadFiles(List<MultipartFile> files) {
         List<CompletableFuture<String>> futures = files.stream()
                 .map(file -> CompletableFuture.supplyAsync(() -> uploadFile(file), executorService)
@@ -66,6 +68,7 @@ public class CloudinaryService {
         return convFile;
     }
 
+    @Transactional
     public void deleteFiles(List<String> urls) {
         List<CompletableFuture<Void>> futures = urls.stream()
                 .map(url -> CompletableFuture.runAsync(() -> {
