@@ -2,6 +2,7 @@ package com.homestay.config;
 
 import com.homestay.exception.CustomAccessDeniedHandler;
 import com.homestay.exception.CustomBasicAuthenticationEntryPoint;
+
 import com.homestay.filter.CsrfCookieFilter;
 import com.homestay.filter.JwtAuthenticationFilter;
 import lombok.AccessLevel;
@@ -74,10 +75,10 @@ public class ProjectSecurityConfig {
                 )
         ;
 
+
         http.formLogin(withDefaults());
         http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
         http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
     }
-
 }

@@ -1,5 +1,6 @@
 package com.homestay.service;
 
+
 import com.homestay.constants.Roles;
 import com.homestay.constants.UserStatus;
 import com.homestay.dto.request.UpdateUserRequest;
@@ -34,6 +35,9 @@ public class UserService {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     CloudinaryService cloudinaryService;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     public UserResponse createUser(UserRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -104,5 +108,18 @@ public class UserService {
         user.setStatus(status);
         userRepository.save(user);
         return status.toLowerCase() + " user successfully";
+    }
+
+    public String login(LoginRequest request) {
+        Optional<User> user = userRepository.findByUsername(request.getUsername());
+        if (user.isEmpty()) {
+            return "Tài khoản không tồn tại!";
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.get().getPassword())) {
+            return "Mật khẩu không đúng!";
+        }
+
+        return "Login successfully";
     }
 }
