@@ -17,6 +17,7 @@ public enum ErrorCode {
 
     INVALID_KEY(400, "Invalid key", HttpStatus.BAD_REQUEST), // 400
     USER_ALREADY_EXISTS(400, "User already exists", HttpStatus.BAD_REQUEST), // 400
+    EMAIL_ALREADY_EXISTS(400, "Email already exists", HttpStatus.BAD_REQUEST), // 400
     HOMESTAY_ALREADY_EXIST(400, "Homestay already exists", HttpStatus.BAD_REQUEST), // 400
     ROLE_NOT_FOUND(404, "Role not found", HttpStatus.NOT_FOUND),  // 404
     USER_NOT_FOUND(404, "User not found", HttpStatus.NOT_FOUND), // 404
