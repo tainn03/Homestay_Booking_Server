@@ -11,50 +11,40 @@ import org.springframework.http.HttpStatusCode;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public enum ErrorCode {
-    INVALID_CREDENTIALS(401, "Invalid credentials", HttpStatus.UNAUTHORIZED), // 401
-    UNAUTHORIZED(403, "You do not have permission", HttpStatus.FORBIDDEN), // 403
-    UNCATEGORIZED(500, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR), // 500
+    INVALID_CREDENTIALS(401, "Thông tin đăng nhập không chính xác", HttpStatus.UNAUTHORIZED), // 401
+    UNAUTHORIZED(403, "Không có quyền truy cập", HttpStatus.FORBIDDEN), // 403
+    UNCATEGORIZED(500, "Lỗi không xác định", HttpStatus.INTERNAL_SERVER_ERROR), // 500
 
-    INVALID_KEY(400, "Invalid key", HttpStatus.BAD_REQUEST), // 400
-    USER_ALREADY_EXISTS(400, "User already exists", HttpStatus.BAD_REQUEST), // 400
-    HOMESTAY_ALREADY_EXIST(400, "Homestay already exists", HttpStatus.BAD_REQUEST), // 400
-    ROLE_NOT_FOUND(404, "Role not found", HttpStatus.NOT_FOUND),  // 404
-    USER_NOT_FOUND(404, "User not found", HttpStatus.NOT_FOUND), // 404
-    USER_NOT_ACTIVE(400, "User is not active", HttpStatus.BAD_REQUEST), // 400
-    HOMESTAY_NOT_FOUND(404, "Homestay not found", HttpStatus.NOT_FOUND), // 404
-    DISCOUNT_NOT_FOUND(404, "Discount not found", HttpStatus.NOT_FOUND), // 404
-    CITY_NOT_FOUND(404, "City not found", HttpStatus.NOT_FOUND), // 404
-    ROOM_NOT_FOUND(404, "Room not found", HttpStatus.NOT_FOUND), // 404
-    REVIEW_NOT_FOUND(404, "Review not found", HttpStatus.NOT_FOUND), // 404
-    BOOKING_NOT_FOUND(404, "Booking not found", HttpStatus.NOT_FOUND), // 404
-    ROOM_ALREADY_EXISTS(400, "Room already exists", HttpStatus.BAD_REQUEST), // 400
-    AMENITY_ALREADY_EXISTS(400, "Amenity already exists", HttpStatus.BAD_REQUEST), // 400
-    AMENITY_NOT_FOUND(404, "Amenity not found", HttpStatus.NOT_FOUND), // 404
-    TYPE_HOMESTAY_NOT_FOUND(404, "Type homestay not found", HttpStatus.NOT_FOUND), // 404
-    DISTRICT_NOT_FOUND(404, "District not found", HttpStatus.NOT_FOUND), // 404
+    INVALID_KEY(400, "Khóa không hợp lệ", HttpStatus.BAD_REQUEST), // 400
+    USER_ALREADY_EXISTS(400, "Người dùng đã tồn tại", HttpStatus.BAD_REQUEST), // 400
+    EMAIL_ALREADY_EXISTS(400, "Email đã được đăng ký", HttpStatus.BAD_REQUEST), // 400
+    HOMESTAY_ALREADY_EXIST(400, "Homestay đã tồn tại", HttpStatus.BAD_REQUEST), // 400
+    ROLE_NOT_FOUND(404, "Vai trò không tồn tại", HttpStatus.NOT_FOUND), // 404
+    USER_NOT_FOUND(404, "Người dùng không tồn tại", HttpStatus.NOT_FOUND), // 404
+    USER_NOT_ACTIVE(400, "Người dùng chưa được kích hoạt", HttpStatus.BAD_REQUEST), // 400
+    HOMESTAY_NOT_FOUND(404, "Homestay không tồn tại", HttpStatus.NOT_FOUND), // 404
+    DISCOUNT_NOT_FOUND(404, "Khuyến mãi không tồn tại", HttpStatus.NOT_FOUND), // 404
+    CITY_NOT_FOUND(404, "Thành phố không tồn tại", HttpStatus.NOT_FOUND), // 404
+    DISTRICT_NOT_FOUND(404, "Quận không tồn tại", HttpStatus.NOT_FOUND), // 404
+    ROOM_NOT_FOUND(404, "Phòng không tồn tại", HttpStatus.NOT_FOUND), // 404
+    REVIEW_NOT_FOUND(404, "Đánh giá không tồn tại", HttpStatus.NOT_FOUND), // 404
+    BOOKING_NOT_FOUND(404, "Booking không tồn tại", HttpStatus.NOT_FOUND), // 404
+    ROOM_ALREADY_EXISTS(400, "Phòng đã tồn tại", HttpStatus.BAD_REQUEST), // 400
+    AMENITY_ALREADY_EXISTS(400, "Tiện ích đã tồn tại", HttpStatus.BAD_REQUEST), // 400
+    AMENITY_NOT_FOUND(404, "Tiện ích không tồn tại", HttpStatus.NOT_FOUND), // 404
+    TYPE_HOMESTAY_NOT_FOUND(404, "Loại homestay không tồn tại", HttpStatus.NOT_FOUND), // 404
 
-    CHECKIN_AFTER_CHECKOUT(400, "Check-in date must be before check-out date", HttpStatus.BAD_REQUEST), // 400
-    NO_AVAILABLE_ROOMS(400, "No available rooms", HttpStatus.BAD_REQUEST), // 400
 
-    INVALID_USERNAME_BLANK(400, "Username must not be blank", HttpStatus.BAD_REQUEST), // 400
-    INVALID_PASSWORD(400, "Invalid password", HttpStatus.BAD_REQUEST), // 400
-    INVALID_USERNAME_SIZE(400, "Username must be at least 6 characters", HttpStatus.BAD_REQUEST), // 400
-    INVALID_PASSWORD_BLANK(400, "Password must not be blank", HttpStatus.BAD_REQUEST), // 400
-    INVALID_PASSWORD_SIZE(400, "Password must be at least 8 characters", HttpStatus.BAD_REQUEST), // 400
-    INVALID_PASSWORD_PATTERN(400, "Password must contain at least one uppercase letter, one lowercase letter, and one number", HttpStatus.BAD_REQUEST), // 400
-    INVALID_FULL_NAME_BLANK(400, "Full name must not be blank", HttpStatus.BAD_REQUEST), // 400
-    INVALID_EMAIL_BLANK(400, "Email must not be blank", HttpStatus.BAD_REQUEST), // 400
-    INVALID_EMAIL_PATTERN(400, "Invalid email pattern", HttpStatus.BAD_REQUEST), // 400
-    INVALID_PHONE_BLANK(400, "Phone must not be blank", HttpStatus.BAD_REQUEST), // 400
-    INVALID_PHONE_PATTERN(400, "Invalid phone pattern", HttpStatus.BAD_REQUEST), // 400
-    INVALID_DOB_BLANK(400, "Date of birth must not be blank", HttpStatus.BAD_REQUEST), // 400
-    INVALID_DOB_PATTERN(400, "Invalid date of birth pattern", HttpStatus.BAD_REQUEST), // 400
-    INVALID_GENDER_BLANK(400, "Gender must not be blank", HttpStatus.BAD_REQUEST), // 400
-    INVALID_CMND_PATTERN(400, "Invalid CMND pattern", HttpStatus.BAD_REQUEST), // 400
-    INVALID_BUSINESS_LICENSE_PATTERN(400, "Invalid business license pattern", HttpStatus.BAD_REQUEST), // 400
-    INVALID_BANK_NUM_PATTERN(400, "Invalid bank number pattern", HttpStatus.BAD_REQUEST), // 400
+    CHECKIN_AFTER_CHECKOUT(400, "Ngày check-in phải trước ngày check-out", HttpStatus.BAD_REQUEST), // 400
+    NO_AVAILABLE_ROOMS(400, "Không còn phòng trống", HttpStatus.BAD_REQUEST), // 400
 
-    INVALID_ROLE_NAME_BLANK(400, "Role name must not be blank", HttpStatus.BAD_REQUEST), // 400
+    INVALID_PASSWORD(400, "Mật khẩu không chính xác", HttpStatus.BAD_REQUEST), // 400
+    INVALID_PASSWORD_BLANK(400, "Mật khẩu không được để trống", HttpStatus.BAD_REQUEST), // 400
+    INVALID_PASSWORD_SIZE(400, "Mật khẩu phải có ít nhất 8 ký tự", HttpStatus.BAD_REQUEST), // 400
+    INVALID_PASSWORD_PATTERN(400, "Mật khẩu phải chứa ít nhất một chữ cái viết hoa, một chữ cái viết thường và một số", HttpStatus.BAD_REQUEST), // 400
+    INVALID_FULL_NAME_BLANK(400, "Họ tên không được để trống", HttpStatus.BAD_REQUEST), // 400
+    INVALID_EMAIL_BLANK(400, "Email không được để trống", HttpStatus.BAD_REQUEST), // 400
+    INVALID_EMAIL_PATTERN(400, "Email không hợp lệ", HttpStatus.BAD_REQUEST), // 400
 
     INVALID_NAME_BLANK(400, "Name must not be blank", HttpStatus.BAD_REQUEST), // 400
     INVALID_CHECKIN_PATTERN(400, "Invalid check-in pattern", HttpStatus.BAD_REQUEST), // 400

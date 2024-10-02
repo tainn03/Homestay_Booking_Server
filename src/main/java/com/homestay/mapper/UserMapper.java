@@ -19,6 +19,7 @@ public interface UserMapper {
     @Mapping(target = "reviews", ignore = true)
     @Mapping(target = "role", source = "role.roleName")
     @Mapping(target = "urlAvatar", source = "avatar.url")
+    @Mapping(target = "lastLogin", source = "lastLogin")
     UserResponse toUserResponse(User user);
 
     void updateToUser(@MappingTarget User user, UpdateUserRequest request);

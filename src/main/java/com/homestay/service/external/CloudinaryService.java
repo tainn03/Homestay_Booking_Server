@@ -1,4 +1,4 @@
-package com.homestay.service;
+package com.homestay.service.external;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
@@ -38,7 +38,7 @@ public class CloudinaryService {
                             }
                             return result;
                         }))
-                .collect(Collectors.toList());
+                .toList();
 
         return futures.stream()
                 .map(CompletableFuture::join)
@@ -79,7 +79,7 @@ public class CloudinaryService {
                         log.error("Error deleting file: {}", publicId, e);
                     }
                 }, executorService))
-                .collect(Collectors.toList());
+                .toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }

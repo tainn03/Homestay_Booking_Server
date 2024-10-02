@@ -92,4 +92,13 @@ public class HomestayController {
                 .build();
     }
 
+    @GetMapping("/public/{id}")
+    public ApiResponse<HomestayResponse> getHomestayById(@PathVariable String id) {
+        return ApiResponse.<HomestayResponse>builder()
+                .code(200)
+                .message("Success")
+                .result(homestayService.getHomestayById(id))
+                .build();
+    }
+
 }

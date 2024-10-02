@@ -73,6 +73,10 @@ public class JwtService {
         return buildToken(new HashMap<>(), userDetails, refreshExpiration);
     }
 
+    public String generateConfirmationToken(UserDetails userDetails) { // tạo confirmation token
+        return buildToken(new HashMap<>(), userDetails, jwtExpiration);
+    }
+
     private String buildToken(
             Map<String, Object> extraClaims,
             UserDetails userDetails,

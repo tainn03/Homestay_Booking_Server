@@ -46,7 +46,7 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    @PreAuthorize("hasAnyAuthority('ADMIN:READ_USER', 'USER:READ_PROFILE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN:READ_USER', 'USER:READ_PROFILE', 'LANDLORD:READ_PROFILE')")
     public ApiResponse<UserResponse> profile() {
         return ApiResponse.<UserResponse>builder()
                 .code(200)
@@ -65,14 +65,15 @@ public class UserController {
                 .result(userService.updateProfile(request))
                 .build();
     }
+//    #request.email == authentication.principal.username or
 
     @PutMapping
-    @PreAuthorize("#email == authentication.principal.username or hasAuthority('ADMIN:UPDATE_USER')")
-    public ApiResponse<UserResponse> updateAvatar(@RequestBody MultipartFile avatar, String email) {
+    @PreAuthorize("hasAnyAuthority('ADMIN:UPDATE_USER', 'USER:UPDATE_PROFILE')")
+    public ApiResponse<UserResponse> updateAvatar(@RequestBody MultipartFile avatar) {
         return ApiResponse.<UserResponse>builder()
                 .code(200)
                 .message("Success")
-                .result(userService.updateAvatar(avatar, email))
+                .result(userService.updateAvatar(avatar))
                 .build();
     }
 

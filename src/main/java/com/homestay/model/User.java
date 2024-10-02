@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Set;
 
@@ -36,6 +37,7 @@ public class User extends BaseEntity implements UserDetails {
     String bankName;
     String bankNum;
     String bankUsername;
+    LocalDateTime lastLogin;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Image avatar;

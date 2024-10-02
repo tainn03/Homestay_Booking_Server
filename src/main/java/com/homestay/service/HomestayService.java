@@ -8,6 +8,7 @@ import com.homestay.exception.ErrorCode;
 import com.homestay.mapper.HomestayMapper;
 import com.homestay.model.*;
 import com.homestay.repository.*;
+import com.homestay.service.external.CloudinaryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -184,9 +185,8 @@ public class HomestayService {
 
         for (int i = 0; i < keywords.length - 1; i++) {
             if (keywords[i].equals("Quận") || keywords[i].equals("Huyện") || keywords[i].equals("Xã") || keywords[i].equals("Đảo")) {
-                District district = districtRepository.findByName(keywords[i + 1] + " " + keywords[i + 2])
-                        .orElseThrow(() -> new BusinessException(ErrorCode.DISTRICT_NOT_FOUND));
-                districts.add(district);
+                String districtName = keywords[i + 1] + (i + 2 < keywords.length ? " " + keywords[i + 2] : "");
+                districtRepository.findByName(districtName).ifPresent(districts::add);
                 if (i + 3 < keywords.length) {
                     i += 2;
                 } else {
@@ -194,9 +194,8 @@ public class HomestayService {
                 }
             }
             if (keywords[i].equals("Tỉnh") || keywords[i + 1].equals("Phố")) {
-                City city = cityRepository.findByName(keywords[i + 1] + " " + keywords[i + 2])
-                        .orElseThrow(() -> new BusinessException(ErrorCode.CITY_NOT_FOUND));
-                cities.add(city);
+                String cityName = keywords[i + 1] + (i + 2 < keywords.length ? " " + keywords[i + 2] : "");
+                cityRepository.findByName(cityName).ifPresent(cities::add);
                 if (i + 3 < keywords.length) {
                     i += 2;
                 } else {
@@ -234,6 +233,7 @@ public class HomestayService {
                     .filter(district -> finalCities.contains(district.getCity()))
                     .collect(Collectors.toList());
         }
+
         List<TypeHomestay> typeHomestays = typeHomestayRepository.findAll().stream()
                 .filter(typeHomestay -> containsKeywords(typeHomestay.getName(), keywords))
                 .toList();
@@ -263,6 +263,7 @@ public class HomestayService {
                 .collect(Collectors.toList());
     }
 
+
     private boolean containsKeywords(String name, String[] keywords) {
         for (String keyword : keywords) {
             if (name.toLowerCase().contains(keyword.toLowerCase())) {
@@ -272,4 +273,10 @@ public class HomestayService {
         return false;
     }
 
+    public HomestayResponse getHomestayById(String id) {
+        Homestay homestay = homestayRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+        HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
+        return toHomeStayResponseWithRelationship(homestay, response);
+    }
 }
