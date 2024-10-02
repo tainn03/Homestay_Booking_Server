@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
@@ -29,6 +30,7 @@ public class UserResponse {
     String bankUsername;
     String urlAvatar;
     String role;
+    LocalDateTime lastLogin;
 
     Set<String> homestays;
     Set<String> bookings;

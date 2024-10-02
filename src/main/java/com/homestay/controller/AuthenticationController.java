@@ -1,5 +1,6 @@
 package com.homestay.controller;
 
+import com.homestay.dto.ApiResponse;
 import com.homestay.dto.request.ChangePasswordRequest;
 import com.homestay.dto.request.LoginRequest;
 import com.homestay.dto.request.RegisterRequest;
@@ -23,13 +24,21 @@ public class AuthenticationController {
     AuthenticationService service;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody LoginRequest request, HttpServletResponse response) {
-        return ResponseEntity.ok(service.authenticate(request, response));
+    public ApiResponse<AuthenticationResponse> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+        return ApiResponse.<AuthenticationResponse>builder()
+                .code(200)
+                .message("success")
+                .result(service.authenticate(request, response))
+                .build();
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(service.register(request));
+    public ApiResponse<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
+        return ApiResponse.<AuthenticationResponse>builder()
+                .code(200)
+                .message("Đăng ký tài khoản thành công")
+                .result(service.register(request))
+                .build();
     }
 
     @PostMapping("/refresh")
@@ -38,13 +47,31 @@ public class AuthenticationController {
     }
 
     @PostMapping("/password")
-    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request, Principal connectedUser) {
+    public ApiResponse<String> changePassword(@RequestBody ChangePasswordRequest request, Principal connectedUser) {
         String message = service.changePassword(request, connectedUser);
-        return ResponseEntity.ok(message);
+        return ApiResponse.<String>builder()
+                .code(200)
+                .message(message)
+                .result(message)
+                .build();
     }
 
     @GetMapping
     public ResponseEntity<String> confirm(@RequestParam String token) {
         return ResponseEntity.ok(service.confirm(token));
+    }
+
+    @PostMapping("/register-landlord")
+    public ApiResponse<String> registerLandlord(@RequestParam String email) {
+        return ApiResponse.<String>builder()
+                .code(200)
+                .message("Đăng ký tài khoản thành công")
+                .result(service.registerLandlord(email))
+                .build();
+    }
+
+    @GetMapping("/confirm-landlord")
+    public ResponseEntity<String> confirmLandlord(@RequestParam String token) {
+        return ResponseEntity.ok(service.confirmLandlord(token));
     }
 }

@@ -11,8 +11,10 @@ import com.homestay.mapper.UserMapper;
 import com.homestay.model.Image;
 import com.homestay.model.Role;
 import com.homestay.model.User;
+import com.homestay.repository.ImageRepository;
 import com.homestay.repository.RoleRepository;
 import com.homestay.repository.UserRepository;
+import com.homestay.service.external.CloudinaryService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +37,7 @@ public class UserService {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     CloudinaryService cloudinaryService;
+    ImageRepository imageRepository;
 
     public UserResponse createUser(UserRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -48,6 +52,7 @@ public class UserService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROLE_NOT_FOUND));
         user.setRole(role);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setLastLogin(LocalDateTime.now());
 
         return userMapper.toUserResponse(userRepository.save(user));
     }
@@ -85,9 +90,18 @@ public class UserService {
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
-    public UserResponse updateAvatar(MultipartFile avatar, String email) {
+    public UserResponse updateAvatar(MultipartFile avatar) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        Image oldAvatar = user.getAvatar();
+        if (oldAvatar != null) {
+            cloudinaryService.deleteFiles(List.of(oldAvatar.getUrl()));
+            oldAvatar.setUser(null);
+            user.getAvatar().setUser(null);
+            imageRepository.delete(oldAvatar);
+        }
+
         String avatarUrl = cloudinaryService.uploadFile(avatar);
         Image image = Image.builder()
                 .url(avatarUrl)
