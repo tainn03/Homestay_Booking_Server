@@ -27,6 +27,12 @@ public class Homestay extends BaseEntity {
     String phone;
     String status;
     double price = 0.0;
+    Double longitude;
+    Double latitude;
+    String addressDetail;
+
+    @Version
+    Long version;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -37,10 +43,6 @@ public class Homestay extends BaseEntity {
 
     @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Image> images;
-
-    Double longitude;
-    Double latitude;
-    String addressDetail;
 
     @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Room> rooms;
