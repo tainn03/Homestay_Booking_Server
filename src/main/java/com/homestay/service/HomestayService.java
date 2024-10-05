@@ -109,6 +109,7 @@ public class HomestayService {
         return responses;
     }
 
+    @Transactional
     public HomestayResponse updateHomestay(HomestayRequest request) {
         Homestay homestay = homestayRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
