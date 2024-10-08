@@ -77,6 +77,7 @@ public class AuthenticationService {
     }
 
     private void saveUserToken(User user, String jwtToken) {
+        jwtToken = jwtToken.trim();
         Token token = Token.builder()
                 .user(user)
                 .token(jwtToken)
@@ -107,8 +108,8 @@ public class AuthenticationService {
         user.setLastLogin(LocalDateTime.now());
 
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-        String jwtToken = jwtService.generateToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
+        String jwtToken = jwtService.generateToken(user).trim();
+        String refreshToken = jwtService.generateRefreshToken(user).trim();
         response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
         response.setHeader("Refresh-token", refreshToken);
 

@@ -15,16 +15,16 @@ import java.time.Instant;
 public class LoggerAspect {
     @Around("execution(* com.homestay.controller.*.*(..))")
     public Object logAroundServiceMethods(ProceedingJoinPoint joinPoint) throws Throwable {
-        log.info("START METHOD EXECUTION: " + joinPoint.getSignature());
+        log.info("START METHOD EXECUTION: {}", joinPoint.getSignature());
         Instant start = Instant.now();
         Object result = joinPoint.proceed();
         Instant end = Instant.now();
-        log.info("TIME TAKEN: " + (end.toEpochMilli() - start.toEpochMilli()) + "ms");
+        log.info("TIME TAKEN: {}ms", end.toEpochMilli() - start.toEpochMilli());
         return result;
     }
 
-    @AfterThrowing(pointcut = "execution(* com.homestay.controller.*.*(..))", throwing = "exception")
+    @AfterThrowing(pointcut = "execution(* com.homestay.service.*.*(..))", throwing = "exception")
     public void logAfterThrowingServiceMethods(Exception exception) {
-        log.error("Exception occurred in service method: " + exception.getMessage());
+        log.error("Exception occurred in service method {} due to: {}", exception.getStackTrace()[0].getMethodName(), exception.getMessage());
     }
 }
