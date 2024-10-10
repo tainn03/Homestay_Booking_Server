@@ -264,7 +264,6 @@ public class HomestayService {
                 .collect(Collectors.toList());
     }
 
-
     private boolean containsKeywords(String name, String[] keywords) {
         for (String keyword : keywords) {
             if (name.toLowerCase().contains(keyword.toLowerCase())) {
