@@ -23,8 +23,6 @@ public class Room extends BaseEntity {
     String name;
     double price;
     int size;
-    @Version
-    Long version;
 
     @ManyToOne
     @JoinColumn(name = "homestay_id", nullable = false)

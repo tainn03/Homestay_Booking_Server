@@ -31,9 +31,6 @@ public class Homestay extends BaseEntity {
     Double latitude;
     String addressDetail;
 
-    @Version
-    Long version;
-
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     User user;

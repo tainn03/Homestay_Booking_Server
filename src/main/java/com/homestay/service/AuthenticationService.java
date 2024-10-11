@@ -27,6 +27,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -100,6 +101,7 @@ public class AuthenticationService {
         tokenRepository.saveAll(validTokens);
     }
 
+    @Transactional
     public AuthenticationResponse authenticate(LoginRequest request, HttpServletResponse response) {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         if (user.getStatus() == null || !user.getStatus().equals("ACTIVE")) {
