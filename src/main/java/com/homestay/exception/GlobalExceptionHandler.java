@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-    private static final String MIN_ATTRIBUTE = "min";
-
     @ExceptionHandler(RuntimeException.class)
     ResponseEntity<ApiResponse> handleRuntimeException(RuntimeException e) {
         log.error("Exception: ", e.getMessage());
