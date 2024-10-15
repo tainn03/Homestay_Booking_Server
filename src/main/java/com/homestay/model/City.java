@@ -1,5 +1,6 @@
 package com.homestay.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -21,6 +22,7 @@ public class City {
 
     String name;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "city")
     Set<District> districts;
 }

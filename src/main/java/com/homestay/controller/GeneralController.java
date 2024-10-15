@@ -2,13 +2,16 @@ package com.homestay.controller;
 
 import com.homestay.dto.ApiResponse;
 import com.homestay.dto.response.RoleResponse;
-import com.homestay.repository.PermissionRepository;
+import com.homestay.model.District;
+import com.homestay.repository.CityRepository;
+import com.homestay.repository.DistrictRepository;
 import com.homestay.repository.RoleRepository;
 import com.homestay.repository.TypeHomestayRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -23,7 +26,8 @@ import static lombok.AccessLevel.PRIVATE;
 public class GeneralController {
     TypeHomestayRepository typeHomestayRepository;
     RoleRepository roleRepository;
-    PermissionRepository permissionRepository;
+    CityRepository cityRepository;
+    DistrictRepository districtRepository;
 
     @GetMapping
     public ApiResponse<?> getAllTypeHomestay() {
@@ -31,6 +35,16 @@ public class GeneralController {
                 .code(200)
                 .message("Success")
                 .result(typeHomestayRepository.findAll())
+                .build();
+    }
+
+    // Lấy tất cả các type homestay ngoại trừ 3 loại type homestay là "Được ưa chuộng", "Mới", "Thật ấn tượng"
+    @GetMapping("/type-homestays")
+    public ApiResponse<?> getAllTypeHomestayExceptPopularNewImpressive() {
+        return ApiResponse.builder()
+                .code(200)
+                .message("Success")
+                .result(typeHomestayRepository.findAllExceptPopularNewImpressive())
                 .build();
     }
 
@@ -47,6 +61,24 @@ public class GeneralController {
                                         .collect(Collectors.toSet()))
                                 .build())
                         .collect(Collectors.toList()))
+                .build();
+    }
+
+    @GetMapping("/cities")
+    public ApiResponse<?> getAllCities() {
+        return ApiResponse.builder()
+                .code(200)
+                .message("Success")
+                .result(cityRepository.findAll())
+                .build();
+    }
+
+    @GetMapping("/districts")
+    public ApiResponse<List<District>> getDistrictsByCityName(@RequestParam String cityName) {
+        return ApiResponse.<List<District>>builder()
+                .code(200)
+                .message("Success")
+                .result(districtRepository.findByCityName(cityName))
                 .build();
     }
 }

@@ -68,7 +68,7 @@ public class UserController {
 //    #request.email == authentication.principal.username or
 
     @PutMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN:UPDATE_USER', 'USER:UPDATE_PROFILE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN:UPDATE_USER', 'USER:UPDATE_PROFILE', 'LANDLORD:UPDATE_PROFILE')")
     public ApiResponse<UserResponse> updateAvatar(@RequestBody MultipartFile avatar) {
         return ApiResponse.<UserResponse>builder()
                 .code(200)

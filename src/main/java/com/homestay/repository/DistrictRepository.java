@@ -13,8 +13,9 @@ import java.util.Optional;
 public interface DistrictRepository extends JpaRepository<District, Long> {
     Optional<District> findByName(String name);
 
-    List<District> findByCityId(int id);
-
     @Query("SELECT d FROM District d WHERE d.city IN ?1")
     List<District> findByCityIn(List<City> cities);
+
+    @Query("SELECT d FROM District d WHERE d.city.name = ?1")
+    List<District> findByCityName(String cityName);
 }
