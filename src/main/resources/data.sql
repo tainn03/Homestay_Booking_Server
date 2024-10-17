@@ -929,3 +929,75 @@ INSERT INTO public.type_homestay (name, url_image)
 VALUES ('Nhà trên đảo', 'https://a0.muscache.com/pictures/ee9e2a40-ffac-4db9-9080-b351efc3cfc4.jpg');
 INSERT INTO public.type_homestay (name, url_image)
 VALUES ('Nhà trên cây', 'https://a0.muscache.com/pictures/4d4a4eba-c7e4-43eb-9ce2-95e1d200d10e.jpg');
+
+-- AMENITY TABLE
+INSERT INTO public.amenity (name, type)
+VALUES ('Hướng nhìn ra sân trong', 'Hướng nhìn đẹp mắt');
+INSERT INTO public.amenity (name, type)
+VALUES ('Hướng nhìn ra biển', 'Hướng nhìn đẹp mắt');
+INSERT INTO public.amenity (name, type)
+VALUES ('Hướng nhìn ra núi', 'Hướng nhìn đẹp mắt');
+INSERT INTO public.amenity (name, type)
+VALUES ('Máy sấy tóc', 'Phòng tắm');
+INSERT INTO public.amenity (name, type)
+VALUES ('Dầu gội đầu', 'Phòng tắm');
+INSERT INTO public.amenity (name, type)
+VALUES ('Dầu xả', 'Phòng tắm');
+INSERT INTO public.amenity (name, type)
+VALUES ('Khăn tắm', 'Phòng tắm');
+INSERT INTO public.amenity (name, type)
+VALUES ('Khăn mặt', 'Phòng tắm');
+INSERT INTO public.amenity (name, type)
+VALUES ('Xà phòng tắm', 'Phòng tắm');
+INSERT INTO public.amenity (name, type)
+VALUES ('Nước nóng', 'Phòng tắm');
+INSERT INTO public.amenity (name, type)
+VALUES ('Máy giặt – Trong tòa nhà', 'Phòng ngủ và giặt ủi');
+INSERT INTO public.amenity (name, type)
+VALUES ('Máy sấy – Trong tòa nhà', 'Phòng ngủ và giặt ủi');
+INSERT INTO public.amenity (name, type)
+VALUES ('Móc treo quần áo', 'Phòng ngủ và giặt ủi');
+INSERT INTO public.amenity (name, type)
+VALUES ('Bộ chăn ga gối', 'Phòng ngủ và giặt ủi');
+INSERT INTO public.amenity (name, type)
+VALUES ('Mành chắn sáng cho phòng', 'Phòng ngủ và giặt ủi');
+INSERT INTO public.amenity (name, type)
+VALUES ('Bàn là', 'Phòng ngủ và giặt ủi');
+INSERT INTO public.amenity (name, type)
+VALUES ('Điều hòa nhiệt đội', 'Hệ thống sưởi và làm mát');
+INSERT INTO public.amenity (name, type)
+VALUES ('Hệ thống sưởi', 'Hệ thống sưởi và làm mát');
+INSERT INTO public.amenity (name, type)
+VALUES ('Máy báo khói', 'An toàn nhà ở');
+INSERT INTO public.amenity (name, type)
+VALUES ('Bình chữa cháy', 'An toàn nhà ở');
+INSERT INTO public.amenity (name, type)
+VALUES ('Bảng hướng dẫn cứu trợ', 'An toàn nhà ở');
+INSERT INTO public.amenity (name, type)
+VALUES ('Wi-fi nhanh – 602 Mbps', 'Internet và văn phòng');
+INSERT INTO public.amenity (name, type)
+VALUES ('Bàn làm việc', 'Internet và văn phòng');
+INSERT INTO public.amenity (name, type)
+VALUES ('Bếp', 'Đồ dùng nấu bếp và ăn uống');
+INSERT INTO public.amenity (name, type)
+VALUES ('Lò vi sóng', 'Đồ dùng nấu bếp và ăn uống');
+INSERT INTO public.amenity (name, type)
+VALUES ('Tủ lạnh', 'Đồ dùng nấu bếp và ăn uống');
+INSERT INTO public.amenity (name, type)
+VALUES ('Bát đĩa và đồ bạc', 'Đồ dùng nấu bếp và ăn uống');
+INSERT INTO public.amenity (name, type)
+VALUES ('Đồ nấu ăn cơ bản', 'Đồ dùng nấu bếp và ăn uống');
+INSERT INTO public.amenity (name, type)
+VALUES ('Bếp gas', 'Đồ dùng nấu bếp và ăn uống');
+INSERT INTO public.amenity (name, type)
+VALUES ('Máy pha cà phê', 'Đồ dùng nấu bếp và ăn uống');
+INSERT INTO public.amenity (name, type)
+VALUES ('Nồi cơm điện', 'Đồ dùng nấu bếp và ăn uống');
+INSERT INTO public.amenity (name, type)
+VALUES ('Sân hiên riêng hoặc ban công riêng', 'Ngoài trời');
+INSERT INTO public.amenity (name, type)
+VALUES ('Sân sau chung – Có hàng rào kín', 'Ngoài trời');
+INSERT INTO public.amenity (name, type)
+VALUES ('Khóa ở cửa phòng ngủ', 'Quyền riêng tư và an toàn');
+INSERT INTO public.amenity (name, type)
+VALUES ('Có camera an ninh ở ngoài nhà hoặc ở lối vào', 'Quyền riêng tư và an toàn');

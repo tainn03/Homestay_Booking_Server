@@ -3,10 +3,7 @@ package com.homestay.controller;
 import com.homestay.dto.ApiResponse;
 import com.homestay.dto.response.RoleResponse;
 import com.homestay.model.District;
-import com.homestay.repository.CityRepository;
-import com.homestay.repository.DistrictRepository;
-import com.homestay.repository.RoleRepository;
-import com.homestay.repository.TypeHomestayRepository;
+import com.homestay.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +25,7 @@ public class GeneralController {
     RoleRepository roleRepository;
     CityRepository cityRepository;
     DistrictRepository districtRepository;
+    AmenityRepository amenityRepository;
 
     @GetMapping
     public ApiResponse<?> getAllTypeHomestay() {
@@ -45,6 +43,15 @@ public class GeneralController {
                 .code(200)
                 .message("Success")
                 .result(typeHomestayRepository.findAllExceptPopularNewImpressive())
+                .build();
+    }
+
+    @GetMapping("/amenities")
+    public ApiResponse<?> getAllAmenity() {
+        return ApiResponse.builder()
+                .code(200)
+                .message("Success")
+                .result(amenityRepository.findAll())
                 .build();
     }
 

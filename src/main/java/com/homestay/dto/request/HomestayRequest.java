@@ -13,14 +13,20 @@ import java.util.Set;
 public class HomestayRequest {
     String name;
     String email;
-    String standardCheckIn;
-    String standardCheckOut;
     String phone;
     double price;
-    Double longitude;
-    Double latitude;
-    String addressDetail;
+    double weekendPrice;
 
-    Set<String> typeHomestays;
+    String addressDetail;
+    String apartment;
+    String city;
     String districtName;
+    Double latitude;
+    Double longitude;
+
+    String standardCheckIn;
+    String standardCheckOut;
+    Set<String> amenityNames;
+    Set<DiscountRequest> discounts;
+    Set<String> typeHomestays;
 }

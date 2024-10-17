@@ -1,6 +1,9 @@
 package com.homestay.model;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -15,11 +18,10 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Amenity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    int id;
     String name;
-    String urlIcon;
+    String type;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "amenities")
-    Set<Room> rooms;
+    Set<Homestay> homestays;
 }

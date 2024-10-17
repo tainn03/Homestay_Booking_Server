@@ -9,19 +9,24 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface HomestayMapper {
+    @Mapping(target = "amenities", ignore = true)
+    @Mapping(target = "discounts", ignore = true)
     @Mapping(target = "typeHomestays", ignore = true)
     @Mapping(target = "district", ignore = true)
     Homestay toHomestay(HomestayRequest homestay);
 
     @Mapping(target = "userEmail", source = "user.email")
     @Mapping(target = "urlImages", ignore = true)
-    @Mapping(target = "discountIds", ignore = true)
+    @Mapping(target = "discounts", ignore = true)
     @Mapping(target = "roomNames", ignore = true)
     @Mapping(target = "reviewIds", ignore = true)
     @Mapping(target = "typeHomestayNames", ignore = true)
     @Mapping(target = "districtName", ignore = true)
     HomestayResponse toHomestayResponse(Homestay homestay);
 
+    @Mapping(target = "amenities", ignore = true)
+    @Mapping(target = "images", ignore = true)
+    @Mapping(target = "discounts", ignore = true)
     @Mapping(target = "typeHomestays", ignore = true)
     @Mapping(target = "district", ignore = true)
     @Mapping(target = "user", ignore = true)

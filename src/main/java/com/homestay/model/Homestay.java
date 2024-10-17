@@ -26,10 +26,15 @@ public class Homestay extends BaseEntity {
     String standardCheckOut;
     String phone;
     String status;
-    double price = 0.0;
     Double longitude;
     Double latitude;
     String addressDetail;
+
+    double price = 0.0;
+    double weekendPrice = 0.0;
+
+    @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    Set<PriceCalendar> priceCalendars;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -59,4 +64,11 @@ public class Homestay extends BaseEntity {
     @JoinColumn(name = "district_id", nullable = false)
     District district;
 
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "homestay_amenity",
+            joinColumns = @JoinColumn(name = "homestay_id"),
+            inverseJoinColumns = @JoinColumn(name = "amenity_id")
+    )
+    Set<Amenity> amenities;
 }

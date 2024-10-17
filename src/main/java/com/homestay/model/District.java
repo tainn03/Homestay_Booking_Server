@@ -19,9 +19,7 @@ public class District {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     int id;
-
     String name;
-
     String detail;
 
     @JsonIgnore

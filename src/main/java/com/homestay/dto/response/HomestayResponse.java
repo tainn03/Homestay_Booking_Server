@@ -18,12 +18,14 @@ public class HomestayResponse {
     String standardCheckIn;
     String standardCheckOut;
     double price;
+    double weekendPrice;
+
     String phone;
     String status;
 
     String userEmail;
 
-    Set<String> discountIds;
+    Set<DiscountResponse> discounts;
     Set<String> urlImages;
 
     Double longitude;

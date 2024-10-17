@@ -1,6 +1,7 @@
 package com.homestay.controller;
 
 import com.homestay.dto.ApiResponse;
+import com.homestay.dto.request.ChangeDiscountValueRequest;
 import com.homestay.dto.request.HomestayRequest;
 import com.homestay.dto.response.HomestayResponse;
 import com.homestay.service.HomestayService;
@@ -25,11 +26,21 @@ public class HomestayController {
     // Chỉ có chủ nhà mới được phép tạo homestay, homestay đó thuộc sở hữu của chủ nhà
     @PostMapping
     @PreAuthorize("hasAuthority('LANDLORD:CREATE_HOMESTAY')")
-    public ApiResponse<HomestayResponse> createHomestay(@Valid @RequestBody HomestayRequest request) {
+    public ApiResponse<HomestayResponse> createHomestay(@RequestBody HomestayRequest request) {
         return ApiResponse.<HomestayResponse>builder()
                 .code(200)
                 .message("Success")
                 .result(homestayService.createHomestay(request))
+                .build();
+    }
+
+    @PutMapping("/images/{id}")
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
+    public ApiResponse<HomestayResponse> updateHomestayImages(@RequestBody List<MultipartFile> images, @PathVariable String id) {
+        return ApiResponse.<HomestayResponse>builder()
+                .code(200)
+                .message("Success")
+                .result(homestayService.updateHomestayImages(images, id))
                 .build();
     }
 
@@ -98,6 +109,36 @@ public class HomestayController {
                 .code(200)
                 .message("Success")
                 .result(homestayService.getHomestayById(id))
+                .build();
+    }
+
+    @PutMapping("/price/{id}")
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
+    public ApiResponse<HomestayResponse> updateHomestayPrice(@RequestBody double price, @PathVariable String id) {
+        return ApiResponse.<HomestayResponse>builder()
+                .code(200)
+                .message("Success")
+                .result(homestayService.updateHomestayPrice(price, id))
+                .build();
+    }
+
+    @PutMapping("/weekendPrice/{id}")
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
+    public ApiResponse<HomestayResponse> updateHomestayWeekendPrice(@RequestBody double weekendPrice, @PathVariable String id) {
+        return ApiResponse.<HomestayResponse>builder()
+                .code(200)
+                .message("Success")
+                .result(homestayService.updateHomestayWeekendPrice(weekendPrice, id))
+                .build();
+    }
+
+    @PutMapping("/discount/{id}")
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
+    public ApiResponse<HomestayResponse> updateHomestayDiscount(@RequestBody ChangeDiscountValueRequest request, @PathVariable String id) {
+        return ApiResponse.<HomestayResponse>builder()
+                .code(200)
+                .message("Success")
+                .result(homestayService.updateHomestayDiscount(request, id))
                 .build();
     }
 

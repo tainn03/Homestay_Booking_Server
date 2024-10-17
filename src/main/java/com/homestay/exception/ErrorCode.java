@@ -19,6 +19,8 @@ public enum ErrorCode {
     USER_ALREADY_EXISTS(400, "Người dùng đã tồn tại", HttpStatus.BAD_REQUEST), // 400
     EMAIL_ALREADY_EXISTS(400, "Email đã được đăng ký", HttpStatus.BAD_REQUEST), // 400
     HOMESTAY_ALREADY_EXIST(400, "Homestay đã tồn tại", HttpStatus.BAD_REQUEST), // 400
+    NO_IMAGES_PROVIDED(400, "Không có ảnh nào được cung cấp", HttpStatus.BAD_REQUEST), // 400
+
     ROLE_NOT_FOUND(404, "Vai trò không tồn tại", HttpStatus.NOT_FOUND), // 404
     USER_NOT_FOUND(404, "Người dùng không tồn tại", HttpStatus.NOT_FOUND), // 404
     USER_NOT_ACTIVE(400, "Người dùng chưa được kích hoạt", HttpStatus.BAD_REQUEST), // 400
