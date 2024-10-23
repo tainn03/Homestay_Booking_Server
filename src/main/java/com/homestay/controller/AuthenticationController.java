@@ -27,8 +27,6 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ApiResponse<AuthenticationResponse> login(@RequestBody LoginRequest request, HttpServletResponse response) {
         return ApiResponse.<AuthenticationResponse>builder()
-                .code(200)
-                .message("success")
                 .result(service.authenticate(request, response))
                 .build();
     }
@@ -47,7 +45,6 @@ public class AuthenticationController {
     @PostMapping("/register")
     public ApiResponse<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
         return ApiResponse.<AuthenticationResponse>builder()
-                .code(200)
                 .message("Đăng ký tài khoản thành công")
                 .result(service.register(request))
                 .build();
@@ -66,8 +63,6 @@ public class AuthenticationController {
     @PostMapping("/forgot-password")
     public ApiResponse<String> forgotPassword(@RequestParam String email) {
         return ApiResponse.<String>builder()
-                .code(200)
-                .message("success")
                 .result(service.forgotPassword(email))
                 .build();
     }
@@ -80,8 +75,6 @@ public class AuthenticationController {
     @PostMapping("/register-landlord")
     public ApiResponse<String> registerLandlord(@RequestParam String email) {
         return ApiResponse.<String>builder()
-                .code(200)
-                .message("Đăng ký tài khoản thành công")
                 .result(service.registerLandlord(email))
                 .build();
     }

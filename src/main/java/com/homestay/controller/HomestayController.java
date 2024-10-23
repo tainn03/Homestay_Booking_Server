@@ -28,8 +28,6 @@ public class HomestayController {
     @PreAuthorize("hasAuthority('LANDLORD:CREATE_HOMESTAY')")
     public ApiResponse<HomestayResponse> createHomestay(@RequestBody HomestayRequest request) {
         return ApiResponse.<HomestayResponse>builder()
-                .code(200)
-                .message("Success")
                 .result(homestayService.createHomestay(request))
                 .build();
     }
@@ -38,8 +36,6 @@ public class HomestayController {
     @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
     public ApiResponse<HomestayResponse> updateHomestayImages(@RequestBody List<MultipartFile> images, @PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()
-                .code(200)
-                .message("Success")
                 .result(homestayService.updateHomestayImages(images, id))
                 .build();
     }
@@ -48,8 +44,6 @@ public class HomestayController {
     @PreAuthorize("hasAuthority('ADMIN:READ_ALL_HOMESTAY')")
     public ApiResponse<List<HomestayResponse>> getAllHomestays() {
         return ApiResponse.<List<HomestayResponse>>builder()
-                .code(200)
-                .message("Success")
                 .result(homestayService.getAllHomestays())
                 .build();
     }
@@ -58,8 +52,6 @@ public class HomestayController {
     @PreAuthorize("hasAuthority('LANDLORD:READ_OWN_HOMESTAY') and isAuthenticated()")
     public ApiResponse<List<HomestayResponse>> getHomestayByOwner() {
         return ApiResponse.<List<HomestayResponse>>builder()
-                .code(200)
-                .message("Success")
                 .result(homestayService.getHomestayByOwner())
                 .build();
     }
@@ -68,8 +60,6 @@ public class HomestayController {
     @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
     public ApiResponse<HomestayResponse> updateHomestayInfo(@Valid @RequestBody HomestayRequest request) {
         return ApiResponse.<HomestayResponse>builder()
-                .code(200)
-                .message("Success")
                 .result(homestayService.updateHomestay(request))
                 .build();
     }
@@ -78,8 +68,6 @@ public class HomestayController {
     @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
     public ApiResponse<HomestayResponse> updateHomestayPhoto(@RequestBody List<MultipartFile> photo, @PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()
-                .code(200)
-                .message("Success")
                 .result(homestayService.updateHomestayPhoto(photo, id))
                 .build();
     }
@@ -88,8 +76,6 @@ public class HomestayController {
     @PreAuthorize("hasAuthority('LANDLORD:DELETE_HOMESTAY')")
     public ApiResponse<String> deleteHomestay(@PathVariable String id) {
         return ApiResponse.<String>builder()
-                .code(200)
-                .message("Success")
                 .result(homestayService.deleteHomestay(id))
                 .build();
     }
@@ -97,8 +83,6 @@ public class HomestayController {
     @GetMapping("/public/search")
     public ApiResponse<List<HomestayResponse>> searchHomestay(@RequestParam String transcript) {
         return ApiResponse.<List<HomestayResponse>>builder()
-                .code(200)
-                .message("Success")
                 .result(homestayService.searchHomestays(transcript))
                 .build();
     }
@@ -106,8 +90,6 @@ public class HomestayController {
     @GetMapping("/public/{id}")
     public ApiResponse<HomestayResponse> getHomestayById(@PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()
-                .code(200)
-                .message("Success")
                 .result(homestayService.getHomestayById(id))
                 .build();
     }
@@ -116,8 +98,6 @@ public class HomestayController {
     @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
     public ApiResponse<HomestayResponse> updateHomestayPrice(@RequestBody double price, @PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()
-                .code(200)
-                .message("Success")
                 .result(homestayService.updateHomestayPrice(price, id))
                 .build();
     }
@@ -126,8 +106,6 @@ public class HomestayController {
     @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
     public ApiResponse<HomestayResponse> updateHomestayWeekendPrice(@RequestBody double weekendPrice, @PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()
-                .code(200)
-                .message("Success")
                 .result(homestayService.updateHomestayWeekendPrice(weekendPrice, id))
                 .build();
     }
@@ -136,8 +114,6 @@ public class HomestayController {
     @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
     public ApiResponse<HomestayResponse> updateHomestayDiscount(@RequestBody ChangeDiscountValueRequest request, @PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()
-                .code(200)
-                .message("Success")
                 .result(homestayService.updateHomestayDiscount(request, id))
                 .build();
     }

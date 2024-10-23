@@ -22,8 +22,6 @@ public class ChatController {
     public ApiResponse<String> sendMessage(@RequestBody SendMessageRequest request) {
         chatService.sendMessage(request.getSenderId(), request.getReceiverId(), request.getContent());
         return ApiResponse.<String>builder()
-                .code(200)
-                .message("Success")
                 .result("Message: " + request.getContent() + " sent successfully")
                 .build();
     }
@@ -31,8 +29,6 @@ public class ChatController {
     @GetMapping("/current")
     public ApiResponse<List<MessageResponse>> getCurrentChat(@RequestParam String senderId, @RequestParam String receiverId) {
         return ApiResponse.<List<MessageResponse>>builder()
-                .code(200)
-                .message("Success")
                 .result(chatService.getCurrentChat(senderId, receiverId))
                 .build();
     }
@@ -40,8 +36,6 @@ public class ChatController {
     @GetMapping("/conversations")
     public ApiResponse<List<String>> getMyChat(@RequestParam String senderId) {
         return ApiResponse.<List<String>>builder()
-                .code(200)
-                .message("Success")
                 .result(chatService.getAllConversations(senderId))
                 .build();
     }

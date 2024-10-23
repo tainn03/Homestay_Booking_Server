@@ -30,8 +30,6 @@ public class GeneralController {
     @GetMapping
     public ApiResponse<?> getAllTypeHomestay() {
         return ApiResponse.builder()
-                .code(200)
-                .message("Success")
                 .result(typeHomestayRepository.findAll())
                 .build();
     }
@@ -40,8 +38,6 @@ public class GeneralController {
     @GetMapping("/type-homestays")
     public ApiResponse<?> getAllTypeHomestayExceptPopularNewImpressive() {
         return ApiResponse.builder()
-                .code(200)
-                .message("Success")
                 .result(typeHomestayRepository.findAllExceptPopularNewImpressive())
                 .build();
     }
@@ -49,8 +45,6 @@ public class GeneralController {
     @GetMapping("/amenities")
     public ApiResponse<?> getAllAmenity() {
         return ApiResponse.builder()
-                .code(200)
-                .message("Success")
                 .result(amenityRepository.findAll())
                 .build();
     }
@@ -58,8 +52,6 @@ public class GeneralController {
     @GetMapping("/roles")
     public ApiResponse<List<RoleResponse>> getAllRoles() {
         return ApiResponse.<List<RoleResponse>>builder()
-                .code(200)
-                .message("Success")
                 .result(roleRepository.findAll().stream()
                         .map(role -> RoleResponse.builder()
                                 .roleName(role.getRoleName())
@@ -74,8 +66,6 @@ public class GeneralController {
     @GetMapping("/cities")
     public ApiResponse<?> getAllCities() {
         return ApiResponse.builder()
-                .code(200)
-                .message("Success")
                 .result(cityRepository.findAll())
                 .build();
     }
@@ -83,8 +73,6 @@ public class GeneralController {
     @GetMapping("/districts")
     public ApiResponse<List<District>> getDistrictsByCityName(@RequestParam String cityName) {
         return ApiResponse.<List<District>>builder()
-                .code(200)
-                .message("Success")
                 .result(districtRepository.findByCityName(cityName))
                 .build();
     }
