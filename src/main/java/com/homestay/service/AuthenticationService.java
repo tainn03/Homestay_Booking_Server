@@ -38,7 +38,10 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -53,13 +56,20 @@ public class AuthenticationService {
     private final TokenRepository tokenRepository;
     private final UserDetailsService userDetailsService;
     private final EmailService emailService;
-
     @Value("${application.security.google.client-id}")
     String clientId;
     @Value("${application.security.google.client-secret}")
     String clientSecret;
     @Value("${application.security.google.redirect-uri}")
     String redirectUri;
+    @Value("${application.utils.uppercase}")
+    String UPPERCASE;
+    @Value("${application.utils.lowercase}")
+    String LOWERCASE;
+    @Value("${application.utils.digits}")
+    String DIGITS;
+    @Value("${application.utils.special-chars}")
+    String SPECIAL_CHARS;
 
     public AuthenticationResponse register(RegisterRequest request) {
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
@@ -83,8 +93,10 @@ public class AuthenticationService {
 
         String confirmationToken = jwtService.generateConfirmationToken(savedUser);
         String link = "http://localhost:8080/api/v1/auth?token=" + confirmationToken;
-        String message = "Email của bạn vừa đăng ký thành công tại website của chúng tôi. Cảm ơn bạn đã đăng ký. Vui lòng nhấp vào liên kết bên dưới để kích hoạt tài khoản của bạn: ";
-        emailService.sendEmail(savedUser.getEmail(), savedUser.getFullName(), link, message);
+        String message = "Cảm ơn bạn đã đăng ký tài khoản trên hệ thống của chúng tôi. Để hoàn tất quá trình đăng ký, vui lòng xác nhận tài khoản của bạn.";
+        String subject = "Xác thực tài khoản của bạn";
+        String buttonText = "Xác thực tài khoản";
+        emailService.sendEmail(savedUser.getEmail(), savedUser.getFullName(), link, message, subject, buttonText);
 
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
@@ -199,8 +211,10 @@ public class AuthenticationService {
         }
         String confirmationToken = jwtService.generateConfirmationToken(user);
         String link = "http://localhost:8080/api/v1/auth/confirm-landlord?token=" + confirmationToken;
-        String message = "Email của bạn vừa đăng ký thành công trở thành CHỦ NHÀ - người cho thuê Homestay - tại website của chúng tôi. Cảm ơn bạn đã đăng ký. Vui lòng nhấp vào liên kết bên dưới để kích hoạt tài khoản của bạn: ";
-        emailService.sendEmail(user.getEmail(), user.getFullName(), link, message);
+        String subject = "Xác thực đăng ký trở thành chủ nhà";
+        String message = "Cảm ơn bạn đã đăng ký trở thành chủ nhà trên hệ thống của chúng tôi. Vui lòng xác thực tài khoản để hoàn tất quá trình đăng ký.";
+        String buttonText = "Xác thực đăng ký";
+        emailService.sendEmail(email, user.getFullName(), link, message, subject, buttonText);
         return "Email sent to " + email;
     }
 
@@ -252,7 +266,6 @@ public class AuthenticationService {
         getProfileDetailsGoogle(accessToken, servletResponse);
     }
 
-
     private void getProfileDetailsGoogle(String accessToken, HttpServletResponse servletResponse) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -282,7 +295,6 @@ public class AuthenticationService {
         servletResponse.sendRedirect(redirectUrl);
     }
 
-
     public User checkAndCreateUser(JsonObject userInfo) {
         String email = userInfo.get("email").getAsString();
         User user = userRepository.findByEmail(email).orElse(null);
@@ -308,4 +320,50 @@ public class AuthenticationService {
         return user;
     }
 
+    public String forgotPassword(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        String newPassword = generateRandomPassword();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        // Gửi email với mật khẩu mới
+        String subject = "Mật khẩu mới của bạn";
+        String body = "Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Mật khẩu mới của bạn là: " + newPassword + ". Để đảm bảo an toàn, vui lòng đổi mật khẩu sau khi đăng nhập.";
+        String buttonText = "Kích hoạt mật khẩu";
+        emailService.sendEmail(email, user.getFullName(), "http://localhost:3000/login", body, subject, buttonText);
+
+        return "New password sent to " + email;
+    }
+
+    private String generateRandomPassword() {
+        SecureRandom random = new SecureRandom();
+
+        // Đảm bảo có ít nhất một ký tự của mỗi loại
+        StringBuilder password = new StringBuilder();
+        password.append(UPPERCASE.charAt(random.nextInt(UPPERCASE.length())));
+        password.append(LOWERCASE.charAt(random.nextInt(LOWERCASE.length())));
+        password.append(DIGITS.charAt(random.nextInt(DIGITS.length())));
+        password.append(SPECIAL_CHARS.charAt(random.nextInt(SPECIAL_CHARS.length())));
+
+        // Thêm các ký tự ngẫu nhiên khác để đạt độ dài 8
+        String allChars = UPPERCASE + LOWERCASE + DIGITS + SPECIAL_CHARS;
+        for (int i = 4; i < 8; i++) {
+            password.append(allChars.charAt(random.nextInt(allChars.length())));
+        }
+
+        // Trộn ngẫu nhiên các ký tự trong chuỗi
+        List<Character> characters = new ArrayList<>();
+        for (char c : password.toString().toCharArray()) {
+            characters.add(c);
+        }
+        Collections.shuffle(characters);
+
+        StringBuilder finalPassword = new StringBuilder();
+        for (char c : characters) {
+            finalPassword.append(c);
+        }
+
+        return finalPassword.toString();
+    }
 }

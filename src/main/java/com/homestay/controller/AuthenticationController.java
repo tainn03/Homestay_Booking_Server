@@ -63,6 +63,15 @@ public class AuthenticationController {
         service.changePassword(request, connectedUser);
     }
 
+    @PostMapping("/forgot-password")
+    public ApiResponse<String> forgotPassword(@RequestParam String email) {
+        return ApiResponse.<String>builder()
+                .code(200)
+                .message("success")
+                .result(service.forgotPassword(email))
+                .build();
+    }
+
     @GetMapping
     public ResponseEntity<String> confirm(@RequestParam String token) {
         return ResponseEntity.ok(service.confirm(token));
