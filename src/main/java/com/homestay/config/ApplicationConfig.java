@@ -8,6 +8,7 @@ import com.homestay.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -25,11 +26,17 @@ import java.util.Map;
 
 @Configuration
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @EnableJpaAuditing
 public class ApplicationConfig {
-    UserRepository userRepository;
+    private final UserRepository userRepository;
 
+    @Value("${application.cloudinary.cloud-name}")
+    String cloudName;
+    @Value("${application.cloudinary.api-key}")
+    String apiKey;
+    @Value("${application.cloudinary.api-secret}")
+    String apiSecret;
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -63,9 +70,9 @@ public class ApplicationConfig {
     @Bean
     public Cloudinary cloudinary() {
         Map<String, String> config = new HashMap<>();
-        config.put("cloud_name", "dk22rcx3l");
-        config.put("api_key", "613817495968912");
-        config.put("api_secret", "JUX07Vd3qixsQeE-F_pQxrLFAYw");
+        config.put("cloud_name", cloudName);
+        config.put("api_key", apiKey);
+        config.put("api_secret", apiSecret);
         return new Cloudinary(config);
     }
 }
