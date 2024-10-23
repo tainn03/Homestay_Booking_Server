@@ -57,11 +57,11 @@ public class AuthenticationService {
     private final UserDetailsService userDetailsService;
     private final EmailService emailService;
     @Value("${application.security.google.client-id}")
-    String clientId;
+    String CLIENTID;
     @Value("${application.security.google.client-secret}")
-    String clientSecret;
+    String CLIENT_SECRET;
     @Value("${application.security.google.redirect-uri}")
-    String redirectUri;
+    String REDIRECT_URI;
     @Value("${application.utils.uppercase}")
     String UPPERCASE;
     @Value("${application.utils.lowercase}")
@@ -231,8 +231,8 @@ public class AuthenticationService {
     }
 
     public void loginGoogleAuth(HttpServletResponse response) throws IOException {
-        String googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?redirect_uri=" + redirectUri +
-                "&response_type=code&client_id=" + clientId +
+        String googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?redirect_uri=" + REDIRECT_URI +
+                "&response_type=code&client_id=" + CLIENTID +
                 "&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&access_type=offline&prompt=consent";
         response.sendRedirect(googleAuthUrl);
     }
@@ -245,9 +245,9 @@ public class AuthenticationService {
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("code", code);
-        params.add("redirect_uri", redirectUri); // Sử dụng redirect_uri từ cấu hình
-        params.add("client_id", clientId);
-        params.add("client_secret", clientSecret);
+        params.add("redirect_uri", REDIRECT_URI);
+        params.add("client_id", CLIENTID);
+        params.add("client_secret", CLIENT_SECRET);
         params.add("grant_type", "authorization_code");
 
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(params, httpHeaders);

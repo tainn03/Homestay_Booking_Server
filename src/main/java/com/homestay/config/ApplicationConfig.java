@@ -32,20 +32,20 @@ import java.util.Map;
 public class ApplicationConfig {
     private final UserRepository userRepository;
     @Value("${application.cloudinary.cloud-name}")
-    String cloudName;
+    String CLOUD_NAME;
     @Value("${application.cloudinary.api-key}")
-    String apiKey;
+    String API_KEY;
     @Value("${application.cloudinary.api-secret}")
-    String apiSecret;
+    String API_SECRET;
 
     @Value("${application.pusher.app-id}")
-    String appId;
+    String APP_ID;
     @Value("${application.pusher.key}")
-    String key;
+    String KEY;
     @Value("${application.pusher.secret}")
-    String secret;
+    String SECRET;
     @Value("${application.pusher.cluster}")
-    String cluster;
+    String CLUSTER;
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -79,16 +79,16 @@ public class ApplicationConfig {
     @Bean
     public Cloudinary cloudinary() {
         Map<String, String> config = new HashMap<>();
-        config.put("cloud_name", cloudName);
-        config.put("api_key", apiKey);
-        config.put("api_secret", apiSecret);
+        config.put("cloud_name", CLOUD_NAME);
+        config.put("api_key", API_KEY);
+        config.put("api_secret", API_SECRET);
         return new Cloudinary(config);
     }
 
     @Bean
     public Pusher pusher() {
-        Pusher pusher = new Pusher(appId, key, secret);
-        pusher.setCluster(cluster);
+        Pusher pusher = new Pusher(APP_ID, KEY, SECRET);
+        pusher.setCluster(CLUSTER);
         pusher.setEncrypted(true);
         return pusher;
     }

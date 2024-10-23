@@ -20,13 +20,13 @@ import java.util.stream.Collectors;
 @Service
 public class JwtService {
     @Value("${application.security.jwt.secret-key}")
-    private String secretKey;
+    private String SECRET_KEY;
 
     @Value("${application.security.jwt.expiration}")
-    private long jwtExpiration;
+    private long JWT_EXPIRATION;
 
     @Value("${application.security.jwt.refresh-expiration}")
-    private long refreshExpiration;
+    private long REFRESH_EXPIRATION;
 
     // TRÍCH XUẤT THÔNG TIN NGƯỜI DÙNG TỪ JWT
     public String extractUsername(String token) {
@@ -47,7 +47,7 @@ public class JwtService {
     }
 
     private Key getSignInKey() { // Lấy secret key
-        byte[] secretBytes = Decoders.BASE64.decode(secretKey); // Giải mã chuỗi SECRET_KEY ra thành mảng byte
+        byte[] secretBytes = Decoders.BASE64.decode(SECRET_KEY); // Giải mã chuỗi SECRET_KEY ra thành mảng byte
         return Keys.hmacShaKeyFor(secretBytes);
     }
 
@@ -66,15 +66,15 @@ public class JwtService {
                                  Map<String, Object> extraClaims,
                                  UserDetails userDetails
     ) {
-        return buildToken(extraClaims, userDetails, jwtExpiration);
+        return buildToken(extraClaims, userDetails, JWT_EXPIRATION);
     }
 
     public String generateRefreshToken(UserDetails userDetails) { // tạo refresh token
-        return buildToken(new HashMap<>(), userDetails, refreshExpiration);
+        return buildToken(new HashMap<>(), userDetails, REFRESH_EXPIRATION);
     }
 
     public String generateConfirmationToken(UserDetails userDetails) { // tạo confirmation token
-        return buildToken(new HashMap<>(), userDetails, jwtExpiration);
+        return buildToken(new HashMap<>(), userDetails, JWT_EXPIRATION);
     }
 
     private String buildToken(
