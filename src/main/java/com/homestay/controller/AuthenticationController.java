@@ -14,6 +14,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.security.Principal;
 
 @RestController
@@ -32,6 +33,17 @@ public class AuthenticationController {
                 .build();
     }
 
+    @GetMapping("/google")
+    public void loginGoogleAuth(HttpServletResponse response) throws IOException {
+        service.loginGoogleAuth(response);
+    }
+
+    @GetMapping("/grantcode")
+    public void grantCode(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
+        // Gọi hàm lấy access token từ Google
+        service.getOauthAccessTokenGoogle(code, response);
+    }
+
     @PostMapping("/register")
     public ApiResponse<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
         return ApiResponse.<AuthenticationResponse>builder()
@@ -47,13 +59,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/password")
-    public ApiResponse<String> changePassword(@RequestBody ChangePasswordRequest request, Principal connectedUser) {
-        String message = service.changePassword(request, connectedUser);
-        return ApiResponse.<String>builder()
-                .code(200)
-                .message(message)
-                .result(message)
-                .build();
+    public void changePassword(@RequestBody ChangePasswordRequest request, Principal connectedUser) throws IOException {
+        service.changePassword(request, connectedUser);
     }
 
     @GetMapping
@@ -71,7 +78,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/confirm-landlord")
-    public ResponseEntity<String> confirmLandlord(@RequestParam String token) {
-        return ResponseEntity.ok(service.confirmLandlord(token));
+    public void confirmLandlord(@RequestParam String token) {
+        service.confirmLandlord(token);
     }
 }

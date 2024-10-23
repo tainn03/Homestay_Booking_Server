@@ -65,7 +65,6 @@ public class UserController {
                 .result(userService.updateProfile(request))
                 .build();
     }
-//    #request.email == authentication.principal.username or
 
     @PutMapping
     @PreAuthorize("hasAnyAuthority('ADMIN:UPDATE_USER', 'USER:UPDATE_PROFILE', 'LANDLORD:UPDATE_PROFILE')")
@@ -97,6 +96,4 @@ public class UserController {
                 .result(userService.updateStatus(id, status))
                 .build();
     }
-
-
 }

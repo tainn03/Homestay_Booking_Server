@@ -1,5 +1,7 @@
 package com.homestay.service;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.homestay.constants.TokenType;
 import com.homestay.dto.request.ChangePasswordRequest;
 import com.homestay.dto.request.LoginRequest;
@@ -7,6 +9,7 @@ import com.homestay.dto.request.RegisterRequest;
 import com.homestay.dto.response.AuthenticationResponse;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
+import com.homestay.model.Image;
 import com.homestay.model.Role;
 import com.homestay.model.Token;
 import com.homestay.model.User;
@@ -19,7 +22,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,23 +32,34 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class AuthenticationService {
-    UserRepository userRepository;
-    RoleRepository roleRepository;
-    PasswordEncoder passwordEncoder;
-    JwtService jwtService;
-    AuthenticationManager authenticationManager;
-    TokenRepository tokenRepository;
-    UserDetailsService userDetailsService;
-    EmailService emailService;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
+    private final TokenRepository tokenRepository;
+    private final UserDetailsService userDetailsService;
+    private final EmailService emailService;
+
+    @Value("${application.security.google.client-id}")
+    String clientId;
+    @Value("${application.security.google.client-secret}")
+    String clientSecret;
+    @Value("${application.security.google.redirect-uri}")
+    String redirectUri;
 
     public AuthenticationResponse register(RegisterRequest request) {
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
@@ -152,11 +167,13 @@ public class AuthenticationService {
 
     public String changePassword(ChangePasswordRequest request, Principal connectedUser) {
         User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
-        }
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
+        if (!user.getPassword().matches("google")) { // Nếu không phải mật khẩu mặc định do đăng nhập bằng Google
+            if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                throw new BusinessException(ErrorCode.INVALID_PASSWORD);
+            }
+            if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+                throw new BusinessException(ErrorCode.INVALID_PASSWORD);
+            }
         }
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
@@ -198,4 +215,97 @@ public class AuthenticationService {
         } else
             return "Invalid token";
     }
+
+    public void loginGoogleAuth(HttpServletResponse response) throws IOException {
+        String googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?redirect_uri=" + redirectUri +
+                "&response_type=code&client_id=" + clientId +
+                "&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&access_type=offline&prompt=consent";
+        response.sendRedirect(googleAuthUrl);
+    }
+
+    // Hàm lấy OAuth Access Token từ Google
+    public void getOauthAccessTokenGoogle(String code, HttpServletResponse servletResponse) throws IOException {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("code", code);
+        params.add("redirect_uri", redirectUri); // Sử dụng redirect_uri từ cấu hình
+        params.add("client_id", clientId);
+        params.add("client_secret", clientSecret);
+        params.add("grant_type", "authorization_code");
+
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(params, httpHeaders);
+
+        String url = "https://oauth2.googleapis.com/token";
+
+        // Gửi yêu cầu POST đến Google để đổi code lấy token
+        String response = restTemplate.postForObject(url, requestEntity, String.class);
+
+        // Phân tích cú pháp phản hồi JSON để lấy access token
+        Gson gson = new Gson();
+        JsonObject jsonObject = gson.fromJson(response, JsonObject.class);
+        String accessToken = jsonObject.get("access_token").getAsString();
+
+        // Lấy thông tin người dùng từ Google với access token
+        getProfileDetailsGoogle(accessToken, servletResponse);
+    }
+
+
+    private void getProfileDetailsGoogle(String accessToken, HttpServletResponse servletResponse) throws IOException {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setBearerAuth(accessToken);  // Thiết lập access token cho Bearer Auth
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(httpHeaders);
+
+        String url = "https://www.googleapis.com/oauth2/v2/userinfo";
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class);
+
+        // Phân tích cú pháp JSON để lấy thông tin người dùng
+        Gson gson = new Gson();
+        JsonObject jsonObject = gson.fromJson(response.getBody(), JsonObject.class);
+
+        // Check and create user if not exists
+        User user = checkAndCreateUser(jsonObject);
+
+        // Tạo JWT token cho user
+        String jwtToken = jwtService.generateToken(user);
+
+        // Lưu token mới vào hệ thống
+        revokeAllUserTokens(user);
+        saveUserToken(user, jwtToken);
+
+        // Điều hướng về frontend kèm theo accessToken
+        String redirectUrl = "http://localhost:3000?accessToken=" + jwtToken;
+        servletResponse.sendRedirect(redirectUrl);
+    }
+
+
+    public User checkAndCreateUser(JsonObject userInfo) {
+        String email = userInfo.get("email").getAsString();
+        User user = userRepository.findByEmail(email).orElse(null);
+
+        if (user == null) {
+            user = User.builder()
+                    .fullName(userInfo.get("name").getAsString())
+                    .email(email)
+                    .password("google") // Mật khẩu mặc định
+                    .status("ACTIVE")
+                    .role(roleRepository.findByRoleName("USER").orElseThrow(() -> new BusinessException(ErrorCode.ROLE_NOT_FOUND)))
+                    .build();
+            Image image = Image.builder()
+                    .url(userInfo.get("picture").getAsString())
+                    .user(user)
+                    .build();
+            user.setAvatar(image);
+            userRepository.save(user);
+        } else {
+            user.setLastLogin(LocalDateTime.now());
+            userRepository.save(user);
+        }
+        return user;
+    }
+
 }
