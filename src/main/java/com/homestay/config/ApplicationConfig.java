@@ -5,6 +5,7 @@ import com.homestay.auditing.ApplicationAuditAware;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
 import com.homestay.repository.UserRepository;
+import com.pusher.rest.Pusher;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -30,13 +31,21 @@ import java.util.Map;
 @EnableJpaAuditing
 public class ApplicationConfig {
     private final UserRepository userRepository;
-
     @Value("${application.cloudinary.cloud-name}")
     String cloudName;
     @Value("${application.cloudinary.api-key}")
     String apiKey;
     @Value("${application.cloudinary.api-secret}")
     String apiSecret;
+
+    @Value("${application.pusher.app-id}")
+    String appId;
+    @Value("${application.pusher.key}")
+    String key;
+    @Value("${application.pusher.secret}")
+    String secret;
+    @Value("${application.pusher.cluster}")
+    String cluster;
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -74,5 +83,13 @@ public class ApplicationConfig {
         config.put("api_key", apiKey);
         config.put("api_secret", apiSecret);
         return new Cloudinary(config);
+    }
+
+    @Bean
+    public Pusher pusher() {
+        Pusher pusher = new Pusher(appId, key, secret);
+        pusher.setCluster(cluster);
+        pusher.setEncrypted(true);
+        return pusher;
     }
 }
