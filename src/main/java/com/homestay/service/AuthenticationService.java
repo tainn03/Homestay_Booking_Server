@@ -218,16 +218,15 @@ public class AuthenticationService {
         return "Email sent to " + email;
     }
 
-    public String confirmLandlord(String token) {
+    public void confirmLandlord(String token, HttpServletResponse response) throws IOException {
         String email = jwtService.extractUsername(token);
         User user = userRepository.findByEmail(email).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         if (jwtService.isValidToken(token, user)) {
             Role role = roleRepository.findByRoleName("LANDLORD").orElseThrow(() -> new BusinessException(ErrorCode.ROLE_NOT_FOUND));
             user.setRole(role);
             userRepository.save(user);
-            return "Account activated successfully";
-        } else
-            return "Invalid token";
+            response.sendRedirect("http://localhost:3000");
+        }
     }
 
     public void loginGoogleAuth(HttpServletResponse response) throws IOException {

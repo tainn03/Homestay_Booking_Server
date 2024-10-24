@@ -80,7 +80,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/confirm-landlord")
-    public void confirmLandlord(@RequestParam String token) {
-        service.confirmLandlord(token);
+    public void confirmLandlord(@RequestParam String token, HttpServletResponse response) throws IOException {
+        service.confirmLandlord(token, response);
     }
 }
