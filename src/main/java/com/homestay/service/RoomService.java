@@ -1,170 +1,45 @@
 package com.homestay.service;
 
-import com.homestay.dto.request.RoomRequest;
-import com.homestay.dto.response.RoomResponse;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
-import com.homestay.model.Amenity;
-import com.homestay.model.Homestay;
+import com.homestay.model.Image;
 import com.homestay.model.Room;
-import com.homestay.repository.AmenityRepository;
-import com.homestay.repository.HomestayRepository;
+import com.homestay.repository.ImageRepository;
 import com.homestay.repository.RoomRepository;
+import com.homestay.service.external.CloudinaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
 public class RoomService {
-    @Autowired
     RoomRepository roomRepository;
+    CloudinaryService cloudinaryService;
+    ImageRepository imageRepository;
 
-    @Autowired
-    HomestayRepository homestayRepository;
+    public String createRoomImages(String nameRoom, List<MultipartFile> images, String homestayId) {
+        Room room = roomRepository.findByNameAndHomestayId(nameRoom, homestayId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
 
-    @Autowired
-    AmenityRepository amenityRepository;
-
-    public RoomResponse createRoom(RoomRequest request) {
-        Homestay homestay = homestayRepository.findById(request.getHomestayId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
-
-        Room existingRoom = roomRepository.findByNameAndHomestayId(request.getName(), request.getHomestayId());
-        if (Optional.ofNullable(existingRoom).isPresent()) {
-            throw new BusinessException(ErrorCode.ROOM_ALREADY_EXISTS);
+        Set<Image> existingImages = room.getImages();
+        List<String> photoUrls = cloudinaryService.uploadFiles(images);
+        for (String photoUrl : photoUrls) {
+            Image image = Image.builder()
+                    .url(photoUrl)
+                    .room(room)
+                    .build();
+            existingImages.add(image);
         }
 
-        Room room = Room.builder()
-                .name(request.getName())
-                .price(request.getPrice())
-                .size(request.getSize())
-                .homestay(homestay)
-                .build();
-        Room savedRoom = roomRepository.save(room);
+        room.setImages(existingImages);
+        roomRepository.save(room);
 
-        return RoomResponse.builder()
-                .id(savedRoom.getId())
-                .name(savedRoom.getName())
-                .price(savedRoom.getPrice())
-                .size(savedRoom.getSize())
-                .homestayName(savedRoom.getHomestay().getName())
-//                .amenities(savedRoom.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
-//                .bookings(savedRoom.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
-                .build();
-    }
-
-    public List<RoomResponse> getAllRooms() {
-        return roomRepository.findAll().stream()
-                .map(room -> RoomResponse.builder()
-                        .id(room.getId())
-                        .name(room.getName())
-                        .price(room.getPrice())
-                        .size(room.getSize())
-                        .homestayName(room.getHomestay().getName())
-                        .amenities(room.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
-                        .bookings(room.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
-                        .build())
-                .toList();
-    }
-
-    public RoomResponse getRoomById(String id) {
-        Room room = roomRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
-        return RoomResponse.builder()
-                .id(room.getId())
-                .name(room.getName())
-                .price(room.getPrice())
-                .size(room.getSize())
-                .homestayName(room.getHomestay().getName())
-                .amenities(room.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
-                .bookings(room.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
-                .build();
-
-    }
-
-    public RoomResponse updateRoom(String id, RoomRequest request) {
-        Room room = roomRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
-        Homestay homestay = homestayRepository.findById(request.getHomestayId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
-        Set<Amenity> amenities = new HashSet<>(amenityRepository.findAllById(request.getAmenityIds()));
-
-        room.setName(request.getName());
-        room.setPrice(request.getPrice());
-        room.setSize(request.getSize());
-        room.setHomestay(homestay);
-        room.setAmenities(amenities); // Update amenities
-        Room updatedRoom = roomRepository.save(room);
-
-        return RoomResponse.builder()
-                .id(updatedRoom.getId())
-                .name(updatedRoom.getName())
-                .price(updatedRoom.getPrice())
-                .size(updatedRoom.getSize())
-                .homestayName(updatedRoom.getHomestay().getName())
-                .amenities(updatedRoom.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
-                .bookings(updatedRoom.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
-                .build();
-    }
-
-    public void deleteRoom(String id) {
-        Room room = roomRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
-        roomRepository.delete(room);
-    }
-
-    public List<RoomResponse> getRoomsByHomestayId(String homestayId) {
-        Homestay homestay = homestayRepository.findById(homestayId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
-        return roomRepository.findByHomestayId(homestayId).stream()
-                .map(room -> RoomResponse.builder()
-                        .id(room.getId())
-                        .name(room.getName())
-                        .price(room.getPrice())
-                        .size(room.getSize())
-                        .homestayName(room.getHomestay().getName())
-                        .amenities(room.getAmenities().stream().map(amenity -> amenity.getName()).collect(Collectors.toSet()))
-                        .bookings(room.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
-                        .build())
-                .toList();
-    }
-
-    public List<RoomResponse> getAvailableRoomsOfHomestayFromCheckInCheckOut(String homestayId, LocalDate checkIn, LocalDate checkOut) {
-        if (checkIn.isAfter(checkOut)) {
-            throw new BusinessException(ErrorCode.CHECKIN_AFTER_CHECKOUT);
-        }
-        // validate date not in the past
-        if (checkIn.isBefore(LocalDate.now()) || checkOut.isBefore(LocalDate.now())) {
-            throw new BusinessException(ErrorCode.CHECKIN_CHECKOUT_IN_PAST);
-        }
-        Homestay homestay = homestayRepository.findById(homestayId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
-
-        List<Room> availableRooms = homestay.getRooms().stream()
-                .filter(room -> room.getBookings().stream()
-                        .noneMatch(booking -> (checkIn.isBefore(booking.getCheckOut()) && checkOut.isAfter(booking.getCheckIn()))))
-                .collect(Collectors.toList());
-
-        return availableRooms.stream()
-                .map(room -> RoomResponse.builder()
-                        .id(room.getId())
-                        .name(room.getName())
-                        .price(room.getPrice())
-                        .size(room.getSize())
-                        .homestayName(homestay.getName())
-                        .amenities(room.getAmenities().stream().map(Amenity::getName).collect(Collectors.toSet()))
-                        .bookings(room.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()))
-                        .build())
-                .collect(Collectors.toList());
+        return "Upload images successfully";
     }
 }

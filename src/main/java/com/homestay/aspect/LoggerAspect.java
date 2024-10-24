@@ -20,6 +20,7 @@ public class LoggerAspect {
         Object result = joinPoint.proceed();
         Instant end = Instant.now();
         log.info("TIME TAKEN: {}ms", end.toEpochMilli() - start.toEpochMilli());
+        log.info("END METHOD EXECUTION: {}", joinPoint.getSignature());
         return result;
     }
 

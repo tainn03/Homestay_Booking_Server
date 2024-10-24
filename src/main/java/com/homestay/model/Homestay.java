@@ -47,7 +47,7 @@ public class Homestay extends BaseEntity {
     List<Image> images;
 
     @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<Room> rooms;
+    List<Room> rooms;
 
     @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Review> reviews;

@@ -39,7 +39,7 @@ public class HomestayController {
                 .result(homestayService.updateHomestayImages(images, id))
                 .build();
     }
-
+    
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN:READ_ALL_HOMESTAY')")
     public ApiResponse<List<HomestayResponse>> getAllHomestays() {

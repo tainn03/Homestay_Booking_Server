@@ -49,6 +49,17 @@ public class HomestayService {
         Homestay homestay = homestayMapper.toHomestay(request);
         homestay.setStatus(HomestayStatus.ACTIVE.name());
 
+        List<Room> rooms = new ArrayList<>();
+        request.getRooms().forEach(roomRequest -> {
+            Room room = Room.builder()
+                    .name(roomRequest.getName())
+                    .size(roomRequest.getSize())
+                    .homestay(homestay)
+                    .build();
+            rooms.add(room);
+        });
+        homestay.setRooms(rooms);
+
         Set<TypeHomestay> typeHomestays = new HashSet<>();
         request.getTypeHomestays().forEach(typeHomestay -> {
             TypeHomestay typeHomestay1 = typeHomestayRepository.findByName(typeHomestay)
@@ -82,6 +93,7 @@ public class HomestayService {
 
         homestay.setUser(userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)));
+        
         homestayRepository.save(homestay);
 
         HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
@@ -90,7 +102,6 @@ public class HomestayService {
 
     @Transactional
     public HomestayResponse updateHomestayImages(List<MultipartFile> images, String id) {
-        System.out.println("images: " + images);
         Homestay homestay = homestayRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
 

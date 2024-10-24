@@ -3,6 +3,7 @@ package com.homestay.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -12,16 +13,10 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RoomResponse {
     String id;
-
     String name;
-    double price;
     int size;
-    String description;
-
+    List<String> images;
     String homestayName;
-
-    Set<String> amenities;
-
     Set<String> bookings;
 }
 

@@ -9,6 +9,7 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface HomestayMapper {
+    @Mapping(target = "rooms", ignore = true)
     @Mapping(target = "amenities", ignore = true)
     @Mapping(target = "discounts", ignore = true)
     @Mapping(target = "typeHomestays", ignore = true)

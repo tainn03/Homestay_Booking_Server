@@ -3,6 +3,7 @@ package com.homestay.dto.request;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -28,5 +29,6 @@ public class HomestayRequest {
     String standardCheckOut;
     Set<String> amenityNames;
     Set<DiscountRequest> discounts;
+    List<RoomRequest> rooms;
     Set<String> typeHomestays;
 }

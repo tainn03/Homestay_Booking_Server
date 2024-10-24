@@ -67,7 +67,7 @@ public class BookingService {
 
         // Calculate total cost based on the number of days
         long days = ChronoUnit.DAYS.between(LocalDate.parse(request.getCheckIn()), LocalDate.parse(request.getCheckOut()));
-        double totalCost = days * selectedRoom.getPrice();
+        double totalCost = days * selectedRoom.getHomestay().getPrice();
 
         // Create and save the booking
         Booking booking = Booking.builder()

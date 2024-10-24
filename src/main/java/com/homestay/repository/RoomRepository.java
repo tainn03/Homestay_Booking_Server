@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RoomRepository extends JpaRepository<Room, String> {
@@ -16,7 +17,7 @@ public interface RoomRepository extends JpaRepository<Room, String> {
     @Query("SELECT r FROM Room r WHERE r.homestay.id = ?1 AND r.id NOT IN (SELECT b.room.id FROM Booking b WHERE b.checkIn <= ?2 AND b.checkOut >= ?3)")
     List<Room> findAvailableRoomsByHomestayId(String homestayId, LocalDate checkIn, LocalDate checkOut);
 
-    Room findByNameAndHomestayId(String name, String homestayId);
+    Optional<Room> findByNameAndHomestayId(String name, String homestayId);
 
     List<Room> findByHomestayId(String homestayId);
 }

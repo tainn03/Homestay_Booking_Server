@@ -21,20 +21,11 @@ public class Room extends BaseEntity {
     String id;
 
     String name;
-    double price;
     int size;
 
     @ManyToOne
     @JoinColumn(name = "homestay_id", nullable = false)
     Homestay homestay;
-
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "room_amenity",
-            joinColumns = @JoinColumn(name = "room_id"),
-            inverseJoinColumns = @JoinColumn(name = "amenity_id")
-    )
-    Set<Amenity> amenities;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Booking> bookings;
