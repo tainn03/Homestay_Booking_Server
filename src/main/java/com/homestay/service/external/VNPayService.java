@@ -27,7 +27,7 @@ public class VNPayService {
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);
         vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
-        vnp_Params.put("vnp_Amount", String.valueOf(total * 100));
+        vnp_Params.put("vnp_Amount", String.valueOf(total * 100)); // Số tiền cần thanh toán nhân với 100 để triệt tiêu phần thập phân trước khi gửi sang VNPAY
         vnp_Params.put("vnp_CurrCode", "VND");
 
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
@@ -96,7 +96,7 @@ public class VNPayService {
         fields.remove("vnp_SecureHashType");
         fields.remove("vnp_SecureHash");
         String signValue = VNPayConfig.hashAllFields(fields);
-        if (signValue.equals(vnp_SecureHash)) {
+        if (signValue.equals(vnp_SecureHash)) {  // 1: success, 0: fail, -1: error
             if ("00".equals(request.getParameter("vnp_TransactionStatus"))) {
                 return 1;
             } else {
