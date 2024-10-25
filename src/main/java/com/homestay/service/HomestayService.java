@@ -93,7 +93,7 @@ public class HomestayService {
 
         homestay.setUser(userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)));
-        
+
         homestayRepository.save(homestay);
 
         HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
@@ -146,9 +146,6 @@ public class HomestayService {
         }
         if (homestay.getTypeHomestays() != null) {
             homestayResponse.setTypeHomestayNames(homestay.getTypeHomestays().stream().map(TypeHomestay::getName).collect(Collectors.toSet()));
-        }
-        if (homestay.getDistrict() != null) {
-            homestayResponse.setDistrictName(homestay.getDistrict().getName());
         }
         if (homestay.getWeekendPrice() != 0.0) {
             homestayResponse.setWeekendPrice(homestay.getWeekendPrice());

@@ -22,7 +22,8 @@ public interface HomestayMapper {
     @Mapping(target = "roomNames", ignore = true)
     @Mapping(target = "reviewIds", ignore = true)
     @Mapping(target = "typeHomestayNames", ignore = true)
-    @Mapping(target = "districtName", ignore = true)
+    @Mapping(target = "districtName", source = "district.name")
+    @Mapping(target = "cityName", source = "district.city.name")
     HomestayResponse toHomestayResponse(Homestay homestay);
 
     @Mapping(target = "amenities", ignore = true)
