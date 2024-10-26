@@ -39,7 +39,24 @@ public class HomestayController {
                 .result(homestayService.updateHomestayImages(images, id))
                 .build();
     }
-    
+
+    @PutMapping("/images/new/{id}")
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
+    public ApiResponse<HomestayResponse> addNewHomestayImages(@RequestBody List<MultipartFile> images, @PathVariable String id) {
+        return ApiResponse.<HomestayResponse>builder()
+                .result(homestayService.addNewHomestayImages(images, id))
+                .build();
+    }
+
+    @DeleteMapping("/images/{id}")
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
+    public ApiResponse<HomestayResponse> deleteHomestayImages(@RequestParam List<String> images, @PathVariable String id) {
+        return ApiResponse.<HomestayResponse>builder()
+                
+                .result(homestayService.deleteHomestayImages(images, id))
+                .build();
+    }
+
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN:READ_ALL_HOMESTAY')")
     public ApiResponse<List<HomestayResponse>> getAllHomestays() {

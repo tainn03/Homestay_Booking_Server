@@ -16,7 +16,6 @@ public class RoomResponse {
     String name;
     int size;
     List<String> images;
-    String homestayName;
     Set<String> bookings;
 }
 

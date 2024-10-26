@@ -5,7 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.GenericGenerator;
 
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Getter
@@ -28,8 +28,8 @@ public class Room extends BaseEntity {
     Homestay homestay;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<Booking> bookings;
+    List<Booking> bookings;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<Image> images;
+    List<Image> images;
 }

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +26,7 @@ public class RoomService {
         Room room = roomRepository.findByNameAndHomestayId(nameRoom, homestayId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
 
-        Set<Image> existingImages = room.getImages();
+        List<Image> existingImages = room.getImages();
         List<String> photoUrls = cloudinaryService.uploadFiles(images);
         for (String photoUrl : photoUrls) {
             Image image = Image.builder()

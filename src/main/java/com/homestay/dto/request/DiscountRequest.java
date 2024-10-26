@@ -3,6 +3,8 @@ package com.homestay.dto.request;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -12,4 +14,6 @@ public class DiscountRequest {
     int value;
     String description;
     String type;
+    LocalDateTime startDate;
+    LocalDateTime endDate;
 }

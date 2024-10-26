@@ -4,6 +4,7 @@ import com.homestay.constants.HomestayStatus;
 import com.homestay.dto.request.ChangeDiscountValueRequest;
 import com.homestay.dto.request.HomestayRequest;
 import com.homestay.dto.response.HomestayResponse;
+import com.homestay.dto.response.RoomResponse;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
 import com.homestay.mapper.DiscountMapper;
@@ -133,13 +134,24 @@ public class HomestayService {
 
     private HomestayResponse toHomeStayResponseWithRelationship(Homestay homestay, HomestayResponse homestayResponse) {
         if (homestay.getImages() != null) {
-            homestayResponse.setUrlImages(homestay.getImages().stream().map(Image::getUrl).collect(Collectors.toSet()));
+            homestayResponse.setUrlImages(homestay.getImages().stream().map(Image::getUrl).collect(Collectors.toList()));
         }
         if (homestay.getDiscounts() != null) {
             homestayResponse.setDiscounts(homestay.getDiscounts().stream().map(discountMapper::toDiscountResponse).collect(Collectors.toSet()));
         }
-        if (homestay.getRooms() != null) {
-            homestayResponse.setRoomNames(homestay.getRooms().stream().map(Room::getName).collect(Collectors.toSet()));
+        if (homestay.getRooms() != null && homestay.getRooms().getFirst().getImages() != null) {
+            homestayResponse.setRooms(homestay.getRooms().stream()
+                    .map(room -> {
+                        RoomResponse roomResponse = RoomResponse.builder()
+                                .id(room.getId())
+                                .name(room.getName())
+                                .size(room.getSize())
+                                .images(room.getImages().stream().map(Image::getUrl).collect(Collectors.toList()))
+                                .bookings(room.getBookings().stream().map(Booking::getId).collect(Collectors.toSet()))
+                                .build();
+                        return roomResponse;
+                    })
+                    .collect(Collectors.toList()));
         }
         if (homestay.getReviews() != null) {
             homestayResponse.setReviewIds(homestay.getReviews().stream().map(Review::getId).collect(Collectors.toSet()));
@@ -175,6 +187,7 @@ public class HomestayService {
                     return toHomeStayResponseWithRelationship(homestay, response);
                 })
                 .collect(Collectors.toList());
+        System.out.println("homestays: " + responses);
         return responses;
     }
 
@@ -378,5 +391,47 @@ public class HomestayService {
         homestayRepository.save(homestay);
         HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
         return toHomeStayResponseWithRelationship(homestay, response);
+    }
+
+    public HomestayResponse addNewHomestayImages(List<MultipartFile> images, String id) {
+        Homestay homestay = homestayRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+
+        List<Image> existingImages = homestay.getImages();
+        List<String> photoUrls = cloudinaryService.uploadFiles(images);
+        for (String photoUrl : photoUrls) {
+            Image image = Image.builder()
+                    .url(photoUrl)
+                    .homestay(homestay)
+                    .build();
+            existingImages.add(image);
+        }
+
+        homestay.setImages(existingImages);
+        homestayRepository.save(homestay);
+
+        HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
+        return toHomeStayResponseWithRelationship(homestay, homestayResponse);
+    }
+
+    @Transactional
+    public HomestayResponse deleteHomestayImages(List<String> images, String id) {
+        Homestay homestay = homestayRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+
+        List<Image> existingImages = homestay.getImages();
+        if (existingImages == null) {
+            existingImages = new ArrayList<>();
+        }
+
+        cloudinaryService.deleteFiles(images);
+
+        existingImages.removeIf(image -> images.contains(image.getUrl()));
+        imageRepository.deleteByUrlIn(images);
+        homestay.setImages(existingImages);
+        homestayRepository.save(homestay);
+
+        HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
+        return toHomeStayResponseWithRelationship(homestay, homestayResponse);
     }
 }

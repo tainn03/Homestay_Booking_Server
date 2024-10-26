@@ -3,6 +3,7 @@ package com.homestay.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -26,13 +27,13 @@ public class HomestayResponse {
     String userEmail;
 
     Set<DiscountResponse> discounts;
-    Set<String> urlImages;
+    List<String> urlImages;
 
     Double longitude;
     Double latitude;
     String addressDetail;
 
-    Set<String> roomNames;
+    List<RoomResponse> rooms;
     Set<String> reviewIds;
     Set<String> typeHomestayNames;
     String districtName;

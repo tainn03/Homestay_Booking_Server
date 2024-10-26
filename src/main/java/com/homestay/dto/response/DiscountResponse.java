@@ -3,6 +3,8 @@ package com.homestay.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -13,4 +15,6 @@ public class DiscountResponse {
     double value;
     String type;
     String description;
+    LocalDateTime startDate;
+    LocalDateTime endDate;
 }
