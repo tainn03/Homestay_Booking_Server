@@ -3,9 +3,13 @@ package com.homestay.mapper;
 import com.homestay.dto.request.HomestayRequest;
 import com.homestay.dto.response.HomestayResponse;
 import com.homestay.model.Homestay;
+import com.homestay.model.Image;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface HomestayMapper {
@@ -33,4 +37,13 @@ public interface HomestayMapper {
     @Mapping(target = "district", ignore = true)
     @Mapping(target = "user", ignore = true)
     void updateToHomestay(@MappingTarget Homestay homestay, HomestayRequest request);
+
+    default List<Image> map(List<String> imageUrls) {
+        if (imageUrls == null) {
+            return null;
+        }
+        return imageUrls.stream()
+                .map(url -> Image.builder().url(url).build())
+                .collect(Collectors.toList());
+    }
 }
