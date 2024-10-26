@@ -16,7 +16,7 @@ import java.util.Optional;
 public interface HomestayRepository extends JpaRepository<Homestay, String> {
     Optional<Homestay> findByEmail(String email);
 
-    @Query("SELECT h FROM Homestay h WHERE h.user = ?1 AND h.status = ?2")
+    @Query("SELECT h FROM Homestay h WHERE h.user = ?1 AND h.status = ?2 ORDER BY h.createdAt DESC")
     List<Homestay> findByUserAndStatus(User user, String status);
 
     @Query("SELECT h FROM Homestay h WHERE h.district.id IN :districtIds OR :typeHomestay MEMBER OF h.typeHomestays")
