@@ -1,5 +1,6 @@
 package com.homestay.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -23,6 +24,7 @@ public class Room extends BaseEntity {
     String name;
     int size;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "homestay_id", nullable = false)
     Homestay homestay;

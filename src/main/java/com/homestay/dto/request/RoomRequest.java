@@ -3,6 +3,8 @@ package com.homestay.dto.request;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -11,4 +13,5 @@ import lombok.experimental.FieldDefaults;
 public class RoomRequest {
     String name;
     int size;
+    List<String> images;
 }

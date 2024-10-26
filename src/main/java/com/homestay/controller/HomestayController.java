@@ -52,7 +52,6 @@ public class HomestayController {
     @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
     public ApiResponse<HomestayResponse> deleteHomestayImages(@RequestParam List<String> images, @PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()
-                
                 .result(homestayService.deleteHomestayImages(images, id))
                 .build();
     }
