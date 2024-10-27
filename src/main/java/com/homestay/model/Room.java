@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.util.List;
 
@@ -17,12 +16,12 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Room extends BaseEntity {
     @Id
-    @GeneratedValue(generator = "uuid", strategy = GenerationType.UUID)
-    @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
     String name;
     int size;
+    String status;
 
     @JsonIgnore
     @ManyToOne
@@ -34,4 +33,8 @@ public class Room extends BaseEntity {
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Image> images;
+
+    @Version
+    @Builder.Default
+    Long version = 0L;
 }

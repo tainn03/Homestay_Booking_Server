@@ -36,4 +36,8 @@ public class Booking extends BaseEntity {
 
     @OneToOne(mappedBy = "booking")
     Payment payment;
+
+    @Version
+    @Builder.Default
+    Long version = 0L;
 }

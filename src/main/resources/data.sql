@@ -51,6 +51,8 @@ INSERT INTO public.permission (permission, role_name)
 VALUES ('LANDLORD:UPDATE_ROOM', 'LANDLORD');
 INSERT INTO public.permission (permission, role_name)
 VALUES ('LANDLORD:CREATE_ROOM', 'LANDLORD');
+INSERT INTO public.permission (permission, role_name)
+VALUES ('LANDLORD:DELETE_ROOM', 'LANDLORD');
 
 -- CITY TABLE
 INSERT INTO public.city (id, "name")

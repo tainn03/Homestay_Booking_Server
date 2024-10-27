@@ -15,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -95,5 +96,18 @@ public class RoomService {
                 .size(room.getSize())
                 .images(room.getImages().stream().map(Image::getUrl).toList())
                 .build();
+    }
+
+    @Transactional
+    public String deleteRoom(String id) {
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
+
+        List<String> imageUrls = room.getImages().stream().map(Image::getUrl).toList();
+        cloudinaryService.deleteFiles(imageUrls);
+        imageRepository.deleteByUrlIn(imageUrls);
+
+        roomRepository.delete(room);
+        return "Room deleted successfully";
     }
 }

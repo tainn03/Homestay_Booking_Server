@@ -45,4 +45,11 @@ public class RoomController {
                 .build();
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('LANDLORD:DELETE_ROOM')")
+    public ApiResponse<String> deleteRoom(@PathVariable String id) {
+        return ApiResponse.<String>builder()
+                .result(roomService.deleteRoom(id))
+                .build();
+    }
 }

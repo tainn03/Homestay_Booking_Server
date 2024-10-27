@@ -1,6 +1,7 @@
 package com.homestay.service;
 
 import com.homestay.constants.HomestayStatus;
+import com.homestay.constants.RoomStatus;
 import com.homestay.dto.request.ChangeDiscountValueRequest;
 import com.homestay.dto.request.HomestayRequest;
 import com.homestay.dto.response.HomestayResponse;
@@ -141,16 +142,14 @@ public class HomestayService {
         }
         if (homestay.getRooms() != null && homestay.getRooms().getFirst().getImages() != null) {
             homestayResponse.setRooms(homestay.getRooms().stream()
-                    .map(room -> {
-                        RoomResponse roomResponse = RoomResponse.builder()
-                                .id(room.getId())
-                                .name(room.getName())
-                                .size(room.getSize())
-                                .images(room.getImages().stream().map(Image::getUrl).collect(Collectors.toList()))
-                                .bookings(room.getBookings().stream().map(Booking::getId).collect(Collectors.toSet()))
-                                .build();
-                        return roomResponse;
-                    })
+                    .filter(room -> !Objects.equals(room.getStatus(), RoomStatus.DELETED.name()))
+                    .map(room -> RoomResponse.builder()
+                            .id(room.getId())
+                            .name(room.getName())
+                            .size(room.getSize())
+                            .images(room.getImages().stream().map(Image::getUrl).collect(Collectors.toList()))
+                            .bookings(room.getBookings().stream().map(Booking::getId).collect(Collectors.toSet()))
+                            .build())
                     .collect(Collectors.toList()));
         }
         if (homestay.getReviews() != null) {
@@ -176,6 +175,7 @@ public class HomestayService {
         return responses;
     }
 
+
     public List<HomestayResponse> getHomestayByOwner() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
@@ -187,7 +187,6 @@ public class HomestayService {
                     return toHomeStayResponseWithRelationship(homestay, response);
                 })
                 .collect(Collectors.toList());
-        System.out.println("homestays: " + responses);
         return responses;
     }
 
