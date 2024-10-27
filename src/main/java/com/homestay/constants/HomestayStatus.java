@@ -1,5 +1,5 @@
 package com.homestay.constants;
 
 public enum HomestayStatus {
-    ACTIVE, BUSY, DELETED
+    ACTIVE, INACTIVE, DELETED
 }

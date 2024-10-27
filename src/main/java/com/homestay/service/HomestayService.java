@@ -89,7 +89,7 @@ public class HomestayService {
         });
         homestay.setAmenities(amenities);
 
-        homestay.setDistrict(districtRepository.findByNameAndCityName(request.getDistrictName(), request.getCity())
+        homestay.setDistrict(districtRepository.findByNameAndCityName(request.getDistrictName(), request.getCityName())
                 .orElseThrow(() -> new BusinessException(ErrorCode.DISTRICT_NOT_FOUND)));
 
         homestay.setUser(userRepository.findByEmail(email)
@@ -209,7 +209,12 @@ public class HomestayService {
         });
         homestay.setTypeHomestays(typeHomestays);
 
-        homestay.setDistrict(districtRepository.findByName(request.getDistrictName())
+        if (Objects.equals(request.getStatus(), HomestayStatus.ACTIVE.name())
+                || Objects.equals(request.getStatus(), HomestayStatus.INACTIVE.name())) {
+            homestay.setStatus(request.getStatus());
+        }
+
+        homestay.setDistrict(districtRepository.findByNameAndCityName(request.getDistrictName(), request.getCityName())
                 .orElseThrow(() -> new BusinessException(ErrorCode.DISTRICT_NOT_FOUND)));
 
         homestay.setUser(userRepository.findByEmail(email)

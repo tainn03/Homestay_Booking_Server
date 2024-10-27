@@ -30,6 +30,7 @@ public interface HomestayMapper {
     @Mapping(target = "cityName", source = "district.city.name")
     HomestayResponse toHomestayResponse(Homestay homestay);
 
+    @Mapping(target = "status", ignore = true)
     @Mapping(target = "amenities", ignore = true)
     @Mapping(target = "images", ignore = true)
     @Mapping(target = "discounts", ignore = true)

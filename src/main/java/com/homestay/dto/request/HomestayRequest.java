@@ -15,12 +15,13 @@ public class HomestayRequest {
     String name;
     String email;
     String phone;
+    String status;
     double price;
     double weekendPrice;
 
     String addressDetail;
     String apartment;
-    String city;
+    String cityName;
     String districtName;
     Double latitude;
     Double longitude;
