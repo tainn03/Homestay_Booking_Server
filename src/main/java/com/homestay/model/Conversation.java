@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -11,15 +13,17 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Message extends BaseEntity {
+public class Conversation {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
-    String sender;
-    String receiver;
-    String text;
-    boolean read;
 
     @ManyToOne
-    Conversation conversation;
+    User user1;
+
+    @ManyToOne
+    User user2;
+
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    List<Message> messages;
 }

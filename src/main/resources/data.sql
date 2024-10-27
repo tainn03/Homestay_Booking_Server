@@ -12,7 +12,7 @@ VALUES ('9e477280-942f-43cd-a181-db482c9be95f', 'admin@gmail.com',
         '$2a$10$Z75d4vzIBCAotcC/4se50OINWCEuGFA5pe0z30ZZfGmWuV3JBcVL2', now(), 'Server', 'Admin Server', 'ADMIN',
         'ACTIVE');
 INSERT INTO public.users (id, email, password, created_at, created_by, full_name, role, status)
-VALUES ('9e477280-942f-43cd-a181-db484c9bd95f', 'landlord@gmail.com',
+VALUES ('9f477280-942f-43cd-a181-db484c9bd95f', 'landlord@gmail.com',
         '$2a$10$Z75d4vzIBCAotcC/4se50OINWCEuGFA5pe0z30ZZfGmWuV3JBcVL2', now(), 'Server', 'Landlord Server', 'LANDLORD',
         'ACTIVE');
 

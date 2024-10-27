@@ -6,16 +6,20 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class MessageResponse {
+public class ConversationResponse {
     String id;
-    String sender;
-    String receiver;
-    String text;
-    String time;
-    boolean read;
+    String userId;
+    String name;
+    String email;
+    String profilePic;
+    String lastMessage;
+    String role;
+    List<MessageResponse> messages;
 }

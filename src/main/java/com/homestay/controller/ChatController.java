@@ -2,7 +2,7 @@ package com.homestay.controller;
 
 import com.homestay.dto.ApiResponse;
 import com.homestay.dto.request.SendMessageRequest;
-import com.homestay.dto.response.MessageResponse;
+import com.homestay.dto.response.ConversationResponse;
 import com.homestay.service.ChatService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -18,24 +18,16 @@ import java.util.List;
 public class ChatController {
     ChatService chatService;
 
-    @PostMapping("/send")
-    public ApiResponse<String> sendMessage(@RequestBody SendMessageRequest request) {
-        chatService.sendMessage(request.getSenderId(), request.getReceiverId(), request.getContent());
-        return ApiResponse.<String>builder()
-                .result("Message: " + request.getContent() + " sent successfully")
-                .build();
-    }
-
-    @GetMapping("/current")
-    public ApiResponse<List<MessageResponse>> getCurrentChat(@RequestParam String senderId, @RequestParam String receiverId) {
-        return ApiResponse.<List<MessageResponse>>builder()
-                .result(chatService.getCurrentChat(senderId, receiverId))
+    @PostMapping
+    public ApiResponse<ConversationResponse> sendMessage(@RequestBody SendMessageRequest request) {
+        return ApiResponse.<ConversationResponse>builder()
+                .result(chatService.sendMessage(request.getSenderId(), request.getReceiverId(), request.getText()))
                 .build();
     }
 
     @GetMapping("/conversations")
-    public ApiResponse<List<String>> getMyChat(@RequestParam String senderId) {
-        return ApiResponse.<List<String>>builder()
+    public ApiResponse<List<ConversationResponse>> getMyConversations(@RequestParam String senderId) {
+        return ApiResponse.<List<ConversationResponse>>builder()
                 .result(chatService.getAllConversations(senderId))
                 .build();
     }

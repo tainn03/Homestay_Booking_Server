@@ -17,6 +17,6 @@ public class PusherService {
     Pusher pusher;
 
     public void sendMessage(String channel, String event, Message message) {
-        pusher.trigger(channel, event, Collections.singletonMap("message", message.getContent()));
+        pusher.trigger(channel, event, Collections.singletonMap("message", message.getText()));
     }
 }

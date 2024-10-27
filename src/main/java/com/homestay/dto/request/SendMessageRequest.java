@@ -11,5 +11,5 @@ import lombok.experimental.FieldDefaults;
 public class SendMessageRequest {
     String senderId;
     String receiverId;
-    String content;
+    String text;
 }
