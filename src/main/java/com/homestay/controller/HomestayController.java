@@ -2,6 +2,7 @@ package com.homestay.controller;
 
 import com.homestay.dto.ApiResponse;
 import com.homestay.dto.request.ChangeDiscountValueRequest;
+import com.homestay.dto.request.CustomPriceRequest;
 import com.homestay.dto.request.HomestayRequest;
 import com.homestay.dto.response.HomestayResponse;
 import com.homestay.service.HomestayService;
@@ -126,6 +127,14 @@ public class HomestayController {
                 .build();
     }
 
+    @PutMapping("/price/calendar/{id}")
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
+    public ApiResponse<HomestayResponse> updateHomestayPriceCalendar(@RequestBody List<CustomPriceRequest> requests, @PathVariable String id) {
+        return ApiResponse.<HomestayResponse>builder()
+                .result(homestayService.updateHomestayPriceCalendar(requests, id))
+                .build();
+    }
+
     @PutMapping("/discount/{id}")
     @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
     public ApiResponse<HomestayResponse> updateHomestayDiscount(@RequestBody ChangeDiscountValueRequest request, @PathVariable String id) {
@@ -133,5 +142,4 @@ public class HomestayController {
                 .result(homestayService.updateHomestayDiscount(request, id))
                 .build();
     }
-
 }

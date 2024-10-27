@@ -1,5 +1,6 @@
 package com.homestay.dto.response;
 
+import com.homestay.model.PriceCalendar;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -38,4 +39,5 @@ public class HomestayResponse {
     Set<String> typeHomestayNames;
     String districtName;
     String cityName;
+    Set<PriceCalendar> priceCalendars;
 }

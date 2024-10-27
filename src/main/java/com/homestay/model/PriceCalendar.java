@@ -1,5 +1,6 @@
 package com.homestay.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -18,6 +19,7 @@ public class PriceCalendar {
     String date;
     double price;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "homestay_id", nullable = false)
     Homestay homestay;

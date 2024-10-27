@@ -3,6 +3,7 @@ package com.homestay.service;
 import com.homestay.constants.HomestayStatus;
 import com.homestay.constants.RoomStatus;
 import com.homestay.dto.request.ChangeDiscountValueRequest;
+import com.homestay.dto.request.CustomPriceRequest;
 import com.homestay.dto.request.HomestayRequest;
 import com.homestay.dto.response.HomestayResponse;
 import com.homestay.dto.response.RoomResponse;
@@ -28,16 +29,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
 public class HomestayService {
-    HomestayRepository homestayRepository;
-    UserRepository userRepository;
     HomestayMapper homestayMapper;
     DiscountMapper discountMapper;
+    CloudinaryService cloudinaryService;
+    HomestayRepository homestayRepository;
+    UserRepository userRepository;
     TypeHomestayRepository typeHomestayRepository;
     DistrictRepository districtRepository;
     CityRepository cityRepository;
-    CloudinaryService cloudinaryService;
     ImageRepository imageRepository;
     AmenityRepository amenityRepository;
+    PriceCalendarRepository priceCalendarRepository;
 
     public HomestayResponse createHomestay(@Valid HomestayRequest request) {
         if (homestayRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -160,6 +162,9 @@ public class HomestayService {
         }
         if (homestay.getWeekendPrice() != 0.0) {
             homestayResponse.setWeekendPrice(homestay.getWeekendPrice());
+        }
+        if (homestay.getPriceCalendars() != null) {
+            homestayResponse.setPriceCalendars(homestay.getPriceCalendars());
         }
         return homestayResponse;
     }
@@ -440,6 +445,34 @@ public class HomestayService {
         existingImages.removeIf(image -> images.contains(image.getUrl()));
         imageRepository.deleteByUrlIn(images);
         homestay.setImages(existingImages);
+        homestayRepository.save(homestay);
+
+        HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
+        return toHomeStayResponseWithRelationship(homestay, homestayResponse);
+    }
+
+    public HomestayResponse updateHomestayPriceCalendar(List<CustomPriceRequest> requests, String id) {
+        Homestay homestay = homestayRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+
+        if (requests == null || requests.isEmpty()) {
+            return null;
+        }
+
+        priceCalendarRepository.deleteAllByHomestay(homestay);
+        homestay.getPriceCalendars().clear();
+
+        Set<PriceCalendar> priceCalendars = new HashSet<>();
+        for (CustomPriceRequest request : requests) {
+            PriceCalendar priceCalendar = PriceCalendar.builder()
+                    .date(request.getDate())
+                    .price(request.getPrice())
+                    .homestay(homestay)
+                    .build();
+            priceCalendars.add(priceCalendar);
+        }
+
+        homestay.setPriceCalendars(priceCalendars);
         homestayRepository.save(homestay);
 
         HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
