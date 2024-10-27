@@ -118,7 +118,7 @@ public class HomestayController {
                 .build();
     }
 
-    @PutMapping("/weekendPrice/{id}")
+    @PutMapping("/price/week/{id}")
     @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
     public ApiResponse<HomestayResponse> updateHomestayWeekendPrice(@RequestBody double weekendPrice, @PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()

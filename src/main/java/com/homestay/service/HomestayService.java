@@ -387,12 +387,19 @@ public class HomestayService {
     public HomestayResponse updateHomestayDiscount(ChangeDiscountValueRequest request, String id) {
         Homestay homestay = homestayRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+
         Discount discount = homestay.getDiscounts().stream()
-                .filter(discount1 -> discount1.getId().equals(request.getDiscountId()))
+                .filter(d -> d.getType().equals(request.getType()))
                 .findFirst()
-                .orElseThrow(() -> new BusinessException(ErrorCode.DISCOUNT_NOT_FOUND));
+                .orElseGet(() -> Discount.builder()
+                        .type(request.getType())
+                        .homestay(homestay)
+                        .build());
+
         discount.setValue(request.getValue());
+        homestay.getDiscounts().add(discount);
         homestayRepository.save(homestay);
+
         HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
         return toHomeStayResponseWithRelationship(homestay, response);
     }
