@@ -40,6 +40,9 @@ public class Homestay extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     User user;
 
+    @ManyToMany(mappedBy = "favoriteHomestays", fetch = FetchType.LAZY)
+    Set<User> favoriteUsers;
+
     @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Discount> discounts;
 

@@ -82,4 +82,11 @@ public class UserController {
                 .result(userService.updateStatus(id, status))
                 .build();
     }
+
+    @PutMapping("/favorite/{homestayId}")
+    public ApiResponse<String> addFavoriteHomestay(@PathVariable String homestayId) {
+        return ApiResponse.<String>builder()
+                .result(userService.addFavoriteHomestay(homestayId))
+                .build();
+    }
 }

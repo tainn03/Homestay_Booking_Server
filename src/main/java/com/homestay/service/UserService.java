@@ -11,6 +11,7 @@ import com.homestay.mapper.UserMapper;
 import com.homestay.model.Image;
 import com.homestay.model.Role;
 import com.homestay.model.User;
+import com.homestay.repository.HomestayRepository;
 import com.homestay.repository.ImageRepository;
 import com.homestay.repository.RoleRepository;
 import com.homestay.repository.UserRepository;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,6 +40,7 @@ public class UserService {
     PasswordEncoder passwordEncoder;
     CloudinaryService cloudinaryService;
     ImageRepository imageRepository;
+    private final HomestayRepository homestayRepository;
 
     public UserResponse createUser(UserRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -118,5 +121,18 @@ public class UserService {
         user.setStatus(status);
         userRepository.save(user);
         return status.toLowerCase() + " user successfully";
+    }
+
+    public String addFavoriteHomestay(String homestayId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        if (user.getFavoriteHomestays() == null) {
+            user.setFavoriteHomestays(new HashSet<>());
+        }
+        user.getFavoriteHomestays().add(homestayRepository.findById(homestayId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND)));
+        userRepository.save(user);
+        return "Add favorite homestay successfully";
     }
 }
