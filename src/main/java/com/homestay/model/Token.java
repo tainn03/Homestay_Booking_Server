@@ -17,7 +17,7 @@ public class Token extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(length = 512)
+    @Column(length = 1024)
     private String token;
 
     @Enumerated(EnumType.STRING)

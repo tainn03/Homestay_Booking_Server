@@ -84,9 +84,10 @@ public class UserController {
     }
 
     @PutMapping("/favorite/{homestayId}")
-    public ApiResponse<String> addFavoriteHomestay(@PathVariable String homestayId) {
+    @PreAuthorize("hasAnyAuthority('USER:UPDATE_FAVORITE', 'LANDLORD:UPDATE_FAVORITE')")
+    public ApiResponse<String> updateFavoriteHomestay(@PathVariable String homestayId) {
         return ApiResponse.<String>builder()
-                .result(userService.addFavoriteHomestay(homestayId))
+                .result(userService.updateFavoriteHomestay(homestayId))
                 .build();
     }
 }

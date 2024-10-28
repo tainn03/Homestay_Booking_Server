@@ -105,7 +105,6 @@ public class AuthenticationService {
     }
 
     private void saveUserToken(User user, String jwtToken) {
-        jwtToken = jwtToken.trim();
         Token token = Token.builder()
                 .user(user)
                 .token(jwtToken)
@@ -177,7 +176,7 @@ public class AuthenticationService {
         }
     }
 
-    public String changePassword(ChangePasswordRequest request, Principal connectedUser) {
+    public void changePassword(ChangePasswordRequest request, Principal connectedUser) {
         User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         if (!user.getPassword().matches("google")) { // Nếu không phải mật khẩu mặc định do đăng nhập bằng Google
             if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
@@ -189,7 +188,6 @@ public class AuthenticationService {
         }
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
-        return "Password changed successfully";
     }
 
     public String confirm(String token) {

@@ -20,6 +20,7 @@ public interface HomestayMapper {
     @Mapping(target = "district", ignore = true)
     Homestay toHomestay(HomestayRequest homestay);
 
+    @Mapping(target = "isFavorite", ignore = true)
     @Mapping(target = "userEmail", source = "user.email")
     @Mapping(target = "urlImages", ignore = true)
     @Mapping(target = "discounts", ignore = true)

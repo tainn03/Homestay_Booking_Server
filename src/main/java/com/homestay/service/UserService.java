@@ -97,7 +97,9 @@ public class UserService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         Image oldAvatar = user.getAvatar();
         if (oldAvatar != null) {
-            cloudinaryService.deleteFiles(List.of(oldAvatar.getUrl()));
+            if (!oldAvatar.getUrl().contains("google")) { // google avatar không xóa
+                cloudinaryService.deleteFiles(List.of(oldAvatar.getUrl()));
+            }
             oldAvatar.setUser(null);
             user.getAvatar().setUser(null);
             imageRepository.delete(oldAvatar);
@@ -121,16 +123,23 @@ public class UserService {
         return status.toLowerCase() + " user successfully";
     }
 
-    public String addFavoriteHomestay(String homestayId) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email)
+    public String updateFavoriteHomestay(String homestayId) {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         if (user.getFavoriteHomestays() == null) {
             user.setFavoriteHomestays(new HashSet<>());
+            user.getFavoriteHomestays().add(homestayRepository.findById(homestayId)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND)));
+        } else {
+            if (user.getFavoriteHomestays().stream().anyMatch(homestay -> homestay.getId().equals(homestayId))) {
+                user.getFavoriteHomestays().remove(homestayRepository.findById(homestayId)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND)));
+            } else {
+                user.getFavoriteHomestays().add(homestayRepository.findById(homestayId)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND)));
+            }
         }
-        user.getFavoriteHomestays().add(homestayRepository.findById(homestayId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND)));
         userRepository.save(user);
-        return "Add favorite homestay successfully";
+        return "Update favorite homestay successfully";
     }
 }

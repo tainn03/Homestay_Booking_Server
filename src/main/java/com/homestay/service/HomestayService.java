@@ -136,6 +136,12 @@ public class HomestayService {
     }
 
     private HomestayResponse toHomeStayResponseWithRelationship(Homestay homestay, HomestayResponse homestayResponse) {
+        User user = SecurityContextHolder.getContext().getAuthentication() == null ? null
+                : userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElse(null);
+        if (user != null) {
+            homestayResponse.setFavorite(user.getFavoriteHomestays().contains(homestay));
+        }
         if (homestay.getImages() != null) {
             homestayResponse.setUrlImages(homestay.getImages().stream().map(Image::getUrl).collect(Collectors.toList()));
         }
