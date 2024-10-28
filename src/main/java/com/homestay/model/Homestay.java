@@ -55,7 +55,7 @@ public class Homestay extends BaseEntity {
     @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Review> reviews;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(
             name = "type_detail",
             joinColumns = @JoinColumn(name = "homestay_id"),
@@ -67,7 +67,7 @@ public class Homestay extends BaseEntity {
     @JoinColumn(name = "district_id", nullable = false)
     District district;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(
             name = "homestay_amenity",
             joinColumns = @JoinColumn(name = "homestay_id"),
