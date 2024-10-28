@@ -31,6 +31,7 @@ modern web technologies and follows best practices for security and performance.
 - **Cloudinary**: For managing and storing images.
 - **Pusher**: For real-time notifications.
 - **Gmail SMTP**: For sending emails.
+- **VNPay**: For processing payments.
 
 ## Features
 
@@ -68,8 +69,6 @@ need to manually add these environment variables to your server configuration to
 - `DATABASE_USERNAME`
 - `DATABASE_PASSWORD`
 - `JWT_SECRET_KEY`
-- `JWT_EXPIRATION`
-- `JWT_REFRESH_EXPIRATION`
 - `MAIL_USERNAME`
 - `MAIL_PASSWORD`
 - `GOOGLE_CLIENT_ID`
