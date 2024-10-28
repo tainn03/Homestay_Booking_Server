@@ -126,7 +126,7 @@ public class UserService {
     public String updateFavoriteHomestay(String homestayId) {
         User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        if (user.getFavoriteHomestays() == null) {
+        if (user.getFavoriteHomestays().isEmpty()) {
             user.setFavoriteHomestays(new HashSet<>());
             user.getFavoriteHomestays().add(homestayRepository.findById(homestayId)
                     .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND)));

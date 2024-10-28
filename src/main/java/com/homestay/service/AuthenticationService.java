@@ -190,15 +190,16 @@ public class AuthenticationService {
         userRepository.save(user);
     }
 
-    public String confirm(String token) {
+    public void confirm(String token, HttpServletResponse response) throws IOException {
         String email = jwtService.extractUsername(token);
         User user = userRepository.findByEmail(email).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         if (jwtService.isValidToken(token, user)) {
             user.setStatus("ACTIVE");
             userRepository.save(user);
-            return "Account activated successfully";
-        } else
-            return "Invalid token";
+            response.sendRedirect("http://localhost:3000/login");
+        } else {
+            response.sendRedirect("http://localhost:3000");
+        }
     }
 
     // Gửi mail để kích hoạt tài khoản cho chủ nhà

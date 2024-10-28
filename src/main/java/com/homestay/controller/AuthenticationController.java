@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -68,8 +67,8 @@ public class AuthenticationController {
     }
 
     @GetMapping
-    public ResponseEntity<String> confirm(@RequestParam String token) {
-        return ResponseEntity.ok(service.confirm(token));
+    public void confirm(@RequestParam String token, HttpServletResponse response) throws IOException {
+        service.confirm(token, response);
     }
 
     @PostMapping("/register-landlord")
