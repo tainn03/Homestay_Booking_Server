@@ -8,9 +8,7 @@ import com.homestay.dto.response.UserResponse;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
 import com.homestay.mapper.UserMapper;
-import com.homestay.model.Image;
-import com.homestay.model.Role;
-import com.homestay.model.User;
+import com.homestay.model.*;
 import com.homestay.repository.HomestayRepository;
 import com.homestay.repository.ImageRepository;
 import com.homestay.repository.RoleRepository;
@@ -74,13 +72,13 @@ public class UserService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         UserResponse response = userMapper.toUserResponse(user);
         if (user.getBookings() != null) {
-            response.setBookings(user.getBookings().stream().map(booking -> booking.getId()).collect(Collectors.toSet()));
+            response.setBookings(user.getBookings().stream().map(Booking::getId).collect(Collectors.toSet()));
         }
         if (user.getHomestays() != null) {
-            response.setHomestays(user.getHomestays().stream().map(homestay -> homestay.getId()).collect(Collectors.toSet()));
+            response.setHomestays(user.getHomestays().stream().map(Homestay::getId).collect(Collectors.toSet()));
         }
         if (user.getReviews() != null) {
-            response.setReviews(user.getReviews().stream().map(review -> review.getId()).collect(Collectors.toSet()));
+            response.setReviews(user.getReviews().stream().map(Review::getId).collect(Collectors.toSet()));
         }
         return response;
     }
