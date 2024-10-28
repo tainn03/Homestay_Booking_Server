@@ -25,6 +25,8 @@ modern web technologies and follows best practices for security and performance.
 
 - **JWT (JSON Web Tokens)**: Used for securing API endpoints and managing user sessions.
 - **OAuth2**: Integration with Google for user authentication.
+- **CSRF (Cross-Site Request Forgery)**: Protection against CSRF attacks using CSRF tokens.
+- **CORS (Cross-Origin Resource Sharing)**: Configured to allow specific origins and methods.
 
 ### Other Technologies
 
