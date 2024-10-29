@@ -1,9 +1,11 @@
 package com.homestay.service;
 
+import com.homestay.constants.DiscountType;
 import com.homestay.constants.HomestayStatus;
 import com.homestay.constants.RoomStatus;
 import com.homestay.dto.request.ChangeDiscountValueRequest;
 import com.homestay.dto.request.CustomPriceRequest;
+import com.homestay.dto.request.DiscountRequest;
 import com.homestay.dto.request.HomestayRequest;
 import com.homestay.dto.response.HomestayResponse;
 import com.homestay.dto.response.RoomResponse;
@@ -36,6 +38,7 @@ public class HomestayService {
     UserRepository userRepository;
     TypeHomestayRepository typeHomestayRepository;
     DistrictRepository districtRepository;
+    DiscountRepository discountRepository;
     CityRepository cityRepository;
     ImageRepository imageRepository;
     AmenityRepository amenityRepository;
@@ -395,7 +398,7 @@ public class HomestayService {
         return toHomeStayResponseWithRelationship(homestay, response);
     }
 
-    public HomestayResponse updateHomestayDiscount(ChangeDiscountValueRequest request, String id) {
+    public HomestayResponse updateHomestaySystemDiscount(ChangeDiscountValueRequest request, String id) {
         Homestay homestay = homestayRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
 
@@ -483,5 +486,55 @@ public class HomestayService {
 
         HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
         return toHomeStayResponseWithRelationship(homestay, homestayResponse);
+    }
+
+    public Discount addHomestayDiscountCustom(DiscountRequest request, String id) {
+        Homestay homestay = homestayRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+
+        Discount discount = Discount.builder()
+                .value(request.getValue())
+                .description(request.getDescription())
+                .type(DiscountType.CUSTOM.name())
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .homestay(homestay)
+                .build();
+
+        homestay.getDiscounts().add(discount);
+        homestayRepository.save(homestay);
+
+        return discountRepository.save(discount);
+    }
+
+    public Discount updateHomestayDiscountCustom(DiscountRequest request, String id) {
+        Homestay homestay = homestayRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+        Discount discount = homestay.getDiscounts().stream()
+                .filter(d -> d.getId().equals(request.getId()))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(ErrorCode.DISCOUNT_NOT_FOUND));
+
+        discount.setValue(request.getValue());
+        discount.setDescription(request.getDescription());
+        discount.setStartDate(request.getStartDate());
+        discount.setEndDate(request.getEndDate());
+        homestay.getDiscounts().add(discount);
+
+        homestayRepository.save(homestay);
+        return discount;
+    }
+
+    public String deleteHomestayDiscountCustom(String id, String discountId) {
+        Homestay homestay = homestayRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+        Discount discount = homestay.getDiscounts().stream()
+                .filter(d -> d.getId().equals(discountId))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(ErrorCode.DISCOUNT_NOT_FOUND));
+        homestay.getDiscounts().remove(discount);
+        discountRepository.delete(discount);
+        homestayRepository.save(homestay);
+        return "Delete discount successfully";
     }
 }

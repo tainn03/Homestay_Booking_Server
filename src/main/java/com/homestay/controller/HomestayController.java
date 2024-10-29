@@ -3,8 +3,10 @@ package com.homestay.controller;
 import com.homestay.dto.ApiResponse;
 import com.homestay.dto.request.ChangeDiscountValueRequest;
 import com.homestay.dto.request.CustomPriceRequest;
+import com.homestay.dto.request.DiscountRequest;
 import com.homestay.dto.request.HomestayRequest;
 import com.homestay.dto.response.HomestayResponse;
+import com.homestay.model.Discount;
 import com.homestay.service.HomestayService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -112,7 +114,7 @@ public class HomestayController {
     }
 
     @PutMapping("/price/{id}")
-    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_PRICE_HOMESTAY')")
     public ApiResponse<HomestayResponse> updateHomestayPrice(@RequestBody double price, @PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()
                 .result(homestayService.updateHomestayPrice(price, id))
@@ -120,7 +122,7 @@ public class HomestayController {
     }
 
     @PutMapping("/price/week/{id}")
-    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_PRICE_HOMESTAY')")
     public ApiResponse<HomestayResponse> updateHomestayWeekendPrice(@RequestBody double weekendPrice, @PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()
                 .result(homestayService.updateHomestayWeekendPrice(weekendPrice, id))
@@ -128,7 +130,7 @@ public class HomestayController {
     }
 
     @PutMapping("/price/calendar/{id}")
-    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_PRICE_HOMESTAY')")
     public ApiResponse<HomestayResponse> updateHomestayPriceCalendar(@RequestBody List<CustomPriceRequest> requests, @PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()
                 .result(homestayService.updateHomestayPriceCalendar(requests, id))
@@ -136,10 +138,34 @@ public class HomestayController {
     }
 
     @PutMapping("/discount/{id}")
-    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
-    public ApiResponse<HomestayResponse> updateHomestayDiscount(@RequestBody ChangeDiscountValueRequest request, @PathVariable String id) {
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_DISCOUNT_HOMESTAY')")
+    public ApiResponse<HomestayResponse> updateHomestaySystemDiscount(@RequestBody ChangeDiscountValueRequest request, @PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()
-                .result(homestayService.updateHomestayDiscount(request, id))
+                .result(homestayService.updateHomestaySystemDiscount(request, id))
+                .build();
+    }
+
+    @PostMapping("/discount/custom/{id}")
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_DISCOUNT_HOMESTAY')")
+    public ApiResponse<Discount> addHomestayDiscountCustom(@RequestBody DiscountRequest request, @PathVariable String id) {
+        return ApiResponse.<Discount>builder()
+                .result(homestayService.addHomestayDiscountCustom(request, id))
+                .build();
+    }
+
+    @PutMapping("/discount/custom/{id}")
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_DISCOUNT_HOMESTAY')")
+    public ApiResponse<Discount> updateHomestayDiscountCustom(@RequestBody DiscountRequest request, @PathVariable String id) {
+        return ApiResponse.<Discount>builder()
+                .result(homestayService.updateHomestayDiscountCustom(request, id))
+                .build();
+    }
+
+    @DeleteMapping("/discount/custom/{id}/{discountId}")
+    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_DISCOUNT_HOMESTAY')")
+    public ApiResponse<String> deleteHomestayDiscountCustom(@PathVariable String id, @PathVariable String discountId) {
+        return ApiResponse.<String>builder()
+                .result(homestayService.deleteHomestayDiscountCustom(id, discountId))
                 .build();
     }
 }

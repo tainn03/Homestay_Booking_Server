@@ -1,5 +1,6 @@
 package com.homestay.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -24,6 +25,7 @@ public class Discount extends BaseEntity {
     LocalDateTime startDate;
     LocalDateTime endDate;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "homestay_id", nullable = false)
     Homestay homestay;
