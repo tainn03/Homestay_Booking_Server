@@ -543,4 +543,16 @@ public class HomestayService {
         homestayRepository.save(homestay);
         return "Delete discount successfully";
     }
+
+    public List<HomestayResponse> getFavoriteHomestay() {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        Set<Homestay> homestays = user.getFavoriteHomestays();
+        return homestays.stream()
+                .map(homestay -> {
+                    HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
+                    return toHomeStayResponseWithRelationship(homestay, response);
+                })
+                .collect(Collectors.toList());
+    }
 }

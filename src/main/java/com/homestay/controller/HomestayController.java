@@ -168,4 +168,12 @@ public class HomestayController {
                 .result(homestayService.deleteHomestayDiscountCustom(id, discountId))
                 .build();
     }
+
+    @GetMapping("/favorite")
+    @PreAuthorize("hasAnyAuthority('USER:READ_FAVORITE', 'LANDLORD:READ_FAVORITE')")
+    public ApiResponse<List<HomestayResponse>> getFavoriteHomestay() {
+        return ApiResponse.<List<HomestayResponse>>builder()
+                .result(homestayService.getFavoriteHomestay())
+                .build();
+    }
 }
