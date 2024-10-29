@@ -88,9 +88,15 @@ public class HomestayService {
         homestay.setDiscounts(discounts);
 
         Set<Amenity> amenities = new HashSet<>();
-        request.getAmenityNames().forEach(amenityName -> {
-            Amenity amenity = amenityRepository.findById(amenityName)
-                    .orElseThrow(() -> new BusinessException(ErrorCode.AMENITY_NOT_FOUND));
+        request.getAmenities().forEach(amenityRequest -> {
+            Amenity amenity = amenityRepository.findById(amenityRequest.getName())
+                    .orElseGet(() -> {
+                        Amenity newAmenity = Amenity.builder()
+                                .name(amenityRequest.getName())
+                                .type(amenityRequest.getType())
+                                .build();
+                        return amenityRepository.save(newAmenity);
+                    });
             amenities.add(amenity);
         });
         homestay.setAmenities(amenities);

@@ -1,5 +1,6 @@
 package com.homestay.dto.request;
 
+import com.homestay.controller.AmenityRequest;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -28,7 +29,7 @@ public class HomestayRequest {
 
     String standardCheckIn;
     String standardCheckOut;
-    Set<String> amenityNames;
+    Set<AmenityRequest> amenities;
     Set<DiscountRequest> discounts;
     List<RoomRequest> rooms;
     Set<String> typeHomestays;
