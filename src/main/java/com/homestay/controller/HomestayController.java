@@ -6,6 +6,7 @@ import com.homestay.dto.request.CustomPriceRequest;
 import com.homestay.dto.request.DiscountRequest;
 import com.homestay.dto.request.HomestayRequest;
 import com.homestay.dto.response.HomestayResponse;
+import com.homestay.dto.response.UserResponse;
 import com.homestay.model.Discount;
 import com.homestay.service.HomestayService;
 import jakarta.validation.Valid;
@@ -110,6 +111,13 @@ public class HomestayController {
     public ApiResponse<HomestayResponse> getHomestayById(@PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()
                 .result(homestayService.getHomestayById(id))
+                .build();
+    }
+
+    @GetMapping("/public/owner/{id}")
+    public ApiResponse<UserResponse> getHomestayByOwner(@PathVariable String id) {
+        return ApiResponse.<UserResponse>builder()
+                .result(homestayService.getOwnerByHomestay(id))
                 .build();
     }
 

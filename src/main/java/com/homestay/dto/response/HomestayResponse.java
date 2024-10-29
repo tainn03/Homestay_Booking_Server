@@ -43,4 +43,5 @@ public class HomestayResponse {
     String districtName;
     String cityName;
     Set<PriceCalendar> priceCalendars;
+    Set<AmenityResponse> amenities;
 }

@@ -7,8 +7,10 @@ import com.homestay.dto.request.ChangeDiscountValueRequest;
 import com.homestay.dto.request.CustomPriceRequest;
 import com.homestay.dto.request.DiscountRequest;
 import com.homestay.dto.request.HomestayRequest;
+import com.homestay.dto.response.AmenityResponse;
 import com.homestay.dto.response.HomestayResponse;
 import com.homestay.dto.response.RoomResponse;
+import com.homestay.dto.response.UserResponse;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
 import com.homestay.mapper.DiscountMapper;
@@ -180,6 +182,12 @@ public class HomestayService {
         }
         if (homestay.getPriceCalendars() != null) {
             homestayResponse.setPriceCalendars(homestay.getPriceCalendars());
+        }
+        if (homestay.getAmenities() != null) {
+            homestayResponse.setAmenities(homestay.getAmenities().stream().map(amenity -> AmenityResponse.builder()
+                    .name(amenity.getName())
+                    .type(amenity.getType())
+                    .build()).collect(Collectors.toSet()));
         }
         return homestayResponse;
     }
@@ -554,5 +562,19 @@ public class HomestayService {
                     return toHomeStayResponseWithRelationship(homestay, response);
                 })
                 .collect(Collectors.toList());
+    }
+
+    public UserResponse getOwnerByHomestay(String id) {
+        Homestay homestay = homestayRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+        User user = homestay.getUser();
+        return UserResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .phone(user.getPhone())
+                .role(user.getRole().getRoleName())
+                .urlAvatar(user.getAvatar() != null ? user.getAvatar().getUrl() : null)
+                .build();
     }
 }
