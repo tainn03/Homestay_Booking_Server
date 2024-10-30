@@ -327,6 +327,42 @@ public class BookingService {
                 .filter(date -> date.getDayOfWeek() != DayOfWeek.SATURDAY && date.getDayOfWeek() != DayOfWeek.SUNDAY)
                 .count());
         bookingResponse.setHomestayId(homestay.getId());
+        bookingResponse.setOriginalTotal(calculateOriginalTotal(booking, homestay));
+        bookingResponse.setTotalDiscount(calculateTotalDiscount(booking, applicableDiscounts, booking.getCheckIn(), booking.getCheckOut()));
         return bookingResponse;
+    }
+
+    private double calculateOriginalTotal(Booking booking, Homestay homestay) {
+        double originalTotal = 0;
+        for (LocalDate date = booking.getCheckIn(); !date.isEqual(booking.getCheckOut()); date = date.plusDays(1)) {
+            double dailyRate = date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY
+                    ? homestay.getWeekendPrice()
+                    : homestay.getPrice();
+            originalTotal += dailyRate * booking.getRooms().size();
+        }
+        return originalTotal;
+    }
+
+    private int calculateTotalDiscount(Booking booking, List<Discount> applicableDiscounts, LocalDate checkIn, LocalDate checkOut) {
+        int totalDiscount = 0;
+        for (LocalDate date = booking.getCheckIn(); !date.isEqual(booking.getCheckOut()); date = date.plusDays(1)) {
+            int valueOfDiscountValueInDay = 0;
+            for (Discount discount : applicableDiscounts) {
+                if (discount.getStartDate() != null && discount.getEndDate() != null
+                        && !date.isBefore(discount.getStartDate().toLocalDate())
+                        && !date.isAfter(discount.getEndDate().toLocalDate())) {
+                    valueOfDiscountValueInDay += (int) discount.getValue();
+                }
+            }
+            totalDiscount += valueOfDiscountValueInDay;
+        }
+        long totalNights = ChronoUnit.DAYS.between(LocalDate.parse(String.valueOf(checkIn)), LocalDate.parse(String.valueOf(checkOut)));
+        for (Discount discount : applicableDiscounts) {
+            if ((Objects.equals(discount.getType(), DiscountType.WEEKLY.toString()) && totalNights >= 7) ||
+                    (Objects.equals(discount.getType(), DiscountType.MONTHLY.toString()) && totalNights >= 28)) {
+                totalDiscount += (int) discount.getValue();
+            }
+        }
+        return totalDiscount;
     }
 }
