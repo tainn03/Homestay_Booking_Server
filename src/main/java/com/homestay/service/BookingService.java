@@ -2,6 +2,7 @@ package com.homestay.service;
 
 import com.homestay.constants.BookingStatus;
 import com.homestay.constants.DiscountType;
+import com.homestay.constants.PaymentStatus;
 import com.homestay.dto.response.BookingResponse;
 import com.homestay.dto.response.RoomResponse;
 import com.homestay.exception.BusinessException;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -364,5 +366,23 @@ public class BookingService {
             }
         }
         return totalDiscount;
+    }
+
+    public void createPayment(String orderInfo, LocalDateTime paymentTime, int paymentStatus, String totalPrice, String transactionId, String vnpBankCode, String vnpBankTranNo, String vnpCardType, String vnpTxnRef, String vnpSecureHash) {
+        Booking booking = bookingRepository.findById(orderInfo)
+                .orElseThrow(() -> new BusinessException(ErrorCode.BOOKING_NOT_FOUND));
+        if (booking.getStatus().equals(BookingStatus.PENDING.name())) {
+            booking.setStatus(paymentStatus == 1 ? BookingStatus.PAID.name() : BookingStatus.REJECTED.name());
+            booking.setPayments(new ArrayList<>(List.of(Payment.builder()
+                    .amount(Integer.parseInt(totalPrice))
+                    .transactionId(transactionId)
+                    .date(paymentTime.toLocalDate())
+                    .status(paymentStatus == 1 ? PaymentStatus.SUCCESS.name() : PaymentStatus.FAILED.name())
+                    .note(paymentStatus == 1 ? "Thanh toán thành công" : "Thanh toán thất bại")
+                    .paymentMethod(vnpCardType)
+                    .booking(booking)
+                    .build())));
+            bookingRepository.save(booking);
+        }
     }
 }

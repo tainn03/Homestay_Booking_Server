@@ -1,12 +1,12 @@
 package com.homestay.controller;
 
+import com.homestay.service.BookingService;
 import com.homestay.service.external.VNPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/payment")
@@ -24,6 +22,7 @@ import java.util.Map;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PaymentController {
     VNPayService vnPayService;
+    BookingService bookingService;
 
     // Chuyển hướng người dùng đến cổng thanh toán VNPAY
     @GetMapping("/order")
@@ -40,10 +39,9 @@ public class PaymentController {
 
     // Sau khi hoàn tất thanh toán, VNPAY sẽ chuyển hướng trình duyệt về URL này
     @GetMapping("/vnpay-payment")
-    public ResponseEntity<Map<String, Object>> handleVNPayPayment(HttpServletRequest request) {
+    public void handleVNPayPayment(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int paymentStatus = vnPayService.orderReturn(request);
 
-        // Lấy các thông tin từ request sau khi thanh toán từ VNPay
         String orderInfo = request.getParameter("vnp_OrderInfo");
         LocalDateTime paymentTime =
                 LocalDateTime.parse(request.getParameter("vnp_PayDate"),
@@ -56,24 +54,11 @@ public class PaymentController {
         String vnp_TxnRef = request.getParameter("vnp_TxnRef");
         String vnp_SecureHash = request.getParameter("vnp_SecureHash");
 
-        // Tạo một đối tượng Map để chứa các thông tin thanh toán
-        Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("orderId", orderInfo);
-        responseBody.put("totalPrice", totalPrice);
-        responseBody.put("paymentTime", paymentTime);
-        responseBody.put("transactionId", transactionId);
-        responseBody.put("paymentStatus", paymentStatus == 1 ? "success" : "fail");
-        responseBody.put("vnp_BankCode", vnp_BankCode);
-        responseBody.put("vnp_BankTranNo", vnp_BankTranNo);
-        responseBody.put("vnp_CardType", vnp_CardType);
-        responseBody.put("vnp_TxnRef", vnp_TxnRef);
-        responseBody.put("vnp_SecureHash", vnp_SecureHash);
+        // Tạo thanh toán mới cho đơn đặt phòng
+        bookingService.createPayment(orderInfo, paymentTime, paymentStatus, totalPrice, transactionId, vnp_BankCode, vnp_BankTranNo, vnp_CardType, vnp_TxnRef, vnp_SecureHash);
 
         // Chuyển hướng người dùng đến ReactJS client qua URL dựa trên kết quả thanh toán
-        String redirectUrl = "http://localhost:3000/pay/" + (paymentStatus == 1 ? "ordersuccess" : "orderfail");
-        responseBody.put("redirectUrl", redirectUrl);
-
-        // Trả về thông tin và URL chuyển hướng dưới dạng JSON
-        return ResponseEntity.ok(responseBody);
+        String redirectUrl = "http://localhost:3000/bookingdetail?id=" + orderInfo;
+        response.sendRedirect(redirectUrl);
     }
 }

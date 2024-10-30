@@ -37,8 +37,8 @@ public class Booking extends BaseEntity {
     )
     List<Room> rooms;
 
-    @OneToOne(mappedBy = "booking")
-    Payment payment;
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
+    List<Payment> payments;
 
     @Version
     @Builder.Default
