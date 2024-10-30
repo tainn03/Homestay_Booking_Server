@@ -3,9 +3,9 @@ package com.homestay.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Getter
@@ -16,8 +16,7 @@ import java.time.LocalDate;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Booking extends BaseEntity {
     @Id
-    @GeneratedValue(generator = "uuid", strategy = GenerationType.UUID)
-    @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @GeneratedValue(strategy = GenerationType.UUID)
     String id;
     LocalDate checkIn;
     LocalDate checkOut;
@@ -30,9 +29,13 @@ public class Booking extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     User user;
 
-    @ManyToOne
-    @JoinColumn(name = "room_id", nullable = false)
-    Room room;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "booking_room",
+            joinColumns = @JoinColumn(name = "booking_id"),
+            inverseJoinColumns = @JoinColumn(name = "room_id")
+    )
+    List<Room> rooms;
 
     @OneToOne(mappedBy = "booking")
     Payment payment;

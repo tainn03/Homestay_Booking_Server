@@ -1,4 +1,4 @@
-package com.homestay.controller;
+package com.homestay.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

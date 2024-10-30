@@ -18,6 +18,7 @@ import static lombok.AccessLevel.PRIVATE;
 @RequestMapping("/api/v1/rooms")
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
+@PreAuthorize("hasAnyRole('ADMIN', 'USER', 'LANDLORD')")
 public class RoomController {
     RoomService roomService;
 

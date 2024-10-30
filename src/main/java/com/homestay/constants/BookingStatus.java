@@ -1,7 +1,9 @@
 package com.homestay.constants;
 
 public enum BookingStatus {
+    REVIEW,
     PENDING,
-    CONFIRMED,
+    PAID,
+    REJECTED,
     CANCELLED
 }

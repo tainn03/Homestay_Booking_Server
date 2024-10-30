@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -14,15 +15,21 @@ public class BookingResponse {
     String id;
     LocalDate checkIn;
     LocalDate checkOut;
-    String status;
-    Double total;
-    int guests;
-    String note;
 
+    Double total;
+    double originalTotal;
+    int totalDiscount;
+    int guests;
+    int nights;
+    int numOfWeekend;
+    int numOfWeekday;
+    List<DiscountResponse> discounts;
+
+    String status;
+    String note;
     String user;
 
-    String roomName;
-    String homestayName;
-
+    List<RoomResponse> rooms;
+    String homestayId;
     String payment;
 }

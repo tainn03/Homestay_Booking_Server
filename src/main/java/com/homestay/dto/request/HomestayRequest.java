@@ -1,6 +1,5 @@
 package com.homestay.dto.request;
 
-import com.homestay.controller.AmenityRequest;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

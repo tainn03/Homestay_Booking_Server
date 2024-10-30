@@ -39,8 +39,8 @@ public class ProjectSecurityConfig {
             "/api/v1/auth/**",
             "/api/v1/homestays/public/**",
             "/api/v1/general/**",
-            "/api/v1/chat/**",
             "/api/v1/payment/**",
+            "/api/v1/booking/public/**",
     };
 
     @Bean

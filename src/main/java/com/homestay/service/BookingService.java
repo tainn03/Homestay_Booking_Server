@@ -1,171 +1,332 @@
 package com.homestay.service;
 
 import com.homestay.constants.BookingStatus;
-import com.homestay.dto.request.BookingRequest;
+import com.homestay.constants.DiscountType;
 import com.homestay.dto.response.BookingResponse;
+import com.homestay.dto.response.RoomResponse;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
-import com.homestay.model.Booking;
-import com.homestay.model.Room;
+import com.homestay.mapper.BookingMapper;
+import com.homestay.mapper.DiscountMapper;
+import com.homestay.model.*;
 import com.homestay.repository.BookingRepository;
 import com.homestay.repository.HomestayRepository;
 import com.homestay.repository.RoomRepository;
 import com.homestay.repository.UserRepository;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class BookingService {
-    @Autowired
     BookingRepository bookingRepository;
-    @Autowired
     RoomRepository roomRepository;
-    @Autowired
     UserRepository userRepository;
-    @Autowired
     HomestayRepository homestayRepository;
+    BookingMapper bookingMapper;
+    DiscountMapper discountMapper;
 
-    public BookingResponse createBooking(@Valid BookingRequest request, String homestayId) {
-        // Validate check-in and check-out dates
-        if (LocalDate.parse(request.getCheckIn()).isAfter(LocalDate.parse(request.getCheckOut()))) {
+    public BookingResponse getReviewBooking(String homestayId, String checkIn, String checkOut, int guests) {
+        Homestay homestay = homestayRepository.findById(homestayId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+
+        if (LocalDate.parse(checkIn).isAfter(LocalDate.parse(checkOut))) {
             throw new BusinessException(ErrorCode.CHECKIN_AFTER_CHECKOUT);
         }
-
-        // validate date in the past
-        if (LocalDate.parse(request.getCheckIn()).isBefore(LocalDate.now()) || LocalDate.parse(request.getCheckOut()).isBefore(LocalDate.now())) {
+        if (LocalDate.parse(checkIn).isBefore(LocalDate.now()) || LocalDate.parse(checkOut).isBefore(LocalDate.now())) {
             throw new BusinessException(ErrorCode.CHECKIN_CHECKOUT_IN_PAST);
         }
 
-        // Validate the Homestay
-        if (!homestayRepository.existsById(homestayId)) {
-            throw new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND);
-        }
-
-        // Find available rooms
-        List<Room> availableRooms = roomRepository.findAvailableRoomsByHomestayId(homestayId, LocalDate.parse(request.getCheckIn()), LocalDate.parse(request.getCheckOut()));
+        List<Room> availableRooms = roomRepository.findAvailableRoomsByHomestayId(homestayId, LocalDate.parse(checkIn), LocalDate.parse(checkOut));
         if (availableRooms.isEmpty()) {
             throw new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS);
         }
 
-        // Select the first available room (smaller rooms are preferred)
-        Room selectedRoom = availableRooms.stream()
-                .filter(room -> room.getSize() >= request.getGuests())
+        List<Room> selectedRooms = new ArrayList<>();
+        int remainingGuests = guests;
+
+        // Sắp xếp phòng theo sức chứa tăng dần để tối ưu hóa việc chọn phòng nhỏ nhất
+        availableRooms.sort(Comparator.comparingInt(Room::getSize));
+        int finalRemainingGuests = remainingGuests;
+        Room suitableRoom = availableRooms.stream()
+                .filter(room -> room.getSize() >= finalRemainingGuests)
                 .min(Comparator.comparingInt(Room::getSize))
-                .orElseThrow(() -> new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS));
+                .orElse(null);
+        if (suitableRoom != null) {
+            selectedRooms.add(suitableRoom);
+            remainingGuests = 0;
+        } else {
+            for (Room room : availableRooms) {
+                if (room.getSize() >= remainingGuests) {
+                    selectedRooms.add(room);
+                    remainingGuests -= room.getSize();
+                    break;
+                } else {
+                    selectedRooms.add(room);
+                    remainingGuests -= room.getSize();
+                }
 
-        // Calculate total cost based on the number of days
-        long days = ChronoUnit.DAYS.between(LocalDate.parse(request.getCheckIn()), LocalDate.parse(request.getCheckOut()));
-        double totalCost = days * selectedRoom.getHomestay().getPrice();
+                if (remainingGuests <= 0) break;
+            }
+        }
+        if (remainingGuests > 0) {
+            throw new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS);
+        }
 
-        // Create and save the booking
+        // Tính toán chi phí và giảm giá
+        List<Discount> applicableDiscounts = new ArrayList<>(homestay.getDiscounts().stream()
+                .filter(d -> (d.getStartDate() == null || !d.getStartDate().isAfter(LocalDate.parse(checkOut).atStartOfDay())) &&
+                        (d.getEndDate() == null || !d.getEndDate().isBefore(LocalDate.parse(checkIn).atStartOfDay())))
+                .sorted(Comparator.comparing(d -> {
+                    if (Objects.equals(d.getType(), DiscountType.WEEKLY.toString())) return 1;
+                    if (Objects.equals(d.getType(), DiscountType.MONTHLY.toString())) return 2;
+                    return 3;
+                }))
+                .toList());
+
+        int numOfWeekend = 0;
+        int numOfWeekday = 0;
+        double originalCost = 0;
+        double totalCost = 0;
+        int totalDiscount = 0;
+
+        for (LocalDate date = LocalDate.parse(checkIn); !date.isEqual(LocalDate.parse(checkOut)); date = date.plusDays(1)) {
+            double dailyRate = date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY
+                    ? homestay.getWeekendPrice()
+                    : homestay.getPrice();
+
+            if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                numOfWeekend++;
+            } else {
+                numOfWeekday++;
+            }
+
+            double dailyCost = dailyRate * selectedRooms.size();
+            originalCost += dailyCost;
+
+            int valueOfDiscountValueInDay = 0;
+            for (Discount discount : applicableDiscounts) {
+                if (discount.getStartDate() != null && discount.getEndDate() != null
+                        && !date.isBefore(discount.getStartDate().toLocalDate())
+                        && !date.isAfter(discount.getEndDate().toLocalDate())) {
+                    valueOfDiscountValueInDay += (int) discount.getValue();
+                }
+            }
+            totalDiscount += valueOfDiscountValueInDay;
+            dailyCost -= (dailyCost * valueOfDiscountValueInDay) / 100;
+            totalCost += dailyCost;
+        }
+
+        // Check for weekly (7 nights) or monthly (28 nights) discounts and update the discount
+        long totalNights = ChronoUnit.DAYS.between(LocalDate.parse(checkIn), LocalDate.parse(checkOut));
+        for (Discount discount : applicableDiscounts) {
+            if ((Objects.equals(discount.getType(), DiscountType.WEEKLY.toString()) && totalNights >= 7) ||
+                    (Objects.equals(discount.getType(), DiscountType.MONTHLY.toString()) && totalNights >= 28)) {
+                totalDiscount += (int) discount.getValue();
+                totalCost -= (totalCost * discount.getValue()) / 100;
+            }
+        }
+
         Booking booking = Booking.builder()
-                .checkIn(LocalDate.parse(request.getCheckIn()))
-                .checkOut(LocalDate.parse(request.getCheckOut()))
-                .status(BookingStatus.PENDING.name())
+                .checkIn(LocalDate.parse(checkIn))
+                .checkOut(LocalDate.parse(checkOut))
+                .status(BookingStatus.REVIEW.name())
                 .total(totalCost)
-                .guests(request.getGuests())
-                .note(request.getNote())
-                .user(userRepository.findById(request.getUserId())
-                        .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)))
-                .room(selectedRoom)
-//                .payment(request.getPayment())
+                .guests(guests)
+                .note("Xem xét đặt phòng")
+                .rooms(selectedRooms)
                 .build();
 
-        bookingRepository.save(booking);
-
-        // Return the booking response
-        return BookingResponse.builder()
-                .id(booking.getId())
-                .checkIn(booking.getCheckIn())
-                .checkOut(booking.getCheckOut())
-                .status(booking.getStatus())
-                .total(booking.getTotal())
-                .guests(booking.getGuests())
-                .note(booking.getNote())
-                .user(booking.getUser().getUsername())
-                .roomName(booking.getRoom().getName())
-                .homestayName(booking.getRoom().getHomestay().getName())
-//                .payment(booking.getPayment())
-                .build();
+        return getBookingResponse(selectedRooms, applicableDiscounts, numOfWeekend, numOfWeekday, originalCost, totalDiscount, (int) totalNights, booking);
     }
 
-    // BookingService.java
-    public List<BookingResponse> getBookings() {
-        List<Booking> bookings = bookingRepository.findAll();
-        return bookings.stream().map(booking -> BookingResponse.builder()
-                        .id(booking.getId())
-                        .checkIn(booking.getCheckIn())
-                        .checkOut(booking.getCheckOut())
-                        .status(booking.getStatus())
-                        .total(booking.getTotal())
-                        .guests(booking.getGuests())
-                        .note(booking.getNote())
-                        .user(booking.getUser().getUsername())
-                        .roomName(booking.getRoom().getName())
-                        .homestayName(booking.getRoom().getHomestay().getName())
+
+    public BookingResponse createBooking(String homestayId, String checkIn, String checkOut, int guests) {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        Homestay homestay = homestayRepository.findById(homestayId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+
+        if (LocalDate.parse(checkIn).isAfter(LocalDate.parse(checkOut))) {
+            throw new BusinessException(ErrorCode.CHECKIN_AFTER_CHECKOUT);
+        }
+        if (LocalDate.parse(checkIn).isBefore(LocalDate.now()) || LocalDate.parse(checkOut).isBefore(LocalDate.now())) {
+            throw new BusinessException(ErrorCode.CHECKIN_CHECKOUT_IN_PAST);
+        }
+
+        List<Room> availableRooms = roomRepository.findAvailableRoomsByHomestayId(homestayId, LocalDate.parse(checkIn), LocalDate.parse(checkOut));
+        if (availableRooms.isEmpty()) {
+            throw new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS);
+        }
+
+        List<Room> selectedRooms = new ArrayList<>();
+        int remainingGuests = guests;
+
+        // Sắp xếp phòng theo sức chứa tăng dần để tối ưu hóa việc chọn phòng nhỏ nhất
+        availableRooms.sort(Comparator.comparingInt(Room::getSize));
+        int finalRemainingGuests = remainingGuests;
+        Room suitableRoom = availableRooms.stream()
+                .filter(room -> room.getSize() >= finalRemainingGuests)
+                .min(Comparator.comparingInt(Room::getSize))
+                .orElse(null);
+        if (suitableRoom != null) {
+            selectedRooms.add(suitableRoom);
+            remainingGuests = 0;
+        } else {
+            for (Room room : availableRooms) {
+                if (room.getSize() >= remainingGuests) {
+                    selectedRooms.add(room);
+                    remainingGuests -= room.getSize();
+                    break;
+                } else {
+                    selectedRooms.add(room);
+                    remainingGuests -= room.getSize();
+                }
+
+                if (remainingGuests <= 0) break;
+            }
+        }
+        if (remainingGuests > 0) {
+            throw new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS);
+        }
+
+        // Tính toán chi phí và giảm giá
+        List<Discount> applicableDiscounts = new ArrayList<>(homestay.getDiscounts().stream()
+                .filter(d -> (d.getStartDate() == null || !d.getStartDate().isAfter(LocalDate.parse(checkOut).atStartOfDay())) &&
+                        (d.getEndDate() == null || !d.getEndDate().isBefore(LocalDate.parse(checkIn).atStartOfDay())))
+                .sorted(Comparator.comparing(d -> {
+                    if (Objects.equals(d.getType(), DiscountType.WEEKLY.toString())) return 1;
+                    if (Objects.equals(d.getType(), DiscountType.MONTHLY.toString())) return 2;
+                    return 3;
+                }))
+                .toList());
+
+        int numOfWeekend = 0;
+        int numOfWeekday = 0;
+        double originalCost = 0;
+        double totalCost = 0;
+        int totalDiscount = 0;
+
+        for (LocalDate date = LocalDate.parse(checkIn); !date.isEqual(LocalDate.parse(checkOut)); date = date.plusDays(1)) {
+            double dailyRate = date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY
+                    ? homestay.getWeekendPrice()
+                    : homestay.getPrice();
+
+            if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                numOfWeekend++;
+            } else {
+                numOfWeekday++;
+            }
+
+            double dailyCost = dailyRate * selectedRooms.size();
+            originalCost += dailyCost;
+
+            int valueOfDiscountValueInDay = 0;
+            for (Discount discount : applicableDiscounts) {
+                if (discount.getStartDate() != null && discount.getEndDate() != null
+                        && !date.isBefore(discount.getStartDate().toLocalDate())
+                        && !date.isAfter(discount.getEndDate().toLocalDate())) {
+                    valueOfDiscountValueInDay += (int) discount.getValue();
+                }
+            }
+            totalDiscount += valueOfDiscountValueInDay;
+            dailyCost -= (dailyCost * valueOfDiscountValueInDay) / 100;
+            totalCost += dailyCost;
+        }
+
+        // Check for weekly (7 nights) or monthly (28 nights) discounts and update the discount
+        long totalNights = ChronoUnit.DAYS.between(LocalDate.parse(checkIn), LocalDate.parse(checkOut));
+        for (Discount discount : applicableDiscounts) {
+            if ((Objects.equals(discount.getType(), DiscountType.WEEKLY.toString()) && totalNights >= 7) ||
+                    (Objects.equals(discount.getType(), DiscountType.MONTHLY.toString()) && totalNights >= 28)) {
+                totalDiscount += (int) discount.getValue();
+                totalCost -= (totalCost * discount.getValue()) / 100;
+            }
+        }
+
+        Booking booking = Booking.builder()
+                .checkIn(LocalDate.parse(checkIn))
+                .checkOut(LocalDate.parse(checkOut))
+                .status(BookingStatus.PENDING.name())
+                .total(totalCost)
+                .guests(guests)
+                .user(user)
+                .note("Chưa thanh toán")
+                .rooms(selectedRooms)
+                .build();
+        Booking savedBooking = bookingRepository.save(booking);
+
+        return getBookingResponse(selectedRooms, applicableDiscounts, numOfWeekend, numOfWeekday, originalCost, totalDiscount, (int) totalNights, savedBooking);
+    }
+
+    private BookingResponse getBookingResponse(List<Room> selectedRooms, List<Discount> applicableDiscounts, int numOfWeekend, int numOfWeekday, double originalCost, int totalDiscount, int totalNights, Booking booking) {
+        BookingResponse bookingResponse = bookingMapper.toBookingResponse(booking);
+        bookingResponse.setRooms(selectedRooms.stream()
+                .map(room -> RoomResponse.builder()
+                        .id(room.getId())
+                        .name(room.getName())
+                        .size(room.getSize())
                         .build())
-                .collect(Collectors.toList());
+                .toList());
+        bookingResponse.setNights(totalNights);
+        bookingResponse.setTotalDiscount(totalDiscount);
+        bookingResponse.setOriginalTotal(originalCost);
+        bookingResponse.setNumOfWeekend(numOfWeekend);
+        bookingResponse.setNumOfWeekday(numOfWeekday);
+        bookingResponse.setDiscounts(applicableDiscounts.stream()
+                .map(discountMapper::toDiscountResponse)
+                .toList());
+
+        return bookingResponse;
     }
 
     public BookingResponse getBooking(String id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.BOOKING_NOT_FOUND));
-        return BookingResponse.builder()
-                .id(booking.getId())
-                .checkIn(booking.getCheckIn())
-                .checkOut(booking.getCheckOut())
-                .status(booking.getStatus())
-                .total(booking.getTotal())
-                .guests(booking.getGuests())
-                .note(booking.getNote())
-                .user(booking.getUser().getUsername())
-                .roomName(booking.getRoom().getName())
-                .homestayName(booking.getRoom().getHomestay().getName())
-                .build();
-    }
+        Homestay homestay = booking.getRooms().getFirst().getHomestay();
+        List<Discount> applicableDiscounts = homestay.getDiscounts().stream()
+                .filter(d -> (d.getStartDate() == null || !d.getStartDate().isAfter(booking.getCheckIn().atStartOfDay())) &&
+                        (d.getEndDate() == null || !d.getEndDate().isBefore(booking.getCheckOut().atStartOfDay())))
+                .sorted(Comparator.comparing(d -> {
+                    if (Objects.equals(d.getType(), DiscountType.WEEKLY.toString())) return 1;
+                    if (Objects.equals(d.getType(), DiscountType.MONTHLY.toString())) return 2;
+                    return 3;
+                }))
+                .toList();
 
-    public BookingResponse updateBooking(String id, String status) {
-        // Find the existing booking
-        Booking existingBooking = bookingRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.BOOKING_NOT_FOUND));
-
-        // Update the booking details
-        existingBooking.setStatus(status);
-
-        // Save the updated booking
-        bookingRepository.save(existingBooking);
-
-        // Return the updated booking response
-        return BookingResponse.builder()
-                .id(existingBooking.getId())
-                .checkIn(existingBooking.getCheckIn())
-                .checkOut(existingBooking.getCheckOut())
-                .status(existingBooking.getStatus())
-                .total(existingBooking.getTotal())
-                .guests(existingBooking.getGuests())
-                .note(existingBooking.getNote())
-                .user(existingBooking.getUser().getUsername())
-                .roomName(existingBooking.getRoom().getName())
-                .homestayName(existingBooking.getRoom().getHomestay().getName())
-//                .payment(existingBooking.getPayment())
-                .build();
-    }
-
-    public void deleteBooking(String id) {
-        Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.BOOKING_NOT_FOUND));
-        bookingRepository.delete(booking);
+        BookingResponse bookingResponse = bookingMapper.toBookingResponse(booking);
+        bookingResponse.setRooms(booking.getRooms().stream()
+                .map(room -> RoomResponse.builder()
+                        .id(room.getId())
+                        .name(room.getName())
+                        .size(room.getSize())
+                        .bookings(room.getBookings().stream().map(Booking::getId).collect(Collectors.toSet()))
+                        .build())
+                .toList());
+        bookingResponse.setNights((int) ChronoUnit.DAYS.between(booking.getCheckIn(), booking.getCheckOut()));
+        bookingResponse.setDiscounts(applicableDiscounts.stream()
+                .map(discountMapper::toDiscountResponse)
+                .toList());
+        bookingResponse.setNumOfWeekend((int) booking.getCheckIn().datesUntil(booking.getCheckOut())
+                .filter(date -> date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY)
+                .count());
+        bookingResponse.setNumOfWeekday((int) booking.getCheckIn().datesUntil(booking.getCheckOut())
+                .filter(date -> date.getDayOfWeek() != DayOfWeek.SATURDAY && date.getDayOfWeek() != DayOfWeek.SUNDAY)
+                .count());
+        bookingResponse.setHomestayId(homestay.getId());
+        return bookingResponse;
     }
 }

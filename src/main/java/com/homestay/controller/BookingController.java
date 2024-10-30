@@ -1,61 +1,47 @@
 package com.homestay.controller;
 
 import com.homestay.dto.ApiResponse;
-import com.homestay.dto.request.BookingRequest;
 import com.homestay.dto.response.BookingResponse;
 import com.homestay.service.BookingService;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/bookings")
+@RequestMapping("/api/v1/booking")
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class BookingController {
-    @Autowired
     BookingService bookingService;
 
-    // CRUD methods: Create, Read, Update, Delete
-    @PostMapping("/{homestayId}")
-    public ResponseEntity<ApiResponse<BookingResponse>> createBooking(@Valid @RequestBody BookingRequest request, @PathVariable String homestayId) {
-        BookingResponse response = bookingService.createBooking(request, homestayId);
-        return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
+    @GetMapping("/public/{homestayId}")
+    public ApiResponse<BookingResponse> getReviewBooking(@PathVariable String homestayId,
+                                                         @RequestParam String checkIn,
+                                                         @RequestParam String checkOut,
+                                                         @RequestParam int guests) {
+        return ApiResponse.<BookingResponse>builder()
+                .result(bookingService.getReviewBooking(homestayId, checkIn, checkOut, guests))
+                .build();
     }
 
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<BookingResponse>>> getBookings() {
-        List<BookingResponse> response = bookingService.getBookings();
-        return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
+    @PostMapping("/{homestayId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'LANDLORD')")
+    public ApiResponse<BookingResponse> createBooking(@PathVariable String homestayId,
+                                                      @RequestParam String checkIn,
+                                                      @RequestParam String checkOut,
+                                                      @RequestParam int guests) {
+        return ApiResponse.<BookingResponse>builder()
+                .result(bookingService.createBooking(homestayId, checkIn, checkOut, guests))
+                .build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<BookingResponse>> getBooking(@PathVariable String id) {
-        BookingResponse response = bookingService.getBooking(id);
-        return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<BookingResponse>> updateBooking(@PathVariable String id, @RequestBody String status) {
-        BookingResponse response = bookingService.updateBooking(id, status);
-        return ResponseEntity.ok(new ApiResponse<>(1000, "Success", response));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> deleteBooking(@PathVariable String id) {
-        bookingService.deleteBooking(id);
-        return ResponseEntity.ok(new ApiResponse<>(1000, "Success", "Booking deleted successfully"));
-    }
-
-    // Additional methods: getBookingsByUserId, getBookingsByRoomId, updateBookingStatus
-    @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateBookingStatus(@PathVariable Long id, @RequestBody String status) {
-        return null;
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'LANDLORD')")
+    public ApiResponse<BookingResponse> getBooking(@PathVariable String id) {
+        return ApiResponse.<BookingResponse>builder()
+                .result(bookingService.getBooking(id))
+                .build();
     }
 }
