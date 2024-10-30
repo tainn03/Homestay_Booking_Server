@@ -22,7 +22,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/payment")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class VNPayController {
+public class PaymentController {
     VNPayService vnPayService;
 
     // Chuyển hướng người dùng đến cổng thanh toán VNPAY

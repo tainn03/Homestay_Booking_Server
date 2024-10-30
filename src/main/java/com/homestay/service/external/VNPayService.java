@@ -58,7 +58,7 @@ public class VNPayService {
         while (itr.hasNext()) {
             String fieldName = (String) itr.next();
             String fieldValue = vnp_Params.get(fieldName);
-            if ((fieldValue != null) && (fieldValue.length() > 0)) {
+            if ((fieldValue != null) && (!fieldValue.isEmpty())) {
                 //Build hash data
                 hashData.append(fieldName);
                 hashData.append('=');
@@ -76,18 +76,17 @@ public class VNPayService {
         String queryUrl = query.toString();
         String vnp_SecureHash = VNPayConfig.hmacSHA512(VNPayConfig.vnp_HashSecret, hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
-        String paymentUrl = VNPayConfig.vnp_PayUrl + "?" + queryUrl;
-        return paymentUrl;
+        return VNPayConfig.vnp_PayUrl + "?" + queryUrl;
     }
 
     public int orderReturn(HttpServletRequest request) {
         Map fields = new HashMap();
-        for (Enumeration params = request.getParameterNames(); params.hasMoreElements(); ) {
+        for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements(); ) {
             String fieldName = null;
             String fieldValue = null;
-            fieldName = URLEncoder.encode((String) params.nextElement(), StandardCharsets.US_ASCII);
+            fieldName = URLEncoder.encode(params.nextElement(), StandardCharsets.US_ASCII);
             fieldValue = URLEncoder.encode(request.getParameter(fieldName), StandardCharsets.US_ASCII);
-            if ((fieldValue != null) && (fieldValue.length() > 0)) {
+            if ((fieldValue != null) && (!fieldValue.isEmpty())) {
                 fields.put(fieldName, fieldValue);
             }
         }
