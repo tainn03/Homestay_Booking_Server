@@ -8,7 +8,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface BookingMapper {
     @Mapping(target = "user", source = "user.email")
-    @Mapping(target = "payment", ignore = true)
     @Mapping(target = "nights", ignore = true)
     @Mapping(target = "rooms", ignore = true)
     @Mapping(target = "id", source = "id")

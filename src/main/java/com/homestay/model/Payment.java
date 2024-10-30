@@ -1,5 +1,6 @@
 package com.homestay.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -24,6 +25,7 @@ public class Payment extends BaseEntity {
     String note;
     String paymentMethod;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "booking_id", nullable = false)
     Booking booking;

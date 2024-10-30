@@ -1,5 +1,6 @@
 package com.homestay.dto.response;
 
+import com.homestay.model.Payment;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -31,5 +32,5 @@ public class BookingResponse {
 
     List<RoomResponse> rooms;
     String homestayId;
-    String payment;
+    List<Payment> payments;
 }
