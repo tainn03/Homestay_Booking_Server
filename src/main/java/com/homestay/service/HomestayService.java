@@ -29,6 +29,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
@@ -122,7 +124,7 @@ public class HomestayService {
 
         if (images != null && !images.isEmpty()) {
             List<Image> existingImages = homestay.getImages();
-            cloudinaryService.deleteFiles(existingImages.stream().map(Image::getUrl).collect(Collectors.toList()));
+            cloudinaryService.deleteFiles(existingImages.stream().map(Image::getUrl).collect(toList()));
             existingImages.clear();
             homestay.getImages().clear();
             imageRepository.deleteAllByHomestay(homestay);
@@ -154,7 +156,7 @@ public class HomestayService {
             homestayResponse.setFavorite(user.getFavoriteHomestays().contains(homestay));
         }
         if (homestay.getImages() != null) {
-            homestayResponse.setUrlImages(homestay.getImages().stream().map(Image::getUrl).collect(Collectors.toList()));
+            homestayResponse.setUrlImages(homestay.getImages().stream().map(Image::getUrl).collect(toList()));
         }
         if (homestay.getDiscounts() != null) {
             homestayResponse.setDiscounts(homestay.getDiscounts().stream().map(discountMapper::toDiscountResponse).collect(Collectors.toSet()));
@@ -166,10 +168,10 @@ public class HomestayService {
                             .id(room.getId())
                             .name(room.getName())
                             .size(room.getSize())
-                            .images(room.getImages().stream().map(Image::getUrl).collect(Collectors.toList()))
+                            .images(room.getImages().stream().map(Image::getUrl).collect(toList()))
                             .bookings(room.getBookings().stream().map(Booking::getId).collect(Collectors.toSet()))
                             .build())
-                    .collect(Collectors.toList()));
+                    .collect(toList()));
         }
         if (homestay.getReviews() != null) {
             homestayResponse.setReviewIds(homestay.getReviews().stream().map(Review::getId).collect(Collectors.toSet()));
@@ -199,7 +201,7 @@ public class HomestayService {
                     HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
                     return toHomeStayResponseWithRelationship(homestay, response);
                 })
-                .collect(Collectors.toList());
+                .collect(toList());
         return responses;
     }
 
@@ -214,7 +216,7 @@ public class HomestayService {
                     HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
                     return toHomeStayResponseWithRelationship(homestay, response);
                 })
-                .collect(Collectors.toList());
+                .collect(toList());
         return responses;
     }
 
@@ -268,7 +270,7 @@ public class HomestayService {
 
         // Xóa các ảnh cũ trên Cloudinary và trong cơ sở dữ liệu
         List<Image> existingImages = homestay.getImages();
-        cloudinaryService.deleteFiles(existingImages.stream().map(Image::getUrl).collect(Collectors.toList()));
+        cloudinaryService.deleteFiles(existingImages.stream().map(Image::getUrl).collect(toList()));
         existingImages.clear();
         homestay.getImages().clear();
         imageRepository.deleteAllByHomestay(homestay);
@@ -290,8 +292,8 @@ public class HomestayService {
         return toHomeStayResponseWithRelationship(homestay, homestayResponse);
     }
 
-    public List<HomestayResponse> searchHomestays(String query) {
-        String[] keywords = Arrays.stream(query.split("\\s+"))
+    public List<HomestayResponse> searchHomestays(String query, String filter) {
+        String[] keywords = Arrays.stream(query.split("[\\s,.]+"))
                 .map(keyword -> keyword.substring(0, 1).toUpperCase() + keyword.substring(1).toLowerCase())
                 .toArray(String[]::new);
 
@@ -331,7 +333,7 @@ public class HomestayService {
             List<City> finalCities = cities;
             districts = districts.stream()
                     .filter(district -> finalCities.contains(district.getCity()))
-                    .collect(Collectors.toList());
+                    .collect(toList());
         }
         if (districts.isEmpty() && !cities.isEmpty()) {
             districts = districtRepository.findByCityIn(cities);
@@ -339,14 +341,14 @@ public class HomestayService {
         if (districts.isEmpty() && cities.isEmpty()) {
             districts = districtRepository.findAll().stream()
                     .filter(district -> containsKeywords(district.getName(), keywords))
-                    .collect(Collectors.toList());
+                    .collect(toList());
             cities = cityRepository.findAll().stream()
                     .filter(city -> containsKeywords(city.getName(), keywords))
-                    .collect(Collectors.toList());
+                    .collect(toList());
             List<City> finalCities = cities;
             districts = districts.stream()
                     .filter(district -> finalCities.contains(district.getCity()))
-                    .collect(Collectors.toList());
+                    .collect(toList());
         }
 
         List<TypeHomestay> typeHomestays = typeHomestayRepository.findAll().stream()
@@ -356,13 +358,14 @@ public class HomestayService {
         // Tìm kiếm homestay theo quận, thành phố và loại homestay
         List<Homestay> homestays = new ArrayList<>();
         if (typeHomestays.isEmpty()) {
-            homestays = homestayRepository.findByDistrictIn(districts);
+            homestays = homestayRepository.findByDistrictIn(districts)
+                    .stream().sorted(Comparator.comparing(Homestay::getCreatedAt).reversed()).toList();
         } else {
             for (TypeHomestay typeHomestay : typeHomestays) {
                 homestays.addAll(homestayRepository.findByDistrictIdInOrTypeHomestay(
-                        districts.stream().map(District::getId).collect(Collectors.toList()),
+                        districts.stream().map(District::getId).collect(toList()),
                         typeHomestay
-                ));
+                ).stream().sorted(Comparator.comparing(Homestay::getCreatedAt).reversed()).toList());
             }
         }
 
@@ -370,12 +373,24 @@ public class HomestayService {
         System.out.println("cities: " + cities.stream().map(City::getName).toList());
         System.out.println("typeHomestays: " + typeHomestays.stream().map(TypeHomestay::getName).toList());
 
-        return homestays.stream().distinct()
+        List<HomestayResponse> responses = new ArrayList<>(homestays.stream().distinct()
                 .map(homestay -> {
                     HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
                     return toHomeStayResponseWithRelationship(homestay, response);
                 })
-                .collect(Collectors.toList());
+                .toList());
+        if (filter != null) {
+            responses.sort((o1, o2) -> {
+                if (filter.equals("price")) {
+                    return Double.compare(o1.getPrice(), o2.getPrice());
+                } else if (filter.equals("rating")) {
+                    return Double.compare(o1.getRating(), o2.getRating());
+                } else {
+                    return 0;
+                }
+            });
+        }
+        return responses;
     }
 
     private boolean containsKeywords(String name, String[] keywords) {
@@ -561,7 +576,7 @@ public class HomestayService {
                     HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
                     return toHomeStayResponseWithRelationship(homestay, response);
                 })
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     public UserResponse getOwnerByHomestay(String id) {

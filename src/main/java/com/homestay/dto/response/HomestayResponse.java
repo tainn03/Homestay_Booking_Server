@@ -4,6 +4,7 @@ import com.homestay.model.PriceCalendar;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -44,4 +45,5 @@ public class HomestayResponse {
     String cityName;
     Set<PriceCalendar> priceCalendars;
     Set<AmenityResponse> amenities;
+    LocalDateTime createdAt;
 }

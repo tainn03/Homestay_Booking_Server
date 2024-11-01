@@ -101,9 +101,9 @@ public class HomestayController {
     }
 
     @GetMapping("/public/search")
-    public ApiResponse<List<HomestayResponse>> searchHomestay(@RequestParam String transcript) {
+    public ApiResponse<List<HomestayResponse>> searchHomestay(@RequestParam String transcript, @RequestParam(required = false) String filter) {
         return ApiResponse.<List<HomestayResponse>>builder()
-                .result(homestayService.searchHomestays(transcript))
+                .result(homestayService.searchHomestays(transcript, filter))
                 .build();
     }
 
