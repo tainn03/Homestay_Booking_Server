@@ -1,11 +1,15 @@
 package com.homestay.service;
 
+import com.homestay.repository.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -18,15 +22,21 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class JwtService {
+    final TokenRepository tokenRepository;
     @Value("${application.security.jwt.secret-key}")
-    private String SECRET_KEY;
-
+    String SECRET_KEY;
     @Value("${application.security.jwt.expiration}")
-    private long JWT_EXPIRATION;
-
+    long JWT_EXPIRATION;
     @Value("${application.security.jwt.refresh-expiration}")
-    private long REFRESH_EXPIRATION;
+    long REFRESH_EXPIRATION;
+
+    @Scheduled(fixedRate = 1000 * 60 * 60) // Xóa token hết hạn mỗi giờ
+    public void removeExpiredTokens() {
+        tokenRepository.deleteAllByExpirationBefore(new Date());
+    }
 
     // TRÍCH XUẤT THÔNG TIN NGƯỜI DÙNG TỪ JWT
     public String extractUsername(String token) {
