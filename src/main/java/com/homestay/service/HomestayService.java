@@ -190,7 +190,6 @@ public class HomestayService {
                 .collect(toList());
     }
 
-
     public List<HomestayResponse> getHomestayByOwner() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
@@ -397,6 +396,15 @@ public class HomestayService {
     public Discount addHomestayDiscountCustom(DiscountRequest request, String id) {
         Homestay homestay = homestayRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+        boolean isDiscountExist = homestay.getDiscounts().stream()
+                .anyMatch(discount ->
+                        Objects.equals(discount.getValue(), request.getValue()) &&
+                                Objects.equals(discount.getStartDate(), request.getStartDate()) &&
+                                Objects.equals(discount.getEndDate(), request.getEndDate())
+                );
+        if (isDiscountExist) {
+            throw new BusinessException(ErrorCode.DISCOUNT_ALREADY_EXIST);
+        }
 
         Discount discount = Discount.builder()
                 .value(request.getValue())

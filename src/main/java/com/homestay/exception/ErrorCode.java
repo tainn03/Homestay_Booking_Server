@@ -23,19 +23,20 @@ public enum ErrorCode {
 
     ROLE_NOT_FOUND(404, "Vai trò không tồn tại", HttpStatus.NOT_FOUND), // 404
     USER_NOT_FOUND(404, "Người dùng không tồn tại", HttpStatus.NOT_FOUND), // 404
-    USER_NOT_ACTIVE(400, "Người dùng chưa được kích hoạt", HttpStatus.BAD_REQUEST), // 400
     HOMESTAY_NOT_FOUND(404, "Homestay không tồn tại", HttpStatus.NOT_FOUND), // 404
     DISCOUNT_NOT_FOUND(404, "Khuyến mãi không tồn tại", HttpStatus.NOT_FOUND), // 404
+    AMENITY_NOT_FOUND(404, "Tiện ích không tồn tại", HttpStatus.NOT_FOUND), // 404
+    TYPE_HOMESTAY_NOT_FOUND(404, "Loại homestay không tồn tại", HttpStatus.NOT_FOUND), // 404
     CITY_NOT_FOUND(404, "Thành phố không tồn tại", HttpStatus.NOT_FOUND), // 404
     DISTRICT_NOT_FOUND(404, "Quận không tồn tại", HttpStatus.NOT_FOUND), // 404
     ROOM_NOT_FOUND(404, "Phòng không tồn tại", HttpStatus.NOT_FOUND), // 404
     REVIEW_NOT_FOUND(404, "Đánh giá không tồn tại", HttpStatus.NOT_FOUND), // 404
     BOOKING_NOT_FOUND(404, "Booking không tồn tại", HttpStatus.NOT_FOUND), // 404
+    
     ROOM_ALREADY_EXISTS(400, "Phòng đã tồn tại", HttpStatus.BAD_REQUEST), // 400
     AMENITY_ALREADY_EXISTS(400, "Tiện ích đã tồn tại", HttpStatus.BAD_REQUEST), // 400
-    AMENITY_NOT_FOUND(404, "Tiện ích không tồn tại", HttpStatus.NOT_FOUND), // 404
-    TYPE_HOMESTAY_NOT_FOUND(404, "Loại homestay không tồn tại", HttpStatus.NOT_FOUND), // 404
-
+    DISCOUNT_ALREADY_EXIST(400, "Khuyến mãi đã tồn tại", HttpStatus.BAD_REQUEST), // 400
+    USER_NOT_ACTIVE(400, "Người dùng chưa được kích hoạt", HttpStatus.BAD_REQUEST), // 400
 
     CHECKIN_AFTER_CHECKOUT(400, "Ngày check-in phải trước ngày check-out", HttpStatus.BAD_REQUEST), // 400
     NO_AVAILABLE_ROOMS(400, "Không còn phòng trống", HttpStatus.BAD_REQUEST), // 400
