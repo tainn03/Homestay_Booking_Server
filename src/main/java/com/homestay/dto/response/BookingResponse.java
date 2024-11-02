@@ -17,7 +17,7 @@ public class BookingResponse {
     LocalDate checkIn;
     LocalDate checkOut;
 
-    Double total;
+    int totalCost;
     double originalTotal;
     int totalDiscount;
     int guests;

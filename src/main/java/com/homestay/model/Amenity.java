@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.util.Objects;
 import java.util.Set;
@@ -23,19 +24,22 @@ public class Amenity {
     String type;
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "amenities")
-    Set<Homestay> homestays;
+    @ManyToMany(mappedBy = "amenities", cascade = {jakarta.persistence.CascadeType.DETACH, jakarta.persistence.CascadeType.MERGE, jakarta.persistence.CascadeType.PERSIST, jakarta.persistence.CascadeType.REFRESH})
+    Set<Room> rooms;
 
-    @Override // để so sánh 2 object amenity với nhau tránh bị lỗi khi dùng Set
-    public boolean equals(Object o) {
+    @Override
+    public final boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null) return false;
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass) return false;
         Amenity amenity = (Amenity) o;
-        return Objects.equals(name, amenity.name) && Objects.equals(type, amenity.type) && Objects.equals(homestays, amenity.homestays);
+        return getName() != null && Objects.equals(getName(), amenity.getName());
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(name, type, homestays);
+    public final int hashCode() {
+        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }

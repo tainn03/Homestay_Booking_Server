@@ -21,9 +21,12 @@ public class Booking extends BaseEntity {
     LocalDate checkIn;
     LocalDate checkOut;
     String status;
-    Double total;
-    int guests;
     String note;
+
+    int originalTotal;
+    int totalDiscount;
+    int totalCost;
+    int guests;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -37,8 +40,8 @@ public class Booking extends BaseEntity {
     )
     List<Room> rooms;
 
-    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
-    List<Payment> payments;
+    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
+    Payment payment;
 
     @Version
     @Builder.Default

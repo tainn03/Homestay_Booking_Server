@@ -47,9 +47,10 @@ public class HomestayController {
     @PutMapping("/images/new/{id}")
     @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
     public ApiResponse<HomestayResponse> addNewHomestayImages(@RequestBody List<MultipartFile> images, @PathVariable String id) {
-        return ApiResponse.<HomestayResponse>builder()
-                .result(homestayService.addNewHomestayImages(images, id))
-                .build();
+        return
+                ApiResponse.<HomestayResponse>builder()
+                        .result(homestayService.addNewHomestayImages(images, id))
+                        .build();
     }
 
     @DeleteMapping("/images/{id}")
@@ -125,7 +126,8 @@ public class HomestayController {
     @PreAuthorize("hasAuthority('LANDLORD:UPDATE_PRICE_HOMESTAY')")
     public ApiResponse<HomestayResponse> updateHomestayPrice(@RequestBody double price, @PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()
-                .result(homestayService.updateHomestayPrice(price, id))
+                .result(null)
+//                .result(homestayService.updateHomestayPrice(price, id))
                 .build();
     }
 
@@ -133,7 +135,8 @@ public class HomestayController {
     @PreAuthorize("hasAuthority('LANDLORD:UPDATE_PRICE_HOMESTAY')")
     public ApiResponse<HomestayResponse> updateHomestayWeekendPrice(@RequestBody double weekendPrice, @PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()
-                .result(homestayService.updateHomestayWeekendPrice(weekendPrice, id))
+                .result(null)
+//                .result(homestayService.updateHomestayWeekendPrice(weekendPrice, id))
                 .build();
     }
 
@@ -141,7 +144,8 @@ public class HomestayController {
     @PreAuthorize("hasAuthority('LANDLORD:UPDATE_PRICE_HOMESTAY')")
     public ApiResponse<HomestayResponse> updateHomestayPriceCalendar(@RequestBody List<CustomPriceRequest> requests, @PathVariable String id) {
         return ApiResponse.<HomestayResponse>builder()
-                .result(homestayService.updateHomestayPriceCalendar(requests, id))
+                .result(null)
+//                .result(homestayService.updateHomestayPriceCalendar(requests, id))
                 .build();
     }
 

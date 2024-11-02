@@ -39,7 +39,7 @@ public class User extends BaseEntity implements UserDetails {
     String bankUsername;
     LocalDateTime lastLogin;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     Image avatar;
 
     @ManyToOne

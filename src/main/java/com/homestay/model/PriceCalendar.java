@@ -21,6 +21,6 @@ public class PriceCalendar {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "homestay_id", nullable = false)
-    Homestay homestay;
+    @JoinColumn(name = "room_id")
+    Room room;
 }

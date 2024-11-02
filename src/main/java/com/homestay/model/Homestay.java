@@ -20,6 +20,7 @@ public class Homestay extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
+    @Column(name = "name", insertable = false, updatable = false)
     String name;
     String email;
     String standardCheckIn;
@@ -30,12 +31,6 @@ public class Homestay extends BaseEntity {
     Double latitude;
     String addressDetail;
 
-    double price = 0.0;
-    double weekendPrice = 0.0;
-
-    @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<PriceCalendar> priceCalendars;
-
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     User user;
@@ -44,34 +39,26 @@ public class Homestay extends BaseEntity {
     Set<User> favoriteUsers;
 
     @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<Discount> discounts;
-
-    @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Image> images;
 
     @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Room> rooms;
 
     @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    Set<Discount> discounts;
+
+    @OneToMany(mappedBy = "homestay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Review> reviews;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(
-            name = "type_detail",
-            joinColumns = @JoinColumn(name = "homestay_id"),
-            inverseJoinColumns = @JoinColumn(name = "type_id")
-    )
-    Set<TypeHomestay> typeHomestays;
+    @ManyToOne
+    @JoinColumn(name = "name", nullable = false)
+    TypeHomestay typeHomestay;
 
     @ManyToOne
     @JoinColumn(name = "district_id", nullable = false)
     District district;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(
-            name = "homestay_amenity",
-            joinColumns = @JoinColumn(name = "homestay_id"),
-            inverseJoinColumns = @JoinColumn(name = "amenity_id")
-    )
-    Set<Amenity> amenities;
+    @Version
+    @Builder.Default
+    Long version = 0L;
 }

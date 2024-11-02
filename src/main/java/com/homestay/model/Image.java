@@ -3,7 +3,6 @@ package com.homestay.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Getter
@@ -14,8 +13,7 @@ import org.hibernate.annotations.GenericGenerator;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Image extends BaseEntity {
     @Id
-    @GeneratedValue(generator = "uuid", strategy = GenerationType.UUID)
-    @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @GeneratedValue(strategy = GenerationType.UUID)
     String id;
     String url;
 

@@ -1,5 +1,6 @@
 package com.homestay.controller;
 
+import com.homestay.constants.BookingStatus;
 import com.homestay.dto.ApiResponse;
 import com.homestay.dto.response.BookingResponse;
 import com.homestay.service.BookingService;
@@ -22,7 +23,7 @@ public class BookingController {
                                                          @RequestParam String checkOut,
                                                          @RequestParam int guests) {
         return ApiResponse.<BookingResponse>builder()
-                .result(bookingService.getReviewBooking(homestayId, checkIn, checkOut, guests))
+                .result(bookingService.booking(homestayId, checkIn, checkOut, guests, BookingStatus.REVIEW.name()))
                 .build();
     }
 
@@ -33,7 +34,7 @@ public class BookingController {
                                                       @RequestParam String checkOut,
                                                       @RequestParam int guests) {
         return ApiResponse.<BookingResponse>builder()
-                .result(bookingService.createBooking(homestayId, checkIn, checkOut, guests))
+                .result(bookingService.booking(homestayId, checkIn, checkOut, guests, BookingStatus.PENDING.name()))
                 .build();
     }
 

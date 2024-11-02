@@ -14,30 +14,25 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface HomestayMapper {
     @Mapping(target = "rooms", ignore = true)
-    @Mapping(target = "amenities", ignore = true)
-    @Mapping(target = "discounts", ignore = true)
-    @Mapping(target = "typeHomestays", ignore = true)
     @Mapping(target = "district", ignore = true)
+    @Mapping(target = "typeHomestay", ignore = true)
     Homestay toHomestay(HomestayRequest homestay);
 
     @Mapping(target = "isFavorite", ignore = true)
     @Mapping(target = "userEmail", source = "user.email")
     @Mapping(target = "urlImages", ignore = true)
-    @Mapping(target = "discounts", ignore = true)
     @Mapping(target = "rooms", ignore = true)
     @Mapping(target = "reviewIds", ignore = true)
-    @Mapping(target = "typeHomestayNames", ignore = true)
+    @Mapping(target = "typeHomestayName", source = "typeHomestay.name")
     @Mapping(target = "districtName", source = "district.name")
     @Mapping(target = "cityName", source = "district.city.name")
+    @Mapping(target = "amenities", ignore = true)
     HomestayResponse toHomestayResponse(Homestay homestay);
 
     @Mapping(target = "status", ignore = true)
-    @Mapping(target = "amenities", ignore = true)
-    @Mapping(target = "images", ignore = true)
-    @Mapping(target = "discounts", ignore = true)
-    @Mapping(target = "typeHomestays", ignore = true)
     @Mapping(target = "district", ignore = true)
     @Mapping(target = "user", ignore = true)
+    @Mapping(target = "typeHomestay", ignore = true)
     void updateToHomestay(@MappingTarget Homestay homestay, HomestayRequest request);
 
     default List<Image> map(List<String> imageUrls) {

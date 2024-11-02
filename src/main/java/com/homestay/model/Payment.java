@@ -25,8 +25,7 @@ public class Payment extends BaseEntity {
     String note;
     String paymentMethod;
 
+    @OneToOne
     @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "booking_id", nullable = false)
     Booking booking;
 }

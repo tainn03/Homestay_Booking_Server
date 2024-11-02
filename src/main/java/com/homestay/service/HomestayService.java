@@ -4,7 +4,6 @@ import com.homestay.constants.DiscountType;
 import com.homestay.constants.HomestayStatus;
 import com.homestay.constants.RoomStatus;
 import com.homestay.dto.request.ChangeDiscountValueRequest;
-import com.homestay.dto.request.CustomPriceRequest;
 import com.homestay.dto.request.DiscountRequest;
 import com.homestay.dto.request.HomestayRequest;
 import com.homestay.dto.response.AmenityResponse;
@@ -18,18 +17,18 @@ import com.homestay.mapper.HomestayMapper;
 import com.homestay.model.*;
 import com.homestay.repository.*;
 import com.homestay.service.external.CloudinaryService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 @Service
 @RequiredArgsConstructor
@@ -37,16 +36,16 @@ import static java.util.stream.Collectors.toList;
 public class HomestayService {
     HomestayMapper homestayMapper;
     DiscountMapper discountMapper;
-    CloudinaryService cloudinaryService;
     HomestayRepository homestayRepository;
-    UserRepository userRepository;
     TypeHomestayRepository typeHomestayRepository;
     DistrictRepository districtRepository;
+    UserRepository userRepository;
+    AmenityRepository amenityRepository;
+    ImageRepository imageRepository;
     DiscountRepository discountRepository;
     CityRepository cityRepository;
-    ImageRepository imageRepository;
-    AmenityRepository amenityRepository;
-    PriceCalendarRepository priceCalendarRepository;
+
+    CloudinaryService cloudinaryService;
 
     public HomestayResponse createHomestay(@Valid HomestayRequest request) {
         if (homestayRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -65,49 +64,45 @@ public class HomestayService {
             Room room = Room.builder()
                     .name(roomRequest.getName())
                     .size(roomRequest.getSize())
+                    .price(roomRequest.getPrice())
+                    .weekendPrice(roomRequest.getWeekendPrice())
                     .homestay(homestay)
                     .build();
+            Set<Amenity> amenities = new HashSet<>();
+            if (roomRequest.getAmenities() != null) {
+                roomRequest.getAmenities().forEach(amenityRequest -> {
+                    Amenity amenity = amenityRepository.findById(amenityRequest.getName())
+                            .orElse(Amenity.builder()
+                                    .name(amenityRequest.getName())
+                                    .type(amenityRequest.getType())
+                                    .build());
+                    amenities.add(amenity);
+                });
+            }
+            Set<Discount> discounts = new HashSet<>();
+            if (roomRequest.getDiscounts() != null) {
+                roomRequest.getDiscounts().forEach(discountRequest -> {
+                    Discount discount = Discount.builder()
+                            .value(discountRequest.getValue())
+                            .description(discountRequest.getDescription())
+                            .type(discountRequest.getType())
+                            .startDate(discountRequest.getStartDate())
+                            .endDate(discountRequest.getEndDate())
+                            .room(room)
+                            .build();
+                    discounts.add(discount);
+                });
+            }
+            room.setDiscounts(discounts);
+            room.setAmenities(amenities);
             rooms.add(room);
         });
         homestay.setRooms(rooms);
 
-        Set<TypeHomestay> typeHomestays = new HashSet<>();
-        request.getTypeHomestays().forEach(typeHomestay -> {
-            TypeHomestay typeHomestay1 = typeHomestayRepository.findByName(typeHomestay)
-                    .orElseThrow(() -> new BusinessException(ErrorCode.TYPE_HOMESTAY_NOT_FOUND));
-            typeHomestays.add(typeHomestay1);
-        });
-        homestay.setTypeHomestays(typeHomestays);
-
-        Set<Discount> discounts = new HashSet<>();
-        request.getDiscounts().forEach(discountRequest -> {
-            Discount discount = Discount.builder()
-                    .value(discountRequest.getValue())
-                    .description(discountRequest.getDescription())
-                    .type(discountRequest.getType())
-                    .homestay(homestay)
-                    .build();
-            discounts.add(discount);
-        });
-        homestay.setDiscounts(discounts);
-
-        Set<Amenity> amenities = new HashSet<>();
-        request.getAmenities().forEach(amenityRequest -> {
-            Amenity amenity = amenityRepository.findById(amenityRequest.getName())
-                    .orElseGet(() -> {
-                        Amenity newAmenity = Amenity.builder()
-                                .name(amenityRequest.getName())
-                                .type(amenityRequest.getType())
-                                .build();
-                        return amenityRepository.save(newAmenity);
-                    });
-            amenities.add(amenity);
-        });
-        homestay.setAmenities(amenities);
-
+        homestay.setTypeHomestay(typeHomestayRepository.findByName(request.getTypeHomestay())
+                .orElseThrow(() -> new BusinessException(ErrorCode.TYPE_HOMESTAY_NOT_FOUND)));
         homestay.setDistrict(districtRepository.findByNameAndCityName(request.getDistrictName(), request.getCityName())
                 .orElseThrow(() -> new BusinessException(ErrorCode.DISTRICT_NOT_FOUND)));
-
         homestay.setUser(userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)));
 
@@ -158,9 +153,6 @@ public class HomestayService {
         if (homestay.getImages() != null) {
             homestayResponse.setUrlImages(homestay.getImages().stream().map(Image::getUrl).collect(toList()));
         }
-        if (homestay.getDiscounts() != null) {
-            homestayResponse.setDiscounts(homestay.getDiscounts().stream().map(discountMapper::toDiscountResponse).collect(Collectors.toSet()));
-        }
         if (homestay.getRooms() != null && homestay.getRooms().getFirst().getImages() != null) {
             homestayResponse.setRooms(homestay.getRooms().stream()
                     .filter(room -> !Objects.equals(room.getStatus(), RoomStatus.DELETED.name()))
@@ -168,41 +160,34 @@ public class HomestayService {
                             .id(room.getId())
                             .name(room.getName())
                             .size(room.getSize())
+                            .price(room.getPrice())
+                            .weekendPrice(room.getWeekendPrice())
+                            .status(room.getStatus())
                             .images(room.getImages().stream().map(Image::getUrl).collect(toList()))
-                            .bookings(room.getBookings().stream().map(Booking::getId).collect(Collectors.toSet()))
+                            .bookings(room.getBookings().stream().map(Booking::getId).collect(toSet()))
+                            .amenities(room.getAmenities().stream().map(amenity -> AmenityResponse.builder()
+                                    .name(amenity.getName())
+                                    .type(amenity.getType())
+                                    .build()).collect(toSet()))
+                            .discounts(room.getDiscounts().stream().map(discountMapper::toDiscountResponse).collect(toSet()))
+                            .priceCalendars(room.getPriceCalendars())
                             .build())
                     .collect(toList()));
         }
         if (homestay.getReviews() != null) {
-            homestayResponse.setReviewIds(homestay.getReviews().stream().map(Review::getId).collect(Collectors.toSet()));
-        }
-        if (homestay.getTypeHomestays() != null) {
-            homestayResponse.setTypeHomestayNames(homestay.getTypeHomestays().stream().map(TypeHomestay::getName).collect(Collectors.toSet()));
-        }
-        if (homestay.getWeekendPrice() != 0.0) {
-            homestayResponse.setWeekendPrice(homestay.getWeekendPrice());
-        }
-        if (homestay.getPriceCalendars() != null) {
-            homestayResponse.setPriceCalendars(homestay.getPriceCalendars());
-        }
-        if (homestay.getAmenities() != null) {
-            homestayResponse.setAmenities(homestay.getAmenities().stream().map(amenity -> AmenityResponse.builder()
-                    .name(amenity.getName())
-                    .type(amenity.getType())
-                    .build()).collect(Collectors.toSet()));
+            homestayResponse.setReviewIds(homestay.getReviews().stream().map(Review::getId).collect(toSet()));
         }
         return homestayResponse;
     }
 
     public List<HomestayResponse> getAllHomestays() {
         List<Homestay> homestays = homestayRepository.findAll();
-        List<HomestayResponse> responses = homestays.stream()
+        return homestays.stream()
                 .map(homestay -> {
                     HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
                     return toHomeStayResponseWithRelationship(homestay, response);
                 })
                 .collect(toList());
-        return responses;
     }
 
 
@@ -211,13 +196,12 @@ public class HomestayService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         List<Homestay> homestays = homestayRepository.findByUserAndStatus(user, HomestayStatus.ACTIVE.name());
-        List<HomestayResponse> responses = homestays.stream()
+        return homestays.stream()
                 .map(homestay -> {
                     HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
                     return toHomeStayResponseWithRelationship(homestay, response);
                 })
                 .collect(toList());
-        return responses;
     }
 
     @Transactional
@@ -229,14 +213,6 @@ public class HomestayService {
         }
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         homestayMapper.updateToHomestay(homestay, request);
-
-        Set<TypeHomestay> typeHomestays = new HashSet<>();
-        request.getTypeHomestays().forEach(typeHomestay -> {
-            TypeHomestay typeHomestay1 = typeHomestayRepository.findByName(typeHomestay)
-                    .orElseThrow(() -> new BusinessException(ErrorCode.TYPE_HOMESTAY_NOT_FOUND));
-            typeHomestays.add(typeHomestay1);
-        });
-        homestay.setTypeHomestays(typeHomestays);
 
         if (Objects.equals(request.getStatus(), HomestayStatus.ACTIVE.name())
                 || Objects.equals(request.getStatus(), HomestayStatus.INACTIVE.name())) {
@@ -359,13 +335,13 @@ public class HomestayService {
         List<Homestay> homestays = new ArrayList<>();
         if (typeHomestays.isEmpty()) {
             homestays = homestayRepository.findByDistrictIn(districts)
-                    .stream().sorted(Comparator.comparing(Homestay::getCreatedAt).reversed()).toList();
+                    .stream().toList();
         } else {
             for (TypeHomestay typeHomestay : typeHomestays) {
                 homestays.addAll(homestayRepository.findByDistrictIdInOrTypeHomestay(
                         districts.stream().map(District::getId).collect(toList()),
                         typeHomestay
-                ).stream().sorted(Comparator.comparing(Homestay::getCreatedAt).reversed()).toList());
+                ).stream().toList());
             }
         }
 
@@ -373,24 +349,13 @@ public class HomestayService {
         System.out.println("cities: " + cities.stream().map(City::getName).toList());
         System.out.println("typeHomestays: " + typeHomestays.stream().map(TypeHomestay::getName).toList());
 
-        List<HomestayResponse> responses = new ArrayList<>(homestays.stream().distinct()
+        return new ArrayList<>(homestays.stream().distinct()
                 .map(homestay -> {
                     HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
                     return toHomeStayResponseWithRelationship(homestay, response);
                 })
+                .sorted(Comparator.comparing(HomestayResponse::getCreatedAt).reversed())
                 .toList());
-        if (filter != null) {
-            responses.sort((o1, o2) -> {
-                if (filter.equals("price")) {
-                    return Double.compare(o1.getPrice(), o2.getPrice());
-                } else if (filter.equals("rating")) {
-                    return Double.compare(o1.getRating(), o2.getRating());
-                } else {
-                    return 0;
-                }
-            });
-        }
-        return responses;
     }
 
     private boolean containsKeywords(String name, String[] keywords) {
@@ -405,24 +370,6 @@ public class HomestayService {
     public HomestayResponse getHomestayById(String id) {
         Homestay homestay = homestayRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
-        HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
-        return toHomeStayResponseWithRelationship(homestay, response);
-    }
-
-    public HomestayResponse updateHomestayPrice(double price, String id) {
-        Homestay homestay = homestayRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
-        homestay.setPrice(price);
-        homestayRepository.save(homestay);
-        HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
-        return toHomeStayResponseWithRelationship(homestay, response);
-    }
-
-    public HomestayResponse updateHomestayWeekendPrice(double weekendPrice, String id) {
-        Homestay homestay = homestayRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
-        homestay.setWeekendPrice(weekendPrice);
-        homestayRepository.save(homestay);
         HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
         return toHomeStayResponseWithRelationship(homestay, response);
     }
@@ -445,76 +392,6 @@ public class HomestayService {
 
         HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
         return toHomeStayResponseWithRelationship(homestay, response);
-    }
-
-    public HomestayResponse addNewHomestayImages(List<MultipartFile> images, String id) {
-        Homestay homestay = homestayRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
-
-        List<Image> existingImages = homestay.getImages();
-        List<String> photoUrls = cloudinaryService.uploadFiles(images);
-        for (String photoUrl : photoUrls) {
-            Image image = Image.builder()
-                    .url(photoUrl)
-                    .homestay(homestay)
-                    .build();
-            existingImages.add(image);
-        }
-
-        homestay.setImages(existingImages);
-        homestayRepository.save(homestay);
-
-        HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
-        return toHomeStayResponseWithRelationship(homestay, homestayResponse);
-    }
-
-    @Transactional
-    public HomestayResponse deleteHomestayImages(List<String> images, String id) {
-        Homestay homestay = homestayRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
-
-        List<Image> existingImages = homestay.getImages();
-        if (existingImages == null) {
-            existingImages = new ArrayList<>();
-        }
-
-        cloudinaryService.deleteFiles(images);
-
-        existingImages.removeIf(image -> images.contains(image.getUrl()));
-        imageRepository.deleteByUrlIn(images);
-        homestay.setImages(existingImages);
-        homestayRepository.save(homestay);
-
-        HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
-        return toHomeStayResponseWithRelationship(homestay, homestayResponse);
-    }
-
-    public HomestayResponse updateHomestayPriceCalendar(List<CustomPriceRequest> requests, String id) {
-        Homestay homestay = homestayRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
-
-        if (requests == null || requests.isEmpty()) {
-            return null;
-        }
-
-        priceCalendarRepository.deleteAllByHomestay(homestay);
-        homestay.getPriceCalendars().clear();
-
-        Set<PriceCalendar> priceCalendars = new HashSet<>();
-        for (CustomPriceRequest request : requests) {
-            PriceCalendar priceCalendar = PriceCalendar.builder()
-                    .date(request.getDate())
-                    .price(request.getPrice())
-                    .homestay(homestay)
-                    .build();
-            priceCalendars.add(priceCalendar);
-        }
-
-        homestay.setPriceCalendars(priceCalendars);
-        homestayRepository.save(homestay);
-
-        HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
-        return toHomeStayResponseWithRelationship(homestay, homestayResponse);
     }
 
     public Discount addHomestayDiscountCustom(DiscountRequest request, String id) {
@@ -565,6 +442,48 @@ public class HomestayService {
         discountRepository.delete(discount);
         homestayRepository.save(homestay);
         return "Delete discount successfully";
+    }
+
+    public HomestayResponse addNewHomestayImages(List<MultipartFile> images, String id) {
+        Homestay homestay = homestayRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+
+        List<Image> existingImages = homestay.getImages();
+        List<String> photoUrls = cloudinaryService.uploadFiles(images);
+        for (String photoUrl : photoUrls) {
+            Image image = Image.builder()
+                    .url(photoUrl)
+                    .homestay(homestay)
+                    .build();
+            existingImages.add(image);
+        }
+
+        homestay.setImages(existingImages);
+        homestayRepository.save(homestay);
+
+        HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
+        return toHomeStayResponseWithRelationship(homestay, homestayResponse);
+    }
+
+    @Transactional
+    public HomestayResponse deleteHomestayImages(List<String> images, String id) {
+        Homestay homestay = homestayRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+
+        List<Image> existingImages = homestay.getImages();
+        if (existingImages == null) {
+            existingImages = new ArrayList<>();
+        }
+
+        cloudinaryService.deleteFiles(images);
+
+        existingImages.removeIf(image -> images.contains(image.getUrl()));
+        imageRepository.deleteByUrlIn(images);
+        homestay.setImages(existingImages);
+        homestayRepository.save(homestay);
+
+        HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
+        return toHomeStayResponseWithRelationship(homestay, homestayResponse);
     }
 
     public List<HomestayResponse> getFavoriteHomestay() {

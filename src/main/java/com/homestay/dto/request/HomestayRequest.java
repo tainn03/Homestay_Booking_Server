@@ -4,7 +4,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
-import java.util.Set;
 
 @Data
 @Builder
@@ -16,8 +15,6 @@ public class HomestayRequest {
     String email;
     String phone;
     String status;
-    double price;
-    double weekendPrice;
 
     String addressDetail;
     String apartment;
@@ -28,8 +25,6 @@ public class HomestayRequest {
 
     String standardCheckIn;
     String standardCheckOut;
-    Set<AmenityRequest> amenities;
-    Set<DiscountRequest> discounts;
     List<RoomRequest> rooms;
-    Set<String> typeHomestays;
+    String typeHomestay;
 }

@@ -27,21 +27,29 @@ public class Discount extends BaseEntity {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "homestay_id", nullable = false)
+    @JoinColumn(name = "room_id")
+    Room room;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "homestay_id")
     Homestay homestay;
 
     // Override equals và hashCode để so sánh 2 đối tượng Discount
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
         Discount discount = (Discount) o;
-        return Double.compare(value, discount.value) == 0 && Objects.equals(id, discount.id) && Objects.equals(type, discount.type) && Objects.equals(description, discount.description) && Objects.equals(homestay, discount.homestay);
+        return Double.compare(value, discount.value) == 0
+                && Objects.equals(type, discount.type) && Objects.equals(description, discount.description)
+                && Objects.equals(startDate, discount.startDate) && Objects.equals(endDate, discount.endDate)
+                && Objects.equals(room, discount.room);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id, value, type, description, homestay);
+        return Objects.hash(id, value, type, description, startDate, endDate, room);
     }
 }
