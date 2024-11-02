@@ -11,6 +11,7 @@ import com.homestay.mapper.BookingMapper;
 import com.homestay.mapper.DiscountMapper;
 import com.homestay.model.*;
 import com.homestay.repository.BookingRepository;
+import com.homestay.repository.HomestayRepository;
 import com.homestay.repository.RoomRepository;
 import com.homestay.repository.UserRepository;
 import lombok.AccessLevel;
@@ -34,8 +35,11 @@ public class BookingService {
     UserRepository userRepository;
     BookingMapper bookingMapper;
     DiscountMapper discountMapper;
+    HomestayRepository homestayRepository;
 
     public BookingResponse booking(String homestayId, String checkIn, String checkOut, int guests, String status) {
+        Homestay homestay = homestayRepository.findById(homestayId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
         if (LocalDate.parse(checkIn).isAfter(LocalDate.parse(checkOut))) {
             throw new BusinessException(ErrorCode.CHECKIN_AFTER_CHECKOUT);
         }
@@ -51,7 +55,6 @@ public class BookingService {
         List<Room> selectedRooms = new ArrayList<>();
         int remainingGuests = guests;
 
-        // Sắp xếp phòng theo sức chứa tăng dần để tối ưu hóa việc chọn phòng nhỏ nhất
         availableRooms.sort(Comparator.comparingInt(Room::getSize));
         int finalRemainingGuests = remainingGuests;
         Room suitableRoom = availableRooms.stream()
@@ -79,67 +82,53 @@ public class BookingService {
             throw new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS);
         }
 
-        // Lọc ra các khuyến mãi áp dụng
-        Set<Discount> applicableDiscounts = new HashSet<>();
-        selectedRooms.stream()
-                .flatMap(room -> room.getDiscounts().stream())
-                .filter(discount -> (discount.getStartDate() == null || !discount.getStartDate().isAfter(LocalDate.parse(checkOut).atStartOfDay())) &&
-                        (discount.getEndDate() == null || !discount.getEndDate().isBefore(LocalDate.parse(checkIn).atStartOfDay())))
-                .sorted(Comparator.comparing(discount -> {
-                    if (Objects.equals(discount.getType(), DiscountType.WEEKLY.toString())) return 1;
-                    if (Objects.equals(discount.getType(), DiscountType.MONTHLY.toString())) return 2;
-                    return 3;
-                }))
-                .forEach(applicableDiscounts::add);
+        double originalCost = 0;
+        double totalCost = 0;
+        double totalDiscount = 0;
 
-        // Tính toán chi phí và giảm giá
-        int numOfWeekend = 0;
-        int numOfWeekday = 0;
-        int originalCost = 0;
-        int totalCost = 0;
-        int totalDiscount = 0;
-
+        int totalNights = (int) ChronoUnit.DAYS.between(LocalDate.parse(checkIn), LocalDate.parse(checkOut));
         for (LocalDate date = LocalDate.parse(checkIn); !date.isEqual(LocalDate.parse(checkOut)); date = date.plusDays(1)) {
             LocalDate finalDate = date;
-            double dailyRate = selectedRooms.stream()
-                    .mapToDouble(room -> {
-                        Optional<PriceCalendar> calendarPrice = room.getPriceCalendars().stream()
-                                .filter(pc -> pc.getDate().equals(finalDate.toString()))
-                                .findFirst();
-                        return calendarPrice.map(PriceCalendar::getPrice)
-                                .orElse(finalDate.getDayOfWeek() == DayOfWeek.SATURDAY || finalDate.getDayOfWeek() == DayOfWeek.SUNDAY
-                                        ? room.getWeekendPrice()
-                                        : room.getPrice());
-                    })
-                    .sum();
-            originalCost += (int) dailyRate;
-
-            if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
-                numOfWeekend++;
-            } else {
-                numOfWeekday++;
-            }
-
-            int valueOfDiscountValueInDay = 0;
-            for (Discount discount : applicableDiscounts) {
-                if (discount.getStartDate() != null && discount.getEndDate() != null
-                        && !date.isBefore(discount.getStartDate().toLocalDate())
-                        && !date.isAfter(discount.getEndDate().toLocalDate())) {
-                    valueOfDiscountValueInDay += (int) discount.getValue();
+            for (Room room : selectedRooms) {
+                double dailyRate = room.getPrice();
+                if (finalDate.getDayOfWeek() == DayOfWeek.SATURDAY || finalDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                    dailyRate = room.getWeekendPrice();
                 }
-            }
-            totalDiscount += valueOfDiscountValueInDay;
-            dailyRate -= (dailyRate * valueOfDiscountValueInDay) / 100;
-            totalCost += (int) dailyRate;
-        }
+                Optional<PriceCalendar> calendarPrice = room.getPriceCalendars().stream()
+                        .filter(pc -> pc.getDate().equals(finalDate.toString()))
+                        .findFirst();
+                if (calendarPrice.isPresent()) {
+                    dailyRate = calendarPrice.get().getPrice();
+                }
 
-        // Check for weekly (7 nights) or monthly (28 nights) discounts and update the discount
-        int totalNights = (int) ChronoUnit.DAYS.between(LocalDate.parse(checkIn), LocalDate.parse(checkOut));
-        for (Discount discount : applicableDiscounts) {
-            if ((Objects.equals(discount.getType(), DiscountType.WEEKLY.toString()) && totalNights >= 7) ||
-                    (Objects.equals(discount.getType(), DiscountType.MONTHLY.toString()) && totalNights >= 28)) {
-                totalDiscount += (int) discount.getValue();
-                totalCost -= (int) ((totalCost * discount.getValue()) / 100);
+                originalCost += dailyRate;
+
+                double discountValue = 0;
+                for (Discount discount : room.getDiscounts()) {
+                    if (discount.getStartDate() != null && discount.getEndDate() != null
+                            && !finalDate.isBefore(discount.getStartDate().toLocalDate())
+                            && !finalDate.isAfter(discount.getEndDate().toLocalDate())) {
+                        discountValue += discount.getValue();
+                    } else if ((Objects.equals(discount.getType(), DiscountType.WEEKLY.toString()) && totalNights >= 7) ||
+                            (Objects.equals(discount.getType(), DiscountType.MONTHLY.toString()) && totalNights >= 28)) {
+                        discountValue += discount.getValue();
+                    }
+                }
+                if (discountValue == 0) {
+                    for (Discount discount : homestay.getDiscounts()) {
+                        if (discount.getStartDate() != null && discount.getEndDate() != null
+                                && !finalDate.isBefore(discount.getStartDate().toLocalDate())
+                                && !finalDate.isAfter(discount.getEndDate().toLocalDate())) {
+                            discountValue += discount.getValue();
+                        } else if ((Objects.equals(discount.getType(), DiscountType.WEEKLY.toString()) && totalNights >= 7) ||
+                                (Objects.equals(discount.getType(), DiscountType.MONTHLY.toString()) && totalNights >= 28)) {
+                            discountValue += discount.getValue();
+                        }
+                    }
+                }
+                totalDiscount += discountValue;
+                dailyRate -= (dailyRate * discountValue) / 100;
+                totalCost += dailyRate;
             }
         }
 
@@ -147,9 +136,9 @@ public class BookingService {
                 .checkIn(LocalDate.parse(checkIn))
                 .checkOut(LocalDate.parse(checkOut))
                 .status(BookingStatus.REVIEW.name())
-                .totalCost(totalCost)
-                .originalTotal(originalCost)
-                .totalDiscount(totalDiscount)
+                .totalCost((int) totalCost)
+                .originalTotal((int) originalCost)
+                .totalDiscount((int) totalDiscount)
                 .guests(guests)
                 .note("Xem xét đặt phòng")
                 .rooms(selectedRooms)
@@ -171,12 +160,8 @@ public class BookingService {
                         .size(room.getSize())
                         .build())
                 .toList());
-//        bookingResponse.setNights(totalNights);
-//        bookingResponse.setTotalDiscount(totalDiscount);
-//        bookingResponse.setOriginalTotal(originalCost);
-//        bookingResponse.setNumOfWeekend(numOfWeekend);
-//        bookingResponse.setNumOfWeekday(numOfWeekday);
-        bookingResponse.setDiscounts(applicableDiscounts.stream()
+        bookingResponse.setDiscounts(selectedRooms.stream()
+                .flatMap(room -> room.getDiscounts().stream())
                 .map(discountMapper::toDiscountResponse)
                 .toList());
 
