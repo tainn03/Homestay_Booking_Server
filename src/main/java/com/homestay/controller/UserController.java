@@ -2,8 +2,10 @@ package com.homestay.controller;
 
 import com.homestay.constants.UserStatus;
 import com.homestay.dto.ApiResponse;
+import com.homestay.dto.request.ReviewRequest;
 import com.homestay.dto.request.UpdateUserRequest;
 import com.homestay.dto.request.UserRequest;
+import com.homestay.dto.response.ReviewResponse;
 import com.homestay.dto.response.UserResponse;
 import com.homestay.service.UserService;
 import jakarta.validation.Valid;
@@ -88,6 +90,14 @@ public class UserController {
     public ApiResponse<String> updateFavoriteHomestay(@PathVariable String homestayId) {
         return ApiResponse.<String>builder()
                 .result(userService.updateFavoriteHomestay(homestayId))
+                .build();
+    }
+
+    @PostMapping("/review/{homestayId}")
+    @PreAuthorize("hasAnyAuthority('USER:CREATE_REVIEW', 'LANDLORD:CREATE_REVIEW')")
+    public ApiResponse<ReviewResponse> createReview(@PathVariable String homestayId, @RequestBody ReviewRequest request) {
+        return ApiResponse.<ReviewResponse>builder()
+                .result(userService.createReview(homestayId, request))
                 .build();
     }
 }

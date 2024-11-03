@@ -2,8 +2,10 @@ package com.homestay.service;
 
 import com.homestay.constants.Roles;
 import com.homestay.constants.UserStatus;
+import com.homestay.dto.request.ReviewRequest;
 import com.homestay.dto.request.UpdateUserRequest;
 import com.homestay.dto.request.UserRequest;
+import com.homestay.dto.response.ReviewResponse;
 import com.homestay.dto.response.UserResponse;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
@@ -141,5 +143,29 @@ public class UserService {
         }
         userRepository.save(user);
         return "Update favorite homestay successfully";
+    }
+
+    public ReviewResponse createReview(String homestayId, ReviewRequest request) {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        Homestay homestay = homestayRepository.findById(homestayId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
+        Review review = Review.builder()
+                .rating(request.getRating())
+                .comment(request.getComment())
+                .user(user)
+                .homestay(homestay)
+                .build();
+        user.getReviews().add(review);
+        homestay.getReviews().add(review);
+        userRepository.save(user);
+        return ReviewResponse.builder()
+                .id(review.getId())
+                .rating(review.getRating())
+                .comment(review.getComment())
+                .userName(user.getFullName())
+                .avatar(user.getAvatar().getUrl())
+                .homestayId(homestay.getId())
+                .build();
     }
 }
