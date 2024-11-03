@@ -16,6 +16,7 @@ public interface HomestayMapper {
     @Mapping(target = "rooms", ignore = true)
     @Mapping(target = "district", ignore = true)
     @Mapping(target = "typeHomestay", ignore = true)
+    @Mapping(target = "nameHomestay", source = "name")
     Homestay toHomestay(HomestayRequest homestay);
 
     @Mapping(target = "isFavorite", ignore = true)
@@ -27,12 +28,15 @@ public interface HomestayMapper {
     @Mapping(target = "districtName", source = "district.name")
     @Mapping(target = "cityName", source = "district.city.name")
     @Mapping(target = "amenities", ignore = true)
+    @Mapping(target = "name", source = "nameHomestay")
     HomestayResponse toHomestayResponse(Homestay homestay);
 
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "district", ignore = true)
     @Mapping(target = "user", ignore = true)
+    @Mapping(target = "discounts", ignore = true)
     @Mapping(target = "typeHomestay", ignore = true)
+    @Mapping(target = "nameHomestay", source = "name")
     void updateToHomestay(@MappingTarget Homestay homestay, HomestayRequest request);
 
     default List<Image> map(List<String> imageUrls) {

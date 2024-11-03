@@ -103,15 +103,8 @@ public class RoomService {
 
         Room finalRoom = room;
         request.getDiscounts().forEach(discountRequest -> {
-            boolean isDuplicate = finalRoom.getDiscounts().stream()
-                    .anyMatch(d -> d.getValue() == discountRequest.getValue() &&
-                            d.getStartDate().equals(discountRequest.getStartDate()) &&
-                            d.getEndDate().equals(discountRequest.getEndDate()));
-            if (isDuplicate) {
-                throw new BusinessException(ErrorCode.DISCOUNT_ALREADY_EXIST);
-            }
             Discount discount = finalRoom.getDiscounts().stream()
-                    .filter(d -> d.getId().equals(discountRequest.getId()))
+                    .filter(d -> discountRequest.getId() != null && discountRequest.getId().equals(d.getId()))
                     .findFirst()
                     .orElse(Discount.builder()
                             .value(discountRequest.getValue())
@@ -147,9 +140,9 @@ public class RoomService {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
 
-        List<String> imageUrls = room.getImages().stream().map(Image::getUrl).toList();
+        List<Image> images = room.getImages();
+        List<String> imageUrls = images.stream().map(Image::getUrl).toList();
         cloudinaryService.deleteFiles(imageUrls);
-        imageRepository.deleteByUrlIn(imageUrls);
 
         roomRepository.delete(room);
         return "Room deleted successfully";

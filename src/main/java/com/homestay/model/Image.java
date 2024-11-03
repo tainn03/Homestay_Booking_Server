@@ -29,4 +29,7 @@ public class Image extends BaseEntity {
     @JoinColumn(name = "user_id")
     User user;
 
+    @Version
+    @Builder.Default
+    Long version = 0L;
 }

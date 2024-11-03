@@ -64,6 +64,7 @@ public class HomestayService {
             Room room = Room.builder()
                     .name(roomRequest.getName())
                     .size(roomRequest.getSize())
+                    .status(RoomStatus.ACTIVE.name())
                     .price(roomRequest.getPrice())
                     .weekendPrice(roomRequest.getWeekendPrice())
                     .homestay(homestay)
@@ -106,10 +107,10 @@ public class HomestayService {
         homestay.setUser(userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)));
 
-        homestayRepository.save(homestay);
+        Homestay savedHomestay = homestayRepository.save(homestay);
 
-        HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(homestay);
-        return toHomeStayResponseWithRelationship(homestay, homestayResponse);
+        HomestayResponse homestayResponse = homestayMapper.toHomestayResponse(savedHomestay);
+        return toHomeStayResponseWithRelationship(savedHomestay, homestayResponse);
     }
 
     @Transactional
@@ -154,6 +155,12 @@ public class HomestayService {
             homestayResponse.setUrlImages(homestay.getImages().stream().map(Image::getUrl).collect(toList()));
         }
         if (homestay.getRooms() != null && homestay.getRooms().getFirst().getImages() != null) {
+            double price = homestay.getRooms().stream()
+                    .filter(room -> !Objects.equals(room.getStatus(), RoomStatus.DELETED.name()))
+                    .mapToDouble(Room::getPrice)
+                    .min()
+                    .orElse(0);
+            homestayResponse.setPrice(price);
             homestayResponse.setRooms(homestay.getRooms().stream()
                     .filter(room -> !Objects.equals(room.getStatus(), RoomStatus.DELETED.name()))
                     .map(room -> RoomResponse.builder()
@@ -203,14 +210,13 @@ public class HomestayService {
                 .collect(toList());
     }
 
-    @Transactional
+    @Transactional // Lỗi chưa cập nhật được homestay
     public HomestayResponse updateHomestay(HomestayRequest request) {
         Homestay homestay = homestayRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
         }
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         homestayMapper.updateToHomestay(homestay, request);
 
         if (Objects.equals(request.getStatus(), HomestayStatus.ACTIVE.name())
@@ -218,11 +224,32 @@ public class HomestayService {
             homestay.setStatus(request.getStatus());
         }
 
-        homestay.setDistrict(districtRepository.findByNameAndCityName(request.getDistrictName(), request.getCityName())
-                .orElseThrow(() -> new BusinessException(ErrorCode.DISTRICT_NOT_FOUND)));
+        if (!Objects.equals(request.getDistrictName(), homestay.getDistrict().getName())) {
+            District district = districtRepository.findByNameAndCityName(request.getDistrictName(), request.getCityName())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.DISTRICT_NOT_FOUND));
+            homestay.setDistrict(district);
+        }
 
-        homestay.setUser(userRepository.findByEmail(email)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)));
+        if (!Objects.equals(request.getTypeHomestay(), homestay.getTypeHomestay().getName())) {
+            TypeHomestay typeHomestay = typeHomestayRepository.findByName(request.getTypeHomestay())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.TYPE_HOMESTAY_NOT_FOUND));
+            homestay.setTypeHomestay(typeHomestay);
+        }
+
+        if (!Objects.equals(request.getEmail(), homestay.getEmail())) {
+            if (homestayRepository.findByEmail(request.getEmail()).isPresent()) {
+                throw new BusinessException(ErrorCode.HOMESTAY_ALREADY_EXIST);
+            }
+            homestay.setEmail(request.getEmail());
+        }
+
+        // Ensure discounts are managed by the current session
+        Set<Discount> managedDiscounts = new HashSet<>();
+        for (Discount discount : homestay.getDiscounts()) {
+            managedDiscounts.add(discountRepository.findById(discount.getId())
+                    .orElseGet(() -> discountRepository.save(discount)));
+        }
+        homestay.setDiscounts(managedDiscounts);
 
         homestayRepository.save(homestay);
 

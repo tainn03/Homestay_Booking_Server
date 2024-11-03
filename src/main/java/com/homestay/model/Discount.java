@@ -35,7 +35,9 @@ public class Discount extends BaseEntity {
     @JoinColumn(name = "homestay_id")
     Homestay homestay;
 
-    // Override equals và hashCode để so sánh 2 đối tượng Discount
+    @Version
+    @Builder.Default
+    Long version = 0L;
 
     @Override
     public boolean equals(Object o) {

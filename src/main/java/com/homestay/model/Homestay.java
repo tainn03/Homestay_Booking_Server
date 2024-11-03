@@ -19,9 +19,7 @@ public class Homestay extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
-
-    @Column(name = "name", insertable = false, updatable = false)
-    String name;
+    String nameHomestay;
     String email;
     String standardCheckIn;
     String standardCheckOut;

@@ -21,14 +21,13 @@ public class HomestayResponse {
     String standardCheckOut;
     String phone;
     String status;
+    double price;
 
     String userEmail;
     boolean isFavorite;
 
     @Builder.Default
     double rating = 4.0;
-
-    Set<DiscountResponse> discounts;
     List<String> urlImages;
 
     Double longitude;
