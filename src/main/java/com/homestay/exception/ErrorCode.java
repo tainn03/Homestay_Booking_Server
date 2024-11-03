@@ -32,7 +32,7 @@ public enum ErrorCode {
     ROOM_NOT_FOUND(404, "Phòng không tồn tại", HttpStatus.NOT_FOUND), // 404
     REVIEW_NOT_FOUND(404, "Đánh giá không tồn tại", HttpStatus.NOT_FOUND), // 404
     BOOKING_NOT_FOUND(404, "Booking không tồn tại", HttpStatus.NOT_FOUND), // 404
-    
+
     ROOM_ALREADY_EXISTS(400, "Phòng đã tồn tại", HttpStatus.BAD_REQUEST), // 400
     AMENITY_ALREADY_EXISTS(400, "Tiện ích đã tồn tại", HttpStatus.BAD_REQUEST), // 400
     DISCOUNT_ALREADY_EXIST(400, "Khuyến mãi đã tồn tại", HttpStatus.BAD_REQUEST), // 400

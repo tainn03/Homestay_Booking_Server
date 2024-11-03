@@ -47,14 +47,13 @@ public class BookingService {
             throw new BusinessException(ErrorCode.CHECKIN_CHECKOUT_IN_PAST);
         }
 
+        // Lấy danh sách phòng còn trống, sắp xếp theo size để tối ưu việc chọn phòng
         List<Room> availableRooms = roomRepository.findAvailableRoomsByHomestayId(homestayId, LocalDate.parse(checkIn), LocalDate.parse(checkOut));
         if (availableRooms.isEmpty()) {
             throw new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS);
         }
-
         List<Room> selectedRooms = new ArrayList<>();
         int remainingGuests = guests;
-
         availableRooms.sort(Comparator.comparingInt(Room::getSize));
         int finalRemainingGuests = remainingGuests;
         Room suitableRoom = availableRooms.stream()
@@ -82,10 +81,10 @@ public class BookingService {
             throw new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS);
         }
 
+        // Tính toán giá tiền và giảm giá
         double originalCost = 0;
         double totalCost = 0;
         double totalDiscount = 0;
-
         int totalNights = (int) ChronoUnit.DAYS.between(LocalDate.parse(checkIn), LocalDate.parse(checkOut));
         for (LocalDate date = LocalDate.parse(checkIn); !date.isEqual(LocalDate.parse(checkOut)); date = date.plusDays(1)) {
             LocalDate finalDate = date;

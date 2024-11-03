@@ -1,12 +1,13 @@
 package com.homestay.service;
 
+import com.homestay.constants.RoomStatus;
 import com.homestay.dto.request.RoomRequest;
 import com.homestay.dto.response.RoomResponse;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
-import com.homestay.model.Homestay;
-import com.homestay.model.Image;
-import com.homestay.model.Room;
+import com.homestay.mapper.RoomMapper;
+import com.homestay.model.*;
+import com.homestay.repository.AmenityRepository;
 import com.homestay.repository.HomestayRepository;
 import com.homestay.repository.ImageRepository;
 import com.homestay.repository.RoomRepository;
@@ -19,15 +20,20 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
+
+import static java.util.stream.Collectors.toSet;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RoomService {
+    AmenityRepository amenityRepository;
     RoomRepository roomRepository;
     HomestayRepository homestayRepository;
     CloudinaryService cloudinaryService;
     ImageRepository imageRepository;
+    RoomMapper roomMapper;
 
     public RoomResponse addRoomImages(String nameRoom, List<MultipartFile> images, String homestayId) {
         Room room = roomRepository.findByNameAndHomestayId(nameRoom, homestayId)
@@ -46,12 +52,7 @@ public class RoomService {
         room.setImages(existingImages);
         roomRepository.save(room);
 
-        return RoomResponse.builder()
-                .id(room.getId())
-                .name(room.getName())
-                .size(room.getSize())
-                .images(room.getImages().stream().map(Image::getUrl).toList())
-                .build();
+        return roomMapper.toRoomResponse(room);
     }
 
     public RoomResponse createRooms(String homestayId, RoomRequest request) {
@@ -60,28 +61,75 @@ public class RoomService {
         Room room = Room.builder()
                 .name(request.getName())
                 .size(request.getSize())
+                .price(request.getPrice())
+                .weekendPrice(request.getWeekendPrice())
+                .status(Objects.equals(request.getStatus(), "") ? RoomStatus.ACTIVE.name() : request.getStatus())
+                .amenities(request.getAmenities().stream().map(amenityRequest -> amenityRepository.findById(amenityRequest.getName())
+                                .orElse(Amenity.builder()
+                                        .name(amenityRequest.getName())
+                                        .type(amenityRequest.getType())
+                                        .build()))
+                        .collect(toSet()))
+                .discounts(request.getDiscounts().stream().map(discountRequest -> Discount.builder()
+                                .value(discountRequest.getValue())
+                                .type(discountRequest.getType())
+                                .description(discountRequest.getDescription())
+                                .startDate(discountRequest.getStartDate())
+                                .endDate(discountRequest.getEndDate())
+                                .build())
+                        .collect(toSet()))
                 .homestay(homestay)
                 .build();
         roomRepository.save(room);
 
-        return RoomResponse.builder()
-                .id(room.getId())
-                .name(room.getName())
-                .size(room.getSize())
-                .build();
+        return roomMapper.toRoomResponse(room);
     }
 
     public RoomResponse updateRoom(String id, RoomRequest request) {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
 
-        room.setName(request.getName());
-        room.setSize(request.getSize());
+        room = roomMapper.toRoom(room, request);
+
+        room.getAmenities().clear();
+        room.getAmenities().addAll(request.getAmenities().stream().map(amenityRequest ->
+                        amenityRepository.findById(amenityRequest.getName())
+                                .orElse(Amenity.builder()
+                                        .name(amenityRequest.getName())
+                                        .type(amenityRequest.getType())
+                                        .build()))
+                .collect(toSet()));
+
+        Room finalRoom = room;
+        request.getDiscounts().forEach(discountRequest -> {
+            boolean isDuplicate = finalRoom.getDiscounts().stream()
+                    .anyMatch(d -> d.getValue() == discountRequest.getValue() &&
+                            d.getStartDate().equals(discountRequest.getStartDate()) &&
+                            d.getEndDate().equals(discountRequest.getEndDate()));
+            if (isDuplicate) {
+                throw new BusinessException(ErrorCode.DISCOUNT_ALREADY_EXIST);
+            }
+            Discount discount = finalRoom.getDiscounts().stream()
+                    .filter(d -> d.getId().equals(discountRequest.getId()))
+                    .findFirst()
+                    .orElse(Discount.builder()
+                            .value(discountRequest.getValue())
+                            .type(discountRequest.getType())
+                            .description(discountRequest.getDescription())
+                            .startDate(discountRequest.getStartDate())
+                            .endDate(discountRequest.getEndDate())
+                            .build());
+            discount.setValue(discountRequest.getValue());
+            discount.setType(discountRequest.getType());
+            discount.setDescription(discountRequest.getDescription());
+            discount.setStartDate(discountRequest.getStartDate());
+            discount.setEndDate(discountRequest.getEndDate());
+            finalRoom.getDiscounts().add(discount);
+        });
 
         // Delete old images
         List<String> existingImageUrls = room.getImages().stream().map(Image::getUrl).toList();
         List<String> newImageUrls = request.getImages();
-
         List<String> urlsToDelete = existingImageUrls.stream()
                 .filter(url -> !newImageUrls.contains(url))
                 .toList();
@@ -90,12 +138,7 @@ public class RoomService {
 
         roomRepository.save(room);
 
-        return RoomResponse.builder()
-                .id(room.getId())
-                .name(room.getName())
-                .size(room.getSize())
-                .images(room.getImages().stream().map(Image::getUrl).toList())
-                .build();
+        return roomMapper.toRoomResponse(room);
     }
 
     @Transactional
