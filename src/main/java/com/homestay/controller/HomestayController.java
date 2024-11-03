@@ -2,7 +2,6 @@ package com.homestay.controller;
 
 import com.homestay.dto.ApiResponse;
 import com.homestay.dto.request.ChangeDiscountValueRequest;
-import com.homestay.dto.request.CustomPriceRequest;
 import com.homestay.dto.request.DiscountRequest;
 import com.homestay.dto.request.HomestayRequest;
 import com.homestay.dto.response.HomestayResponse;
@@ -119,33 +118,6 @@ public class HomestayController {
     public ApiResponse<UserResponse> getHomestayByOwner(@PathVariable String id) {
         return ApiResponse.<UserResponse>builder()
                 .result(homestayService.getOwnerByHomestay(id))
-                .build();
-    }
-
-    @PutMapping("/price/{id}")
-    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_PRICE_HOMESTAY')")
-    public ApiResponse<HomestayResponse> updateHomestayPrice(@RequestBody double price, @PathVariable String id) {
-        return ApiResponse.<HomestayResponse>builder()
-                .result(null)
-//                .result(homestayService.updateHomestayPrice(price, id))
-                .build();
-    }
-
-    @PutMapping("/price/week/{id}")
-    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_PRICE_HOMESTAY')")
-    public ApiResponse<HomestayResponse> updateHomestayWeekendPrice(@RequestBody double weekendPrice, @PathVariable String id) {
-        return ApiResponse.<HomestayResponse>builder()
-                .result(null)
-//                .result(homestayService.updateHomestayWeekendPrice(weekendPrice, id))
-                .build();
-    }
-
-    @PutMapping("/price/calendar/{id}")
-    @PreAuthorize("hasAuthority('LANDLORD:UPDATE_PRICE_HOMESTAY')")
-    public ApiResponse<HomestayResponse> updateHomestayPriceCalendar(@RequestBody List<CustomPriceRequest> requests, @PathVariable String id) {
-        return ApiResponse.<HomestayResponse>builder()
-                .result(null)
-//                .result(homestayService.updateHomestayPriceCalendar(requests, id))
                 .build();
     }
 
