@@ -21,9 +21,10 @@ public class BookingController {
     public ApiResponse<BookingResponse> getReviewBooking(@PathVariable String homestayId,
                                                          @RequestParam String checkIn,
                                                          @RequestParam String checkOut,
-                                                         @RequestParam int guests) {
+                                                         @RequestParam int guests,
+                                                         @RequestParam String roomId) {
         return ApiResponse.<BookingResponse>builder()
-                .result(bookingService.booking(homestayId, checkIn, checkOut, guests, BookingStatus.REVIEW.name()))
+                .result(bookingService.booking(homestayId, checkIn, checkOut, guests, BookingStatus.REVIEW.name(), roomId))
                 .build();
     }
 
@@ -32,9 +33,10 @@ public class BookingController {
     public ApiResponse<BookingResponse> createBooking(@PathVariable String homestayId,
                                                       @RequestParam String checkIn,
                                                       @RequestParam String checkOut,
-                                                      @RequestParam int guests) {
+                                                      @RequestParam int guests,
+                                                      @RequestParam String roomId) {
         return ApiResponse.<BookingResponse>builder()
-                .result(bookingService.booking(homestayId, checkIn, checkOut, guests, BookingStatus.PENDING.name()))
+                .result(bookingService.booking(homestayId, checkIn, checkOut, guests, BookingStatus.PENDING.name(), roomId))
                 .build();
     }
 

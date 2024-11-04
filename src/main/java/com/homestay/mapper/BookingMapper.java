@@ -13,5 +13,8 @@ public interface BookingMapper {
     @Mapping(target = "numOfWeekday", expression = "java((int) booking.getCheckIn().datesUntil(booking.getCheckOut()).filter(date -> date.getDayOfWeek() != java.time.DayOfWeek.SATURDAY && date.getDayOfWeek() != java.time.DayOfWeek.SUNDAY).count())")
     @Mapping(target = "discounts", ignore = true)
     @Mapping(target = "rooms", ignore = true)
+    @Mapping(target = "payments", ignore = true)
+    @Mapping(target = "price", ignore = true)
+    @Mapping(target = "weekendPrice", ignore = true)
     BookingResponse toBookingResponse(Booking booking);
 }

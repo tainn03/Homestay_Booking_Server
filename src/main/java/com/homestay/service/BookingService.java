@@ -9,11 +9,14 @@ import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
 import com.homestay.mapper.BookingMapper;
 import com.homestay.mapper.DiscountMapper;
+import com.homestay.mapper.HomestayMapper;
+import com.homestay.mapper.RoomMapper;
 import com.homestay.model.*;
 import com.homestay.repository.BookingRepository;
 import com.homestay.repository.HomestayRepository;
 import com.homestay.repository.RoomRepository;
 import com.homestay.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -25,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,11 +37,14 @@ public class BookingService {
     BookingRepository bookingRepository;
     RoomRepository roomRepository;
     UserRepository userRepository;
+    HomestayRepository homestayRepository;
     BookingMapper bookingMapper;
     DiscountMapper discountMapper;
-    HomestayRepository homestayRepository;
+    HomestayMapper homestayMapper;
+    RoomMapper roomMapper;
 
-    public BookingResponse booking(String homestayId, String checkIn, String checkOut, int guests, String status) {
+    @Transactional
+    public BookingResponse booking(String homestayId, String checkIn, String checkOut, int guests, String status, String roomId) {
         Homestay homestay = homestayRepository.findById(homestayId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
         if (LocalDate.parse(checkIn).isAfter(LocalDate.parse(checkOut))) {
@@ -47,41 +54,55 @@ public class BookingService {
             throw new BusinessException(ErrorCode.CHECKIN_CHECKOUT_IN_PAST);
         }
 
-        // Lấy danh sách phòng còn trống, sắp xếp theo size để tối ưu việc chọn phòng
-        List<Room> availableRooms = roomRepository.findAvailableRoomsByHomestayId(homestayId, LocalDate.parse(checkIn), LocalDate.parse(checkOut));
-        if (availableRooms.isEmpty()) {
-            throw new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS);
-        }
         List<Room> selectedRooms = new ArrayList<>();
         int remainingGuests = guests;
-        availableRooms.sort(Comparator.comparingInt(Room::getSize));
-        int finalRemainingGuests = remainingGuests;
-        Room suitableRoom = availableRooms.stream()
-                .filter(room -> room.getSize() >= finalRemainingGuests)
-                .min(Comparator.comparingInt(Room::getSize))
-                .orElse(null);
-        if (suitableRoom != null) {
-            selectedRooms.add(suitableRoom);
-            remainingGuests = 0;
-        } else {
-            for (Room room : availableRooms) {
-                if (room.getSize() >= remainingGuests) {
-                    selectedRooms.add(room);
-                    remainingGuests -= room.getSize();
-                    break;
-                } else {
-                    selectedRooms.add(room);
-                    remainingGuests -= room.getSize();
-                }
 
-                if (remainingGuests <= 0) break;
-            }
-        }
-        if (remainingGuests > 0) {
+        // Get available rooms
+        List<Room> availableRooms = roomRepository.findAvailableRoomsByHomestayId(homestayId, LocalDate.parse(checkIn), LocalDate.parse(checkOut));
+        if (availableRooms.isEmpty() || remainingGuests > availableRooms.stream().mapToInt(Room::getSize).sum()) {
             throw new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS);
         }
 
-        // Tính toán giá tiền và giảm giá
+        // If roomId is provided, add the room to the selected rooms list
+        if (!Objects.equals(roomId, "") && availableRooms.stream().anyMatch(room -> room.getId().equals(roomId))) {
+            Room requireRoom = availableRooms.stream()
+                    .filter(room -> room.getId().equals(roomId))
+                    .findFirst()
+                    .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
+            selectedRooms.add(requireRoom);
+            availableRooms.remove(requireRoom);
+            remainingGuests -= requireRoom.getSize();
+        }
+
+        // Sort rooms based on the number of guests
+        if (remainingGuests <= availableRooms.stream().mapToInt(Room::getSize).max().orElse(0) && remainingGuests > 0) {
+            availableRooms.sort(Comparator.comparingInt(Room::getSize));
+            int finalRemainingGuests = remainingGuests;
+            Room suitableRoom = availableRooms.stream()
+                    .filter(room -> room.getSize() >= finalRemainingGuests)
+                    .min(Comparator.comparingInt(Room::getSize))
+                    .orElseThrow(() -> new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS));
+            selectedRooms.add(suitableRoom);
+        } else {
+            while (remainingGuests > 0) {
+                availableRooms.sort(Comparator.comparingInt(Room::getSize));
+                Room largestRoom = availableRooms.getLast();
+                selectedRooms.add(largestRoom);
+                remainingGuests -= largestRoom.getSize();
+                availableRooms.remove(largestRoom);
+                if (remainingGuests <= availableRooms.stream().mapToInt(Room::getSize).max().orElse(0)) {
+                    int finalRemainingGuests1 = remainingGuests;
+                    Room suitableRoom = availableRooms.stream()
+                            .filter(room -> room.getSize() >= finalRemainingGuests1)
+                            .min(Comparator.comparingInt(Room::getSize))
+                            .orElseThrow(() -> new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS));
+                    selectedRooms.add(suitableRoom);
+                    remainingGuests -= suitableRoom.getSize();
+                }
+            }
+        }
+
+        // Calculate costs and discounts
         double originalCost = 0;
         double totalCost = 0;
         double totalDiscount = 0;
@@ -130,6 +151,8 @@ public class BookingService {
                 totalCost += dailyRate;
             }
         }
+        double price = selectedRooms.stream().mapToDouble(Room::getPrice).sum();
+        double weekendPrice = selectedRooms.stream().mapToDouble(Room::getWeekendPrice).sum();
 
         Booking booking = Booking.builder()
                 .checkIn(LocalDate.parse(checkIn))
@@ -159,10 +182,13 @@ public class BookingService {
                         .size(room.getSize())
                         .build())
                 .toList());
+        bookingResponse.setHomestayId(homestayId);
+        bookingResponse.setPrice(price);
+        bookingResponse.setWeekendPrice(weekendPrice);
         bookingResponse.setDiscounts(selectedRooms.stream()
                 .flatMap(room -> room.getDiscounts().stream())
                 .map(discountMapper::toDiscountResponse)
-                .toList());
+                .collect(Collectors.toSet()));
 
         return bookingResponse;
     }
@@ -178,10 +204,13 @@ public class BookingService {
                         .size(room.getSize())
                         .build())
                 .toList());
+        response.setHomestayId(booking.getRooms().getFirst().getHomestay().getId());
+        response.setPrice(booking.getRooms().stream().mapToDouble(Room::getPrice).sum());
+        response.setWeekendPrice(booking.getRooms().stream().mapToDouble(Room::getWeekendPrice).sum());
         response.setDiscounts(booking.getRooms().stream()
                 .flatMap(room -> room.getDiscounts().stream())
                 .map(discountMapper::toDiscountResponse)
-                .toList());
+                .collect(Collectors.toSet()));
         return response;
     }
 
