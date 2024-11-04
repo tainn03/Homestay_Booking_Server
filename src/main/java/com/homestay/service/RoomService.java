@@ -19,8 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -177,26 +179,37 @@ public class RoomService {
                     .build();
             priceCalendarRepository.save(priceCalendar);
         });
-        roomRepository.save(room);
-        return roomMapper.toRoomResponse(room);
+        Room savedRoom = roomRepository.save(room);
+        return roomMapper.toRoomResponse(savedRoom);
     }
 
+    @Transactional
     public RoomResponse updateRoomSystemDiscount(ChangeDiscountValueRequest request, String id) {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
-        room.getDiscounts().forEach(discount -> {
+        Set<Discount> discountsToUpdate = new HashSet<>();
+        boolean discountUpdated = false;
+
+        for (Discount discount : room.getDiscounts()) {
             if (discount.getType().equals(request.getType())) {
                 discount.setValue(request.getValue());
-            } else {
-                Discount newDiscount = Discount.builder()
-                        .type(request.getType())
-                        .value(request.getValue())
-                        .build();
-                room.getDiscounts().add(newDiscount);
+                discountUpdated = true;
             }
-        });
-        roomRepository.save(room);
-        return roomMapper.toRoomResponse(room);
+            discountsToUpdate.add(discount);
+        }
+
+        if (!discountUpdated) {
+            Discount newDiscount = Discount.builder()
+                    .type(request.getType())
+                    .value(request.getValue())
+                    .room(room)
+                    .build();
+            discountsToUpdate.add(newDiscount);
+        }
+
+        room.setDiscounts(discountsToUpdate);
+        Room savedRoom = roomRepository.save(room);
+        return roomMapper.toRoomResponse(savedRoom);
     }
 
     public Discount addRoomCustomDiscount(DiscountRequest request, String id) {

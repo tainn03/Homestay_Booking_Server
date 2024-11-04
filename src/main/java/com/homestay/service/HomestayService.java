@@ -179,6 +179,7 @@ public class HomestayService {
                             .discounts(room.getDiscounts().stream().map(discountMapper::toDiscountResponse).collect(toSet()))
                             .priceCalendars(room.getPriceCalendars())
                             .build())
+                    .sorted(Comparator.comparing(RoomResponse::getName))
                     .collect(toList()));
         }
         if (homestay.getReviews() != null) {
