@@ -10,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DiscountResponse {
     String id;
+    String nameRoom;
     double value;
     String type;
     String description;

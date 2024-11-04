@@ -9,6 +9,7 @@ import com.homestay.dto.response.ReviewResponse;
 import com.homestay.dto.response.UserResponse;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
+import com.homestay.mapper.HomestayMapper;
 import com.homestay.mapper.UserMapper;
 import com.homestay.model.*;
 import com.homestay.repository.HomestayRepository;
@@ -37,6 +38,7 @@ public class UserService {
     UserRepository userRepository;
     RoleRepository roleRepository;
     UserMapper userMapper;
+    HomestayMapper homestayMapper;
     PasswordEncoder passwordEncoder;
     CloudinaryService cloudinaryService;
     ImageRepository imageRepository;
@@ -77,7 +79,8 @@ public class UserService {
             response.setBookings(user.getBookings().stream().map(Booking::getId).collect(Collectors.toSet()));
         }
         if (user.getHomestays() != null) {
-            response.setHomestays(user.getHomestays().stream().map(Homestay::getId).collect(Collectors.toSet()));
+            response.setHomestays(user.getHomestays().stream().map(
+                    homestayMapper::toHomestayResponse).collect(Collectors.toSet()));
         }
         if (user.getReviews() != null) {
             response.setReviews(user.getReviews().stream().map(Review::getId).collect(Collectors.toSet()));

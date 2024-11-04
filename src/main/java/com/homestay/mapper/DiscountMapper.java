@@ -10,5 +10,6 @@ public interface DiscountMapper {
     @Mapping(target = "id", source = "id")
     @Mapping(target = "startDate", source = "startDate", dateFormat = "yyyy-MM-dd")
     @Mapping(target = "endDate", source = "endDate", dateFormat = "yyyy-MM-dd")
+    @Mapping(target = "nameRoom", expression = "java(discount.getRoom() != null ? discount.getRoom().getName() : null)")
     DiscountResponse toDiscountResponse(Discount discount);
 }

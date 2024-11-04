@@ -115,7 +115,7 @@ public class HomestayController {
     }
 
     @GetMapping("/public/owner/{id}")
-    public ApiResponse<UserResponse> getHomestayByOwner(@PathVariable String id) {
+    public ApiResponse<UserResponse> getOwnerByHomestay(@PathVariable String id) {
         return ApiResponse.<UserResponse>builder()
                 .result(homestayService.getOwnerByHomestay(id))
                 .build();

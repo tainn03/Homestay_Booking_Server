@@ -14,6 +14,7 @@ import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
 import com.homestay.mapper.DiscountMapper;
 import com.homestay.mapper.HomestayMapper;
+import com.homestay.mapper.UserMapper;
 import com.homestay.model.*;
 import com.homestay.repository.*;
 import com.homestay.service.external.CloudinaryService;
@@ -36,6 +37,8 @@ import static java.util.stream.Collectors.toSet;
 public class HomestayService {
     HomestayMapper homestayMapper;
     DiscountMapper discountMapper;
+    UserMapper userMapper;
+
     HomestayRepository homestayRepository;
     TypeHomestayRepository typeHomestayRepository;
     DistrictRepository districtRepository;
@@ -179,6 +182,7 @@ public class HomestayService {
                             .discounts(room.getDiscounts().stream().map(discountMapper::toDiscountResponse).collect(toSet()))
                             .priceCalendars(room.getPriceCalendars())
                             .build())
+                    .sorted(Comparator.comparing(RoomResponse::getName))
                     .collect(toList()));
         }
         if (homestay.getReviews() != null) {
@@ -537,13 +541,13 @@ public class HomestayService {
         Homestay homestay = homestayRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
         User user = homestay.getUser();
-        return UserResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .fullName(user.getFullName())
-                .phone(user.getPhone())
-                .role(user.getRole().getRoleName())
-                .urlAvatar(user.getAvatar() != null ? user.getAvatar().getUrl() : null)
-                .build();
+
+        UserResponse response = userMapper.toUserResponse(user);
+        response.setHomestays(user.getHomestays().stream().map(
+                homestay1 -> {
+                    HomestayResponse homestayResponse1 = homestayMapper.toHomestayResponse(homestay1);
+                    return toHomeStayResponseWithRelationship(homestay1, homestayResponse1);
+                }).collect(toSet()));
+        return response;
     }
 }

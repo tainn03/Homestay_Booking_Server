@@ -32,7 +32,7 @@ public class UserResponse {
     String role;
     LocalDateTime lastLogin;
 
-    Set<String> homestays;
+    Set<HomestayResponse> homestays;
     Set<String> bookings;
     Set<String> reviews;
 }
