@@ -5,6 +5,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -34,5 +35,5 @@ public class UserResponse {
 
     Set<HomestayResponse> homestays;
     Set<String> bookings;
-    Set<String> reviews;
+    List<ReviewResponse> reviews;
 }

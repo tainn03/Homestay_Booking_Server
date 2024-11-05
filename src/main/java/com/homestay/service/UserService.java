@@ -83,7 +83,17 @@ public class UserService {
                     homestayMapper::toHomestayResponse).collect(Collectors.toSet()));
         }
         if (user.getReviews() != null) {
-            response.setReviews(user.getReviews().stream().map(Review::getId).collect(Collectors.toSet()));
+            response.setReviews(user.getReviews().stream().map(
+                    review -> ReviewResponse.builder()
+                            .id(review.getId())
+                            .rating(review.getRating())
+                            .comment(review.getComment())
+                            .userName(review.getUser().getFullName())
+                            .avatar(review.getUser().getAvatar().getUrl())
+                            .homestayId(review.getHomestay().getId())
+                            .date(review.getCreatedAt())
+                            .build()
+            ).toList());
         }
         return response;
     }
