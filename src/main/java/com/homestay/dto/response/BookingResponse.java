@@ -35,5 +35,5 @@ public class BookingResponse {
 
     List<RoomResponse> rooms;
     String homestayId;
-    List<Payment> payments;
+    Payment payment;
 }

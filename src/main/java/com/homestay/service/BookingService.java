@@ -3,6 +3,7 @@ package com.homestay.service;
 import com.homestay.constants.BookingStatus;
 import com.homestay.constants.DiscountType;
 import com.homestay.constants.PaymentStatus;
+import com.homestay.dto.response.AmenityResponse;
 import com.homestay.dto.response.BookingResponse;
 import com.homestay.dto.response.RoomResponse;
 import com.homestay.exception.BusinessException;
@@ -27,6 +28,9 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 @Service
 @RequiredArgsConstructor
@@ -202,6 +206,17 @@ public class BookingService {
                         .id(room.getId())
                         .name(room.getName())
                         .size(room.getSize())
+                        .price(room.getPrice())
+                        .weekendPrice(room.getWeekendPrice())
+                        .status(room.getStatus())
+                        .images(room.getImages().stream().map(Image::getUrl).collect(toList()))
+                        .bookings(room.getBookings().stream().map(Booking::getId).collect(toSet()))
+                        .amenities(room.getAmenities().stream().map(amenity -> AmenityResponse.builder()
+                                .name(amenity.getName())
+                                .type(amenity.getType())
+                                .build()).collect(toSet()))
+                        .discounts(room.getDiscounts().stream().map(discountMapper::toDiscountResponse).collect(toSet()))
+                        .priceCalendars(room.getPriceCalendars())
                         .build())
                 .toList());
         response.setHomestayId(booking.getRooms().getFirst().getHomestay().getId());
@@ -211,6 +226,7 @@ public class BookingService {
                 .flatMap(room -> room.getDiscounts().stream())
                 .map(discountMapper::toDiscountResponse)
                 .collect(Collectors.toSet()));
+        response.setPayment(booking.getPayment());
         return response;
     }
 
@@ -223,12 +239,14 @@ public class BookingService {
                 .transactionId(transactionId)
                 .date(paymentTime.toLocalDate())
                 .status(paymentStatus == 1 ? PaymentStatus.SUCCESS.name() : PaymentStatus.FAILED.name())
-                .note("Payment via VNPay with info: vnpBankCode = " + vnpBankCode + ", vnpBankTranNo = " + vnpBankTranNo + ", vnpCardType = " + vnpCardType + ", vnpTxnRef = " + vnpTxnRef + ", vnpSecureHash = " + vnpSecureHash)
+                .note("Thanh toán qua VNPAY")
                 .paymentMethod(vnpCardType)
                 .booking(booking)
                 .build();
 
         booking.setPayment(payment);
+        booking.setNote("Đã thanh toán");
+        booking.setStatus(BookingStatus.PAID.name());
         bookingRepository.save(booking);
     }
 }

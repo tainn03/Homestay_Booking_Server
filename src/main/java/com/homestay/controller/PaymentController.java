@@ -55,7 +55,6 @@ public class PaymentController {
         String vnp_SecureHash = request.getParameter("vnp_SecureHash");
 
         // Tạo thanh toán mới cho đơn đặt phòng
-        System.out.println("All info: " + orderInfo + " " + paymentTime + " " + paymentStatus + " " + totalPrice + " " + transactionId + " " + vnp_BankCode + " " + vnp_BankTranNo + " " + vnp_CardType + " " + vnp_TxnRef + " " + vnp_SecureHash);
         bookingService.createPayment(orderInfo, paymentTime, paymentStatus, totalPrice, transactionId, vnp_BankCode, vnp_BankTranNo, vnp_CardType, vnp_TxnRef, vnp_SecureHash);
 
         // Chuyển hướng người dùng đến ReactJS client qua URL dựa trên kết quả thanh toán
