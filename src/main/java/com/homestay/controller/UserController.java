@@ -100,4 +100,12 @@ public class UserController {
                 .result(userService.createReview(homestayId, request))
                 .build();
     }
+
+    @GetMapping("/{email}")
+    @PreAuthorize("hasAnyAuthority('ADMIN:READ_USER', 'USER:READ_PROFILE', 'LANDLORD:READ_PROFILE')")
+    public ApiResponse<UserResponse> getUserByEmail(@PathVariable String email) {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getUserByEmail(email))
+                .build();
+    }
 }

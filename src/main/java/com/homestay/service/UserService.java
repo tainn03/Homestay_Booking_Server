@@ -182,4 +182,10 @@ public class UserService {
                 .date(review.getCreatedAt())
                 .build();
     }
+
+    public UserResponse getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        return userMapper.toUserResponse(user);
+    }
 }
