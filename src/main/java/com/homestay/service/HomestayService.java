@@ -161,6 +161,14 @@ public class HomestayService {
                     .min()
                     .orElse(0);
             homestayResponse.setPrice(price);
+            homestayResponse.setAmenities(homestay.getRooms().stream()
+                    .filter(room -> !Objects.equals(room.getStatus(), RoomStatus.DELETED.name()))
+                    .flatMap(room -> room.getAmenities().stream())
+                    .map(amenity -> AmenityResponse.builder()
+                            .name(amenity.getName())
+                            .type(amenity.getType())
+                            .build())
+                    .collect(toSet()));
             homestayResponse.setRooms(homestay.getRooms().stream()
                     .filter(room -> !Objects.equals(room.getStatus(), RoomStatus.DELETED.name()))
                     .map(room -> RoomResponse.builder()
@@ -187,6 +195,7 @@ public class HomestayService {
                     .mapToDouble(Review::getRating)
                     .average()
                     .orElse(0);
+            rating = Math.round(rating * 100.0) / 100.0;
             homestayResponse.setRating(rating);
             homestayResponse.setReviews(homestay.getReviews().stream().map(review -> ReviewResponse.builder()
                             .id(review.getId())
