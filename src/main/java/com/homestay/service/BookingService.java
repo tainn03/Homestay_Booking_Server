@@ -9,8 +9,6 @@ import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
 import com.homestay.mapper.BookingMapper;
 import com.homestay.mapper.DiscountMapper;
-import com.homestay.mapper.HomestayMapper;
-import com.homestay.mapper.RoomMapper;
 import com.homestay.model.*;
 import com.homestay.repository.BookingRepository;
 import com.homestay.repository.HomestayRepository;
@@ -40,8 +38,6 @@ public class BookingService {
     HomestayRepository homestayRepository;
     BookingMapper bookingMapper;
     DiscountMapper discountMapper;
-    HomestayMapper homestayMapper;
-    RoomMapper roomMapper;
 
     @Transactional
     public BookingResponse booking(String homestayId, String checkIn, String checkOut, int guests, String status, String roomId) {
@@ -64,14 +60,18 @@ public class BookingService {
         }
 
         // If roomId is provided, add the room to the selected rooms list
-        if (!Objects.equals(roomId, "") && availableRooms.stream().anyMatch(room -> room.getId().equals(roomId))) {
-            Room requireRoom = availableRooms.stream()
-                    .filter(room -> room.getId().equals(roomId))
-                    .findFirst()
-                    .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
-            selectedRooms.add(requireRoom);
-            availableRooms.remove(requireRoom);
-            remainingGuests -= requireRoom.getSize();
+        if (!Objects.equals(roomId, "")) {
+            if (availableRooms.stream().anyMatch(room -> room.getId().equals(roomId))) {
+                Room requireRoom = availableRooms.stream()
+                        .filter(room -> room.getId().equals(roomId))
+                        .findFirst()
+                        .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
+                selectedRooms.add(requireRoom);
+                availableRooms.remove(requireRoom);
+                remainingGuests -= requireRoom.getSize();
+            } else {
+                throw new BusinessException(ErrorCode.ROOM_NOT_AVAILABLE);
+            }
         }
 
         // Sort rooms based on the number of guests
@@ -171,7 +171,7 @@ public class BookingService {
             booking.setUser(user);
             booking.setStatus(BookingStatus.PENDING.name());
             booking.setNote("Chưa thanh toán");
-            bookingRepository.save(booking);
+            booking.setId(bookingRepository.save(booking).getId());
         }
 
         BookingResponse bookingResponse = bookingMapper.toBookingResponse(booking);

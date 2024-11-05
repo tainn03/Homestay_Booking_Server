@@ -40,6 +40,7 @@ public enum ErrorCode {
 
     CHECKIN_AFTER_CHECKOUT(400, "Ngày check-in phải trước ngày check-out", HttpStatus.BAD_REQUEST), // 400
     NO_AVAILABLE_ROOMS(400, "Không còn phòng trống", HttpStatus.BAD_REQUEST), // 400
+    ROOM_NOT_AVAILABLE(400, "Phòng được chọn không còn trống", HttpStatus.BAD_REQUEST), // 400
 
     INVALID_PASSWORD(400, "Mật khẩu không chính xác", HttpStatus.BAD_REQUEST), // 400
     INVALID_PASSWORD_BLANK(400, "Mật khẩu không được để trống", HttpStatus.BAD_REQUEST), // 400
@@ -66,7 +67,6 @@ public enum ErrorCode {
     INVALID_PAYMENT_BLANK(400, "Payment must not be blank", HttpStatus.BAD_REQUEST), // 400
     INVALID_PRICE_NEGATIVE(400, "Price must be greater than 0", HttpStatus.BAD_REQUEST), // 400
     CHECKIN_CHECKOUT_IN_PAST(400, "Check-in and check-out dates must be in the future", HttpStatus.BAD_REQUEST), // 400
-
 
     ;
 
