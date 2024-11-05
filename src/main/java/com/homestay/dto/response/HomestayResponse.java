@@ -25,8 +25,6 @@ public class HomestayResponse {
 
     String userEmail;
     boolean isFavorite;
-
-    @Builder.Default
     double rating = 4.0;
     List<String> urlImages;
 

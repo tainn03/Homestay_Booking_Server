@@ -183,6 +183,11 @@ public class HomestayService {
                     .collect(toList()));
         }
         if (homestay.getReviews() != null) {
+            double rating = homestay.getReviews().stream()
+                    .mapToDouble(Review::getRating)
+                    .average()
+                    .orElse(0);
+            homestayResponse.setRating(rating);
             homestayResponse.setReviews(homestay.getReviews().stream().map(review -> ReviewResponse.builder()
                             .id(review.getId())
                             .rating(review.getRating())

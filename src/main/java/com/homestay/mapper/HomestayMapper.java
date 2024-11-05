@@ -23,7 +23,7 @@ public interface HomestayMapper {
     @Mapping(target = "userEmail", source = "user.email")
     @Mapping(target = "urlImages", ignore = true)
     @Mapping(target = "rooms", ignore = true)
-    @Mapping(target = "reviewIds", ignore = true)
+    @Mapping(target = "reviews", ignore = true)
     @Mapping(target = "typeHomestayName", source = "typeHomestay.name")
     @Mapping(target = "districtName", source = "district.name")
     @Mapping(target = "cityName", source = "district.city.name")
