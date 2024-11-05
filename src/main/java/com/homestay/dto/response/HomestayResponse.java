@@ -35,7 +35,7 @@ public class HomestayResponse {
     String addressDetail;
 
     List<RoomResponse> rooms;
-    Set<String> reviewIds;
+    List<ReviewResponse> reviews;
     String typeHomestayName;
     String districtName;
     String cityName;

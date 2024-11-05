@@ -3,6 +3,8 @@ package com.homestay.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -14,5 +16,6 @@ public class ReviewResponse {
     String comment;
     String userName;
     String avatar;
+    LocalDateTime date;
     String homestayId;
 }

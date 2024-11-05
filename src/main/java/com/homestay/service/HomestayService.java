@@ -6,10 +6,7 @@ import com.homestay.constants.RoomStatus;
 import com.homestay.dto.request.ChangeDiscountValueRequest;
 import com.homestay.dto.request.DiscountRequest;
 import com.homestay.dto.request.HomestayRequest;
-import com.homestay.dto.response.AmenityResponse;
-import com.homestay.dto.response.HomestayResponse;
-import com.homestay.dto.response.RoomResponse;
-import com.homestay.dto.response.UserResponse;
+import com.homestay.dto.response.*;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
 import com.homestay.mapper.DiscountMapper;
@@ -186,7 +183,17 @@ public class HomestayService {
                     .collect(toList()));
         }
         if (homestay.getReviews() != null) {
-            homestayResponse.setReviewIds(homestay.getReviews().stream().map(Review::getId).collect(toSet()));
+            homestayResponse.setReviews(homestay.getReviews().stream().map(review -> ReviewResponse.builder()
+                            .id(review.getId())
+                            .rating(review.getRating())
+                            .comment(review.getComment())
+                            .userName(review.getUser().getFullName())
+                            .avatar(review.getUser().getAvatar().getUrl())
+                            .date(review.getCreatedAt())
+                            .homestayId(review.getHomestay().getId())
+                            .build())
+                    .sorted(Comparator.comparing(ReviewResponse::getDate).reversed())
+                    .collect(toList()));
         }
         return homestayResponse;
     }

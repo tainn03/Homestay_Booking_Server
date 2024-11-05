@@ -94,7 +94,7 @@ public class UserController {
     }
 
     @PostMapping("/review/{homestayId}")
-    @PreAuthorize("hasAnyAuthority('USER:CREATE_REVIEW', 'LANDLORD:CREATE_REVIEW')")
+    @PreAuthorize("hasAnyAuthority('USER:CREATE_REVIEW', 'LANDLORD:CREATE_REVIEW', 'ADMIN:CREATE_REVIEW')")
     public ApiResponse<ReviewResponse> createReview(@PathVariable String homestayId, @RequestBody ReviewRequest request) {
         return ApiResponse.<ReviewResponse>builder()
                 .result(userService.createReview(homestayId, request))

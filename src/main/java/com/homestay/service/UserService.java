@@ -169,6 +169,7 @@ public class UserService {
                 .userName(user.getFullName())
                 .avatar(user.getAvatar().getUrl())
                 .homestayId(homestay.getId())
+                .date(review.getCreatedAt())
                 .build();
     }
 }

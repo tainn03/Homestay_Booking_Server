@@ -30,6 +30,8 @@ VALUES ('USER:UPDATE_FAVORITE', 'USER');
 INSERT INTO public.permission (permission, role_name)
 VALUES ('USER:READ_FAVORITE', 'USER');
 INSERT INTO public.permission (permission, role_name)
+VALUES ('USER:CREATE_REVIEW', 'USER');
+INSERT INTO public.permission (permission, role_name)
 VALUES ('ADMIN:READ_USER', 'ADMIN');
 INSERT INTO public.permission (permission, role_name)
 VALUES ('ADMIN:READ_ALL_HOMESTAY', 'ADMIN');
@@ -39,6 +41,8 @@ INSERT INTO public.permission (permission, role_name)
 VALUES ('ADMIN:UPDATE_USER', 'ADMIN');
 INSERT INTO public.permission (permission, role_name)
 VALUES ('ADMIN:DELETE_USER', 'ADMIN');
+INSERT INTO public.permission (permission, role_name)
+VALUES ('ADMIN:CREATE_REVIEW', 'ADMIN');
 INSERT INTO public.permission (permission, role_name)
 VALUES ('LANDLORD:READ_OWN_HOMESTAY', 'LANDLORD');
 INSERT INTO public.permission (permission, role_name)
@@ -69,6 +73,8 @@ INSERT INTO public.permission (permission, role_name)
 VALUES ('LANDLORD:UPDATE_PRICE_ROOM', 'LANDLORD');
 INSERT INTO public.permission (permission, role_name)
 VALUES ('LANDLORD:UPDATE_DISCOUNT_ROOM', 'LANDLORD');
+INSERT INTO public.permission (permission, role_name)
+VALUES ('LANDLORD:CREATE_REVIEW', 'LANDLORD');
 
 -- CITY TABLE
 INSERT INTO public.city (id, "name")
