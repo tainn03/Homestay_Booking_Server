@@ -21,7 +21,7 @@ public interface HomestayMapper {
 
     @Mapping(target = "isFavorite", ignore = true)
     @Mapping(target = "userEmail", source = "user.email")
-    @Mapping(target = "urlImages", ignore = true)
+    @Mapping(target = "urlImages", expression = "java(homestay.getImages().stream().map(com.homestay.model.Image::getUrl).collect(java.util.stream.Collectors.toList()))")
     @Mapping(target = "rooms", ignore = true)
     @Mapping(target = "reviews", ignore = true)
     @Mapping(target = "typeHomestayName", source = "typeHomestay.name")

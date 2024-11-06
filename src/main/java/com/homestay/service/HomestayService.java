@@ -151,9 +151,6 @@ public class HomestayService {
         if (user != null) {
             homestayResponse.setFavorite(user.getFavoriteHomestays().contains(homestay));
         }
-        if (homestay.getImages() != null) {
-            homestayResponse.setUrlImages(homestay.getImages().stream().map(Image::getUrl).collect(toList()));
-        }
         if (homestay.getRooms() != null && homestay.getRooms().getFirst().getImages() != null) {
             double price = homestay.getRooms().stream()
                     .filter(room -> !Objects.equals(room.getStatus(), RoomStatus.DELETED.name()))

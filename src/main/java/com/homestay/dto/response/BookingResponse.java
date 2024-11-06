@@ -1,10 +1,12 @@
 package com.homestay.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.homestay.model.Payment;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -13,6 +15,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookingResponse {
     String id;
     LocalDate checkIn;
@@ -32,8 +35,10 @@ public class BookingResponse {
     String status;
     String note;
     String user;
+    LocalDateTime createdAt;
 
     List<RoomResponse> rooms;
     String homestayId;
+    HomestayResponse homestay;
     Payment payment;
 }
