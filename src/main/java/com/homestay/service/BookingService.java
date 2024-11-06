@@ -231,4 +231,13 @@ public class BookingService {
                 .collect(Collectors.toSet()));
         return response;
     }
+
+    public BookingResponse updateBookingStatus(String id, String status, String reason) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.BOOKING_NOT_FOUND));
+        booking.setStatus(status);
+        booking.setNote(reason != null ? reason : "");
+        bookingRepository.save(booking);
+        return getBookingResponse(booking);
+    }
 }

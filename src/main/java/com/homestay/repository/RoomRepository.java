@@ -15,7 +15,7 @@ public interface RoomRepository extends JpaRepository<Room, String> {
             "AND r.id NOT IN (" +
             "   SELECT rb.id FROM Room rb " +
             "   JOIN rb.bookings b " +
-            "   WHERE b.checkIn < ?3 AND b.checkOut > ?2" +
+            "   WHERE b.checkIn < ?3 AND b.checkOut > ?2 AND b.status <> 'DELETED' AND b.status <> 'REJECTED' " +
             ")")
     List<Room> findAvailableRoomsByHomestayId(String homestayId, LocalDate checkIn, LocalDate checkOut);
 
