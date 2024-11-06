@@ -3,13 +3,13 @@ package com.homestay.service;
 import com.homestay.constants.BookingStatus;
 import com.homestay.constants.DiscountType;
 import com.homestay.constants.PaymentStatus;
-import com.homestay.dto.response.AmenityResponse;
 import com.homestay.dto.response.BookingResponse;
-import com.homestay.dto.response.RoomResponse;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
 import com.homestay.mapper.BookingMapper;
 import com.homestay.mapper.DiscountMapper;
+import com.homestay.mapper.HomestayMapper;
+import com.homestay.mapper.RoomMapper;
 import com.homestay.model.*;
 import com.homestay.repository.BookingRepository;
 import com.homestay.repository.HomestayRepository;
@@ -30,7 +30,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +41,8 @@ public class BookingService {
     HomestayRepository homestayRepository;
     BookingMapper bookingMapper;
     DiscountMapper discountMapper;
+    RoomMapper roomMapper;
+    HomestayMapper homestayMapper;
 
     @Transactional
     public BookingResponse booking(String homestayId, String checkIn, String checkOut, int guests, String status, String roomId) {
@@ -155,8 +156,6 @@ public class BookingService {
                 totalCost += dailyRate;
             }
         }
-        double price = selectedRooms.stream().mapToDouble(Room::getPrice).sum();
-        double weekendPrice = selectedRooms.stream().mapToDouble(Room::getWeekendPrice).sum();
 
         Booking booking = Booking.builder()
                 .checkIn(LocalDate.parse(checkIn))
@@ -178,56 +177,13 @@ public class BookingService {
             booking.setId(bookingRepository.save(booking).getId());
         }
 
-        BookingResponse bookingResponse = bookingMapper.toBookingResponse(booking);
-        bookingResponse.setRooms(selectedRooms.stream()
-                .map(room -> RoomResponse.builder()
-                        .id(room.getId())
-                        .name(room.getName())
-                        .size(room.getSize())
-                        .build())
-                .toList());
-        bookingResponse.setHomestayId(homestayId);
-        bookingResponse.setPrice(price);
-        bookingResponse.setWeekendPrice(weekendPrice);
-        bookingResponse.setDiscounts(selectedRooms.stream()
-                .flatMap(room -> room.getDiscounts().stream())
-                .map(discountMapper::toDiscountResponse)
-                .collect(Collectors.toSet()));
-
-        return bookingResponse;
+        return getBookingResponse(booking);
     }
 
     public BookingResponse getBooking(String id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.BOOKING_NOT_FOUND));
-        BookingResponse response = bookingMapper.toBookingResponse(booking);
-        response.setRooms(booking.getRooms().stream()
-                .map(room -> RoomResponse.builder()
-                        .id(room.getId())
-                        .name(room.getName())
-                        .size(room.getSize())
-                        .price(room.getPrice())
-                        .weekendPrice(room.getWeekendPrice())
-                        .status(room.getStatus())
-                        .images(room.getImages().stream().map(Image::getUrl).collect(toList()))
-                        .bookings(room.getBookings().stream().map(Booking::getId).collect(toSet()))
-                        .amenities(room.getAmenities().stream().map(amenity -> AmenityResponse.builder()
-                                .name(amenity.getName())
-                                .type(amenity.getType())
-                                .build()).collect(toSet()))
-                        .discounts(room.getDiscounts().stream().map(discountMapper::toDiscountResponse).collect(toSet()))
-                        .priceCalendars(room.getPriceCalendars())
-                        .build())
-                .toList());
-        response.setHomestayId(booking.getRooms().getFirst().getHomestay().getId());
-        response.setPrice(booking.getRooms().stream().mapToDouble(Room::getPrice).sum());
-        response.setWeekendPrice(booking.getRooms().stream().mapToDouble(Room::getWeekendPrice).sum());
-        response.setDiscounts(booking.getRooms().stream()
-                .flatMap(room -> room.getDiscounts().stream())
-                .map(discountMapper::toDiscountResponse)
-                .collect(Collectors.toSet()));
-        response.setPayment(booking.getPayment());
-        return response;
+        return getBookingResponse(booking);
     }
 
     public void createPayment(String orderInfo, LocalDateTime paymentTime, int paymentStatus, String totalPrice, String transactionId, String vnpBankCode, String vnpBankTranNo, String vnpCardType, String vnpTxnRef, String vnpSecureHash) {
@@ -248,5 +204,31 @@ public class BookingService {
         booking.setNote("Đã thanh toán");
         booking.setStatus(BookingStatus.PAID.name());
         bookingRepository.save(booking);
+    }
+
+    public List<BookingResponse> getMyBooking() {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        List<Booking> bookings = bookingRepository.findByUserId(user.getId());
+        return bookings.stream()
+                .map(this::getBookingResponse)
+                .sorted(Comparator.comparing(BookingResponse::getCreatedAt).reversed())
+                .toList();
+    }
+
+    private BookingResponse getBookingResponse(Booking booking) {
+        BookingResponse response = bookingMapper.toBookingResponse(booking);
+        response.setRooms(booking.getRooms().stream()
+                .map(roomMapper::toRoomResponse)
+                .collect(toList()));
+        response.setHomestayId(booking.getRooms().getFirst().getHomestay().getId());
+        response.setHomestay(homestayRepository.findById(booking.getRooms().getFirst().getHomestay().getId())
+                .map(homestayMapper::toHomestayResponse)
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND)));
+        response.setDiscounts(booking.getRooms().stream()
+                .flatMap(room -> room.getDiscounts().stream())
+                .map(discountMapper::toDiscountResponse)
+                .collect(Collectors.toSet()));
+        return response;
     }
 }

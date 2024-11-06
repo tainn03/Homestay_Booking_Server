@@ -10,6 +10,8 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/booking")
 @RequiredArgsConstructor
@@ -45,6 +47,14 @@ public class BookingController {
     public ApiResponse<BookingResponse> getBooking(@PathVariable String id) {
         return ApiResponse.<BookingResponse>builder()
                 .result(bookingService.getBooking(id))
+                .build();
+    }
+
+    @GetMapping("/mine")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'LANDLORD')")
+    public ApiResponse<List<BookingResponse>> getMyBooking() {
+        return ApiResponse.<List<BookingResponse>>builder()
+                .result(bookingService.getMyBooking())
                 .build();
     }
 }
