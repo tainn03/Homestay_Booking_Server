@@ -6,10 +6,7 @@ import com.homestay.constants.PaymentStatus;
 import com.homestay.dto.response.BookingResponse;
 import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
-import com.homestay.mapper.BookingMapper;
-import com.homestay.mapper.DiscountMapper;
-import com.homestay.mapper.HomestayMapper;
-import com.homestay.mapper.RoomMapper;
+import com.homestay.mapper.*;
 import com.homestay.model.*;
 import com.homestay.repository.BookingRepository;
 import com.homestay.repository.HomestayRepository;
@@ -43,6 +40,7 @@ public class BookingService {
     DiscountMapper discountMapper;
     RoomMapper roomMapper;
     HomestayMapper homestayMapper;
+    UserMapper userMapper;
 
     @Transactional
     public BookingResponse booking(String homestayId, String checkIn, String checkOut, int guests, String status, String roomId) {
@@ -216,8 +214,21 @@ public class BookingService {
                 .toList();
     }
 
+    public List<BookingResponse> getAllBookings() {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        List<Booking> bookings = bookingRepository.findByHomestayIds(user.getHomestays().stream()
+                .map(Homestay::getId)
+                .collect(Collectors.toSet()));
+        return bookings.stream()
+                .map(this::getBookingResponse)
+                .sorted(Comparator.comparing(BookingResponse::getCreatedAt).reversed())
+                .toList();
+    }
+
     private BookingResponse getBookingResponse(Booking booking) {
         BookingResponse response = bookingMapper.toBookingResponse(booking);
+        response.setUserInformation(userMapper.toUserResponse(booking.getUser()));
         response.setRooms(booking.getRooms().stream()
                 .map(roomMapper::toRoomResponse)
                 .collect(toList()));

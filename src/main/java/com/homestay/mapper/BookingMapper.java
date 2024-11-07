@@ -7,6 +7,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface BookingMapper {
+    @Mapping(target = "userInformation", ignore = true)
     @Mapping(target = "createdAt", source = "createdAt")
     @Mapping(target = "user", source = "user.email")
     @Mapping(target = "nights", expression = "java((int) java.time.temporal.ChronoUnit.DAYS.between(booking.getCheckIn(), booking.getCheckOut()))")

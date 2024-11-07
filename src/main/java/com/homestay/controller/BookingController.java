@@ -58,6 +58,14 @@ public class BookingController {
                 .build();
     }
 
+    @GetMapping("/landlord")
+    @PreAuthorize("hasAnyRole('ADMIN', 'LANDLORD')")
+    public ApiResponse<List<BookingResponse>> getAllBookings() {
+        return ApiResponse.<List<BookingResponse>>builder()
+                .result(bookingService.getAllBookings())
+                .build();
+    }
+
     @PutMapping("/status/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'LANDLORD')")
     public ApiResponse<BookingResponse> updateBookingStatus(@PathVariable String id,

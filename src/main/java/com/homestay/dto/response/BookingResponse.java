@@ -35,6 +35,7 @@ public class BookingResponse {
     String status;
     String note;
     String user;
+    UserResponse userInformation;
     LocalDateTime createdAt;
 
     List<RoomResponse> rooms;
