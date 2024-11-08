@@ -18,4 +18,5 @@ public class MessageResponse {
     String text;
     String time;
     boolean read;
+    String type;
 }

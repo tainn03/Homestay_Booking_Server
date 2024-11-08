@@ -17,11 +17,11 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -40,6 +40,9 @@ public class ChatService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         User receiver = userRepository.findById(receiverId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        if (sender.getId().equals(receiver.getId())) {
+            return null;
+        }
         Conversation conversation = findOrCreateConversation(sender, receiver);
 
         markMessagesAsRead(conversation.getId());
@@ -77,7 +80,7 @@ public class ChatService {
 
     private void sendPusherNotification(String id, Message message) {
         try {
-            pusherService.sendMessage("chat", "message-received", message);
+            pusherService.sendMessage("chat", "message-received", id);
         } catch (Exception e) {
             log.error("FAILED TO SEND PUSH NOTIFICATION: {}", e.getMessage());
         }
@@ -95,79 +98,50 @@ public class ChatService {
                 .messages(conversation.getMessages().stream()
                         .sorted(Comparator.comparing(BaseEntity::getCreatedAt))
                         .map(m -> MessageResponse.builder()
+                                .id(m.getId())
                                 .sender(m.getSender())
                                 .receiver(m.getReceiver())
                                 .text(m.getText())
                                 .time(m.getCreatedAt()
-                                        .format(DateTimeFormatter.ofPattern("h:mm a")))
+                                        .format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")))
                                 .read(m.isRead())
+                                .type(m.getSender().equals(receiver.getUsername()) ? "received" : "sent")
                                 .build())
                         .toList())
                 .build();
     }
 
-    public List<ConversationResponse> getMyConversations(String senderId) {
-        User sender = userRepository.findById(senderId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        return conversationRepository.findByUser(sender).stream()
-                .map(c -> {
-                    User receiver = c.getUser1().getId().equals(senderId) ? c.getUser2() : c.getUser1();
-                    return ConversationResponse.builder()
-                            .id(c.getId())
-                            .userId(receiver.getId())
-                            .name(receiver.getFullName())
-                            .email(receiver.getEmail())
-                            .profilePic(receiver.getAvatar() != null ? receiver.getAvatar().getUrl() : "")
-                            .lastMessage(c.getMessages() != null && !c.getMessages().isEmpty() ? c.getMessages().get(c.getMessages().size() - 1).getText() : "")
-                            .role(receiver.getRole().getRoleName())
-                            .messages(c.getMessages().stream()
-                                    .sorted(Comparator.comparing(BaseEntity::getCreatedAt))
-                                    .map(m -> MessageResponse.builder()
-                                            .sender(m.getSender().equals(sender.getUsername()) ? "user" : m.getSender())
-                                            .receiver(m.getReceiver())
-                                            .text(m.getText())
-                                            .time(m.getCreatedAt().
-                                                    format(DateTimeFormatter.ofPattern("h:mm a")))
-                                            .read(m.isRead())
-                                            .build())
-                                    .toList())
-                            .build();
-                })
-                .sorted(Comparator.comparing(c -> c.getMessages().isEmpty() ? null : c.getMessages().getLast().getTime(), Comparator.nullsLast(Comparator.reverseOrder())))
-                .toList();
-    }
-
     public List<ConversationResponse> getAllConversations(String senderId) {
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        List<User> allUsers = userRepository.findAll();
-        return allUsers.stream()
-                .filter(user -> !user.getId().equals(senderId))
-                .map(user -> {
-                    Optional<Conversation> conversationOpt = conversationRepository.findBySenderAndReceiver(sender, user);
-                    Conversation conversation = conversationOpt.orElse(null);
-                    List<MessageResponse> messages = conversation != null ? conversation.getMessages().stream()
-                            .sorted(Comparator.comparing(BaseEntity::getCreatedAt))
-                            .map(m -> MessageResponse.builder()
-                                    .sender(m.getSender().equals(sender.getUsername()) ? "user" : m.getSender())
-                                    .receiver(m.getReceiver())
-                                    .text(m.getText())
-                                    .time(m.getCreatedAt().format(DateTimeFormatter.ofPattern("h:mm a")))
-                                    .read(m.isRead())
-                                    .build())
-                            .toList() : new ArrayList<>();
-                    return ConversationResponse.builder()
-                            .id(conversation != null ? conversation.getId() : null)
-                            .userId(user.getId())
-                            .name(user.getFullName())
-                            .email(user.getEmail())
-                            .profilePic(user.getAvatar() != null ? user.getAvatar().getUrl() : "")
-                            .lastMessage(conversation != null && !conversation.getMessages().isEmpty() ? conversation.getMessages().get(conversation.getMessages().size() - 1).getText() : "")
-                            .role(user.getRole().getRoleName())
-                            .messages(messages)
-                            .build();
+
+        List<Conversation> userConversations = conversationRepository.findByUser(sender);
+        if (userConversations.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return userConversations.stream()
+                .map(c -> {
+                    User receiver = c.getUser1().getId().equals(senderId) ? c.getUser2() : c.getUser1();
+                    return buildConversationResponse(c, receiver, "");
                 })
-                .sorted(Comparator.comparing(c -> c.getMessages().isEmpty() ? null : c.getMessages().getLast().getTime(), Comparator.nullsLast(Comparator.reverseOrder())))
+                .sorted(Comparator.comparing(c -> {
+                    if (c.getMessages().isEmpty()) {
+                        return null;
+                    }
+                    String time = c.getMessages().getLast().getTime();
+                    return LocalDateTime.parse(time, DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"));
+                }, Comparator.nullsLast(Comparator.reverseOrder())))
                 .toList();
+    }
+
+    public ConversationResponse getCurrentConversation(String senderId, String receiverId) {
+        User sender = userRepository.findById(senderId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User receiver = userRepository.findById(receiverId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        Conversation conversation = conversationRepository.findBySenderAndReceiver(sender, receiver)
+                .orElse(null);
+        return buildConversationResponse(conversation, receiver, "");
     }
 }

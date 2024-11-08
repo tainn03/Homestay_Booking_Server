@@ -1,6 +1,5 @@
 package com.homestay.service.external;
 
-import com.homestay.model.Message;
 import com.pusher.rest.Pusher;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -16,7 +15,7 @@ import static lombok.AccessLevel.PRIVATE;
 public class PusherService {
     Pusher pusher;
 
-    public void sendMessage(String channel, String event, Message message) {
-        pusher.trigger(channel, event, Collections.singletonMap("message", message.getText()));
+    public void sendMessage(String channel, String event, String conversationId) {
+        pusher.trigger(channel, event, Collections.singletonMap("message", conversationId));
     }
 }
