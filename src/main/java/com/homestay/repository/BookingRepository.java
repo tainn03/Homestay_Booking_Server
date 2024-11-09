@@ -14,4 +14,6 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
 
     @Query("SELECT DISTINCT b FROM Booking b JOIN b.rooms r WHERE r.homestay.id IN ?1")
     List<Booking> findByHomestayIds(Set<String> id);
+
+    List<Booking> findByStatus(String name);
 }

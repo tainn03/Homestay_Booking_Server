@@ -20,8 +20,8 @@ import static lombok.AccessLevel.PRIVATE;
 public class EmailService {
     JavaMailSender mailSender;
 
-    public CompletableFuture<Void> sendEmail(String to, String name, String link, String message, String subject, String buttonText) {
-        return CompletableFuture.runAsync(() -> {
+    public void sendEmail(String to, String name, String link, String message, String subject, String buttonText) {
+        CompletableFuture.runAsync(() -> {
             try {
                 String email = buildEmail(name, link, message, subject, buttonText);
                 MimeMessage mimeMessage = mailSender.createMimeMessage();

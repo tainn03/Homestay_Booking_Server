@@ -12,10 +12,12 @@ import com.homestay.repository.BookingRepository;
 import com.homestay.repository.HomestayRepository;
 import com.homestay.repository.RoomRepository;
 import com.homestay.repository.UserRepository;
+import com.homestay.service.external.EmailService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +34,7 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class BookingService {
+    EmailService emailService;
     BookingRepository bookingRepository;
     RoomRepository roomRepository;
     UserRepository userRepository;
@@ -41,6 +44,26 @@ public class BookingService {
     RoomMapper roomMapper;
     HomestayMapper homestayMapper;
     UserMapper userMapper;
+
+    @Scheduled(fixedRate = 1000 * 60 * 60 * 12)
+    public void remindBooking() {
+        List<Booking> bookings = bookingRepository.findByStatus(BookingStatus.PENDING.name());
+        for (Booking booking : bookings) {
+            if (LocalDate.now().isEqual(booking.getCheckIn().minusDays(1))) {
+                if (Objects.equals(booking.getStatus(), BookingStatus.PENDING.name())) {
+                    emailService.sendEmail(booking.getUser().getEmail(), booking.getUser().getFullName(),
+                            "http://localhost:3000/pay?id=" + booking.getId(),
+                            "Ngày mai là ngày check-in của bạn, vui lòng thanh toán để hoàn tất quá trình đặt phòng.",
+                            "Nhắc hẹn thanh toán", "Thanh toán ngay");
+                } else if (Objects.equals(booking.getStatus(), BookingStatus.PAID.name())) {
+                    emailService.sendEmail(booking.getUser().getEmail(), booking.getUser().getFullName(),
+                            "http://localhost:3000/bookingdetail?id=" + booking.getId(),
+                            "Ngày mai là ngày check-in của bạn, vui lòng chuẩn bị.",
+                            "Nhắc hẹn check-in", "Chuẩn bị ngay");
+                }
+            }
+        }
+    }
 
     @Transactional
     public BookingResponse booking(String homestayId, String checkIn, String checkOut, int guests, String status, String roomId) {
