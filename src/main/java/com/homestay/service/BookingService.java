@@ -251,4 +251,119 @@ public class BookingService {
         bookingRepository.save(booking);
         return getBookingResponse(booking);
     }
+
+    @Transactional
+    public BookingResponse updateBooking(String id, String checkIn, String checkOut, int guests) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.BOOKING_NOT_FOUND));
+
+        if (LocalDate.parse(checkIn).isAfter(LocalDate.parse(checkOut))) {
+            throw new BusinessException(ErrorCode.CHECKIN_AFTER_CHECKOUT);
+        }
+        if (LocalDate.parse(checkIn).isBefore(LocalDate.now()) || LocalDate.parse(checkOut).isBefore(LocalDate.now())) {
+            throw new BusinessException(ErrorCode.CHECKIN_CHECKOUT_IN_PAST);
+        }
+
+        List<Room> selectedRooms = booking.getRooms();
+        int remainingGuests = guests;
+
+        // Get available rooms
+        List<Room> availableRooms = roomRepository.findAvailableRoomsByHomestayId(booking.getRooms().getFirst().getHomestay().getId(), LocalDate.parse(checkIn), LocalDate.parse(checkOut));
+        selectedRooms.stream().map(Room::getId).forEach(roomId -> availableRooms.removeIf(room -> room.getId().equals(roomId)));
+        availableRooms.addAll(selectedRooms);
+        selectedRooms.clear();
+        if (availableRooms.isEmpty() || remainingGuests > availableRooms.stream().mapToInt(Room::getSize).sum()) {
+            throw new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS);
+        }
+
+        // Sort rooms based on the number of guests
+        if (remainingGuests <= availableRooms.stream().mapToInt(Room::getSize).max().orElse(0) && remainingGuests > 0) {
+            availableRooms.sort(Comparator.comparingInt(Room::getSize));
+            int finalRemainingGuests = remainingGuests;
+            Room suitableRoom = availableRooms.stream()
+                    .filter(room -> room.getSize() >= finalRemainingGuests)
+                    .min(Comparator.comparingInt(Room::getSize))
+                    .orElseThrow(() -> new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS));
+            selectedRooms.add(suitableRoom);
+        } else {
+            while (remainingGuests > 0) {
+                availableRooms.sort(Comparator.comparingInt(Room::getSize));
+                Room largestRoom = availableRooms.getLast();
+                selectedRooms.add(largestRoom);
+                remainingGuests -= largestRoom.getSize();
+                availableRooms.remove(largestRoom);
+                if (remainingGuests <= availableRooms.stream().mapToInt(Room::getSize).max().orElse(0)) {
+                    int finalRemainingGuests1 = remainingGuests;
+                    Room suitableRoom = availableRooms.stream()
+                            .filter(room -> room.getSize() >= finalRemainingGuests1)
+                            .min(Comparator.comparingInt(Room::getSize))
+                            .orElseThrow(() -> new BusinessException(ErrorCode.NO_AVAILABLE_ROOMS));
+                    selectedRooms.add(suitableRoom);
+                    remainingGuests -= suitableRoom.getSize();
+                }
+            }
+        }
+
+        // Calculate costs and discounts
+        double originalCost = 0;
+        double totalCost = 0;
+        double totalDiscount = 0;
+        int totalNights = (int) ChronoUnit.DAYS.between(LocalDate.parse(checkIn), LocalDate.parse(checkOut));
+        for (LocalDate date = LocalDate.parse(checkIn); !date.isEqual(LocalDate.parse(checkOut)); date = date.plusDays(1)) {
+            LocalDate finalDate = date;
+            for (Room room : selectedRooms) {
+                double dailyRate = room.getPrice();
+                if (finalDate.getDayOfWeek() == DayOfWeek.SATURDAY || finalDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                    dailyRate = room.getWeekendPrice();
+                }
+                Optional<PriceCalendar> calendarPrice = room.getPriceCalendars().stream()
+                        .filter(pc -> pc.getDate().equals(finalDate.toString()))
+                        .findFirst();
+                if (calendarPrice.isPresent()) {
+                    dailyRate = calendarPrice.get().getPrice();
+                }
+
+                originalCost += dailyRate;
+
+                double discountValue = 0;
+                for (Discount discount : room.getDiscounts()) {
+                    if (discount.getStartDate() != null && discount.getEndDate() != null
+                            && !finalDate.isBefore(discount.getStartDate().toLocalDate())
+                            && !finalDate.isAfter(discount.getEndDate().toLocalDate())) {
+                        discountValue += discount.getValue();
+                    } else if ((Objects.equals(discount.getType(), DiscountType.WEEKLY.toString()) && totalNights >= 7) ||
+                            (Objects.equals(discount.getType(), DiscountType.MONTHLY.toString()) && totalNights >= 28)) {
+                        discountValue += discount.getValue();
+                    }
+                }
+                if (discountValue == 0) {
+                    for (Discount discount : booking.getRooms().get(0).getHomestay().getDiscounts()) {
+                        if (discount.getStartDate() != null && discount.getEndDate() != null
+                                && !finalDate.isBefore(discount.getStartDate().toLocalDate())
+                                && !finalDate.isAfter(discount.getEndDate().toLocalDate())) {
+                            discountValue += discount.getValue();
+                        } else if ((Objects.equals(discount.getType(), DiscountType.WEEKLY.toString()) && totalNights >= 7) ||
+                                (Objects.equals(discount.getType(), DiscountType.MONTHLY.toString()) && totalNights >= 28)) {
+                            discountValue += discount.getValue();
+                        }
+                    }
+                }
+                totalDiscount += discountValue;
+                dailyRate -= (dailyRate * discountValue) / 100;
+                totalCost += dailyRate;
+            }
+        }
+
+        booking.setCheckIn(LocalDate.parse(checkIn));
+        booking.setCheckOut(LocalDate.parse(checkOut));
+        booking.setGuests(guests);
+        booking.setTotalCost((int) totalCost);
+        booking.setOriginalTotal((int) originalCost);
+        booking.setTotalDiscount((int) totalDiscount);
+        booking.setRooms(selectedRooms);
+
+        bookingRepository.save(booking);
+
+        return getBookingResponse(booking);
+    }
 }

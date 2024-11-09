@@ -75,4 +75,15 @@ public class BookingController {
                 .result(bookingService.updateBookingStatus(id, status, reason))
                 .build();
     }
+
+    @PutMapping("{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'LANDLORD')")
+    public ApiResponse<BookingResponse> updateBooking(@PathVariable String id,
+                                                      @RequestParam String checkIn,
+                                                      @RequestParam String checkOut,
+                                                      @RequestParam int guests) {
+        return ApiResponse.<BookingResponse>builder()
+                .result(bookingService.updateBooking(id, checkIn, checkOut, guests))
+                .build();
+    }
 }
