@@ -8,7 +8,6 @@ import com.homestay.dto.response.HomestayResponse;
 import com.homestay.dto.response.UserResponse;
 import com.homestay.model.Discount;
 import com.homestay.service.HomestayService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -76,9 +75,9 @@ public class HomestayController {
                 .build();
     }
 
-    @PutMapping
+    @PutMapping("/info")
     @PreAuthorize("hasAuthority('LANDLORD:UPDATE_HOMESTAY')")
-    public ApiResponse<HomestayResponse> updateHomestayInfo(@Valid @RequestBody HomestayRequest request) {
+    public ApiResponse<HomestayResponse> updateHomestayInfo(@RequestBody HomestayRequest request) {
         return ApiResponse.<HomestayResponse>builder()
                 .result(homestayService.updateHomestay(request))
                 .build();

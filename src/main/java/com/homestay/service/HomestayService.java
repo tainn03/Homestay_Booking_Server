@@ -11,6 +11,7 @@ import com.homestay.exception.BusinessException;
 import com.homestay.exception.ErrorCode;
 import com.homestay.mapper.DiscountMapper;
 import com.homestay.mapper.HomestayMapper;
+import com.homestay.mapper.RoomMapper;
 import com.homestay.mapper.UserMapper;
 import com.homestay.model.*;
 import com.homestay.repository.*;
@@ -35,6 +36,7 @@ public class HomestayService {
     HomestayMapper homestayMapper;
     DiscountMapper discountMapper;
     UserMapper userMapper;
+    RoomMapper roomMapper;
 
     HomestayRepository homestayRepository;
     TypeHomestayRepository typeHomestayRepository;
@@ -168,22 +170,7 @@ public class HomestayService {
                     .collect(toSet()));
             homestayResponse.setRooms(homestay.getRooms().stream()
                     .filter(room -> !Objects.equals(room.getStatus(), RoomStatus.DELETED.name()))
-                    .map(room -> RoomResponse.builder()
-                            .id(room.getId())
-                            .name(room.getName())
-                            .size(room.getSize())
-                            .price(room.getPrice())
-                            .weekendPrice(room.getWeekendPrice())
-                            .status(room.getStatus())
-                            .images(room.getImages().stream().map(Image::getUrl).collect(toList()))
-                            .bookings(room.getBookings().stream().map(Booking::getId).collect(toSet()))
-                            .amenities(room.getAmenities().stream().map(amenity -> AmenityResponse.builder()
-                                    .name(amenity.getName())
-                                    .type(amenity.getType())
-                                    .build()).collect(toSet()))
-                            .discounts(room.getDiscounts().stream().map(discountMapper::toDiscountResponse).collect(toSet()))
-                            .priceCalendars(room.getPriceCalendars())
-                            .build())
+                    .map(roomMapper::toRoomResponse)
                     .sorted(Comparator.comparing(RoomResponse::getName))
                     .collect(toList()));
         }

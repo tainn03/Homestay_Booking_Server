@@ -94,7 +94,6 @@ public class RoomService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
 
         room = roomMapper.toRoom(room, request);
-
         room.getAmenities().clear();
         room.getAmenities().addAll(request.getAmenities().stream().map(amenityRequest ->
                         amenityRepository.findById(amenityRequest.getName())
@@ -121,6 +120,7 @@ public class RoomService {
             discount.setDescription(discountRequest.getDescription());
             discount.setStartDate(discountRequest.getStartDate());
             discount.setEndDate(discountRequest.getEndDate());
+            discount.setRoom(finalRoom);
             finalRoom.getDiscounts().add(discount);
         });
 
@@ -133,9 +133,8 @@ public class RoomService {
         cloudinaryService.deleteFiles(urlsToDelete);
         imageRepository.deleteByUrlIn(urlsToDelete);
 
-        roomRepository.save(room);
-
-        return roomMapper.toRoomResponse(room);
+        Room savedRoom = roomRepository.save(room);
+        return roomMapper.toRoomResponse(savedRoom);
     }
 
     @Transactional
