@@ -271,8 +271,8 @@ public class BookingService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.BOOKING_NOT_FOUND));
         booking.setStatus(status);
         booking.setNote(reason != null ? reason : "");
-        bookingRepository.save(booking);
-        return getBookingResponse(booking);
+        Booking savedBooking = bookingRepository.save(booking);
+        return getBookingResponse(savedBooking);
     }
 
     @Transactional

@@ -22,4 +22,6 @@ public interface HomestayRepository extends JpaRepository<Homestay, String> {
 
     @Query("SELECT h FROM Homestay h WHERE h.district.id = ?1 OR h.typeHomestay = ?2")
     List<Homestay> findByDistrictIdInOrTypeHomestay(List<Integer> districtId, TypeHomestay typeHomestay);
+
+    List<Homestay> findByTypeHomestay(TypeHomestay typeHomestay);
 }

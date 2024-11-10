@@ -22,6 +22,8 @@ public class HomestayResponse {
     String phone;
     String status;
     double price;
+    double weekendPrice;
+    double maxCurrentDiscount;
 
     String userEmail;
     boolean isFavorite;

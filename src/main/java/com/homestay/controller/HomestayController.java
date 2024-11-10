@@ -59,11 +59,17 @@ public class HomestayController {
                 .build();
     }
 
-    @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN:READ_ALL_HOMESTAY')")
+    @GetMapping("/public/all")
     public ApiResponse<List<HomestayResponse>> getAllHomestays() {
         return ApiResponse.<List<HomestayResponse>>builder()
                 .result(homestayService.getAllHomestays())
+                .build();
+    }
+
+    @GetMapping("/public/type/{type}")
+    public ApiResponse<List<HomestayResponse>> getHomestayByType(@PathVariable String type) {
+        return ApiResponse.<List<HomestayResponse>>builder()
+                .result(homestayService.getHomestayByType(type))
                 .build();
     }
 

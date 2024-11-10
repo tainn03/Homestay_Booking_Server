@@ -928,11 +928,11 @@ VALUES (701, 'thị xã', 'Tân Châu', 1),
 
 -- TYPE HOMESTAY TABLE
 INSERT INTO public.type_homestay (name, url_image)
-VALUES ('Được ưa chuộng', 'https://a0.muscache.com/pictures/3726d94b-534a-42b8-bca0-a0304d912260.jpg');
+VALUES ('Tất cả', 'https://a0.muscache.com/pictures/3726d94b-534a-42b8-bca0-a0304d912260.jpg');
 INSERT INTO public.type_homestay (name, url_image)
 VALUES ('Mới', 'https://a0.muscache.com/pictures/c0fa9598-4e37-40f3-b734-4bd0e2377add.jpg');
 INSERT INTO public.type_homestay (name, url_image)
-VALUES ('Thật ấn tượng', 'https://a0.muscache.com/pictures/c5a4f6fc-c92c-4ae8-87dd-57f1ff1b89a6.jpg');
+VALUES ('Được ưu chuộng', 'https://a0.muscache.com/pictures/c5a4f6fc-c92c-4ae8-87dd-57f1ff1b89a6.jpg');
 INSERT INTO public.type_homestay (name, url_image)
 VALUES ('Nhà nghỉ dưỡng', 'https://a0.muscache.com/pictures/3b1eb541-46d9-4bef-abc4-c37d77e3c21b.jpg');
 INSERT INTO public.type_homestay (name, url_image)

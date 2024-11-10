@@ -24,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static java.util.stream.Collectors.toList;
@@ -159,7 +160,22 @@ public class HomestayService {
                     .mapToDouble(Room::getPrice)
                     .min()
                     .orElse(0);
+            double weekendPrice = homestay.getRooms().stream()
+                    .filter(room -> !Objects.equals(room.getStatus(), RoomStatus.DELETED.name()))
+                    .mapToDouble(Room::getWeekendPrice)
+                    .min()
+                    .orElse(0);
+            double maxCurrentDiscount = homestay.getRooms().stream()
+                    .filter(room -> !Objects.equals(room.getStatus(), RoomStatus.DELETED.name()))
+                    .flatMap(room -> room.getDiscounts().stream())
+                    .filter(discount -> discount.getStartDate() != null && discount.getEndDate() != null &&
+                            (!discount.getStartDate().isAfter(LocalDateTime.now()) && !discount.getEndDate().isBefore(LocalDateTime.now())))
+                    .mapToDouble(Discount::getValue)
+                    .max()
+                    .orElse(0);
+            homestayResponse.setMaxCurrentDiscount(maxCurrentDiscount);
             homestayResponse.setPrice(price);
+            homestayResponse.setWeekendPrice(weekendPrice);
             homestayResponse.setAmenities(homestay.getRooms().stream()
                     .filter(room -> !Objects.equals(room.getStatus(), RoomStatus.DELETED.name()))
                     .flatMap(room -> room.getAmenities().stream())
@@ -554,5 +570,28 @@ public class HomestayService {
                     return toHomeStayResponseWithRelationship(homestay1, homestayResponse1);
                 }).collect(toSet()));
         return response;
+    }
+
+    public List<HomestayResponse> getHomestayByType(String type) {
+        TypeHomestay typeHomestay = typeHomestayRepository.findByName(type)
+                .orElseThrow(() -> new BusinessException(ErrorCode.TYPE_HOMESTAY_NOT_FOUND));
+        List<Homestay> homestays = homestayRepository.findByTypeHomestay(typeHomestay);
+        if (Objects.equals(typeHomestay.getName(), "Được ưu chuộng")) {
+            homestays = homestayRepository.findAll().stream().sorted(Comparator.comparing(homestay -> {
+                double rating = homestay.getReviews().stream()
+                        .mapToDouble(Review::getRating)
+                        .average()
+                        .orElse(0);
+                return -rating;
+            })).toList();
+        } else if (Objects.equals(typeHomestay.getName(), "Mới")) {
+            homestays = homestayRepository.findAll().stream().sorted(Comparator.comparing(Homestay::getCreatedAt).reversed()).toList();
+        }
+        return homestays.stream()
+                .map(homestay -> {
+                    HomestayResponse response = homestayMapper.toHomestayResponse(homestay);
+                    return toHomeStayResponseWithRelationship(homestay, response);
+                })
+                .collect(toList());
     }
 }
