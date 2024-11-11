@@ -20,6 +20,9 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,6 +53,7 @@ public class HomestayService {
 
     CloudinaryService cloudinaryService;
 
+    @CachePut(value = "homestays", key = "#result.id")
     public HomestayResponse createHomestay(@Valid HomestayRequest request) {
         if (homestayRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new BusinessException(ErrorCode.HOMESTAY_ALREADY_EXIST);
@@ -116,6 +120,7 @@ public class HomestayService {
         return toHomeStayResponseWithRelationship(savedHomestay, homestayResponse);
     }
 
+    @CachePut(value = "homestays", key = "#result.id")
     @Transactional
     public HomestayResponse updateHomestayImages(List<MultipartFile> images, String id) {
         Homestay homestay = homestayRepository.findById(id)
@@ -212,6 +217,7 @@ public class HomestayService {
         return homestayResponse;
     }
 
+    @Cacheable(value = "homestays")
     public List<HomestayResponse> getAllHomestays() {
         List<Homestay> homestays = homestayRepository.findAll();
         return homestays.stream()
@@ -222,6 +228,7 @@ public class HomestayService {
                 .collect(toList());
     }
 
+    @Cacheable(value = "homestays")
     public List<HomestayResponse> getHomestayByOwner() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
@@ -235,6 +242,7 @@ public class HomestayService {
                 .collect(toList());
     }
 
+    @CachePut(value = "homestays", key = "#result.id")
     @Transactional // Lỗi chưa cập nhật được homestay
     public HomestayResponse updateHomestay(HomestayRequest request) {
         Homestay homestay = homestayRepository.findByEmail(request.getEmail())
@@ -282,6 +290,7 @@ public class HomestayService {
         return toHomeStayResponseWithRelationship(homestay, homestayResponse);
     }
 
+    @CacheEvict(value = "homestays", key = "#id")
     public String deleteHomestay(String id) {
         Homestay homestay = homestayRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
@@ -290,6 +299,7 @@ public class HomestayService {
         return "Delete homestay successfully";
     }
 
+    @CachePut(value = "homestays", key = "#result.id")
     @Transactional
     public HomestayResponse updateHomestayPhoto(List<MultipartFile> photos, String id) {
         Homestay homestay = homestayRepository.findById(id)
@@ -319,6 +329,7 @@ public class HomestayService {
         return toHomeStayResponseWithRelationship(homestay, homestayResponse);
     }
 
+    @Cacheable(value = "homestays")
     public List<HomestayResponse> searchHomestays(String query, String filter) {
         String[] keywords = Arrays.stream(query.split("[\\s,.]+"))
                 .map(keyword -> keyword.substring(0, 1).toUpperCase() + keyword.substring(1).toLowerCase())
@@ -418,6 +429,7 @@ public class HomestayService {
         return false;
     }
 
+    @Cacheable(value = "homestays", key = "#id")
     public HomestayResponse getHomestayById(String id) {
         Homestay homestay = homestayRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
@@ -425,6 +437,7 @@ public class HomestayService {
         return toHomeStayResponseWithRelationship(homestay, response);
     }
 
+    @CachePut(value = "homestays", key = "#result.id")
     public HomestayResponse updateHomestaySystemDiscount(ChangeDiscountValueRequest request, String id) {
         Homestay homestay = homestayRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
@@ -504,6 +517,7 @@ public class HomestayService {
         return "Delete discount successfully";
     }
 
+    @CachePut(value = "homestays", key = "#result.id")
     public HomestayResponse addNewHomestayImages(List<MultipartFile> images, String id) {
         Homestay homestay = homestayRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.HOMESTAY_NOT_FOUND));
@@ -525,6 +539,7 @@ public class HomestayService {
         return toHomeStayResponseWithRelationship(homestay, homestayResponse);
     }
 
+    @CacheEvict(value = "homestays", key = "#id")
     @Transactional
     public HomestayResponse deleteHomestayImages(List<String> images, String id) {
         Homestay homestay = homestayRepository.findById(id)
@@ -546,6 +561,7 @@ public class HomestayService {
         return toHomeStayResponseWithRelationship(homestay, homestayResponse);
     }
 
+    @Cacheable(value = "homestays")
     public List<HomestayResponse> getFavoriteHomestay() {
         User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
@@ -572,6 +588,7 @@ public class HomestayService {
         return response;
     }
 
+    @Cacheable(value = "homestays")
     public List<HomestayResponse> getHomestayByType(String type) {
         TypeHomestay typeHomestay = typeHomestayRepository.findByName(type)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TYPE_HOMESTAY_NOT_FOUND));

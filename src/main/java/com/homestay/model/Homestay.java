@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
@@ -15,7 +16,7 @@ import java.util.Set;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "homestay")
-public class Homestay extends BaseEntity {
+public class Homestay extends BaseEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;

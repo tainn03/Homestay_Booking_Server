@@ -7,6 +7,7 @@ import com.homestay.filter.JwtAuthenticationFilter;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -33,6 +34,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 @EnableMethodSecurity
 @EnableScheduling
+@EnableCaching
 public class ProjectSecurityConfig {
     AuthenticationProvider authenticationProvider;
     JwtAuthenticationFilter jwtAuthenticationFilter;
