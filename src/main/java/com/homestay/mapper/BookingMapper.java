@@ -9,6 +9,7 @@ import org.mapstruct.Mapping;
 public interface BookingMapper {
     @Mapping(target = "userInformation", ignore = true)
     @Mapping(target = "createdAt", source = "createdAt")
+    @Mapping(target = "updatedAt", source = "updatedAt")
     @Mapping(target = "user", source = "user.email")
     @Mapping(target = "nights", expression = "java((int) java.time.temporal.ChronoUnit.DAYS.between(booking.getCheckIn(), booking.getCheckOut()))")
     @Mapping(target = "numOfWeekend", expression = "java((int) booking.getCheckIn().datesUntil(booking.getCheckOut()).filter(date -> date.getDayOfWeek() == java.time.DayOfWeek.SATURDAY || date.getDayOfWeek() == java.time.DayOfWeek.SUNDAY).count())")

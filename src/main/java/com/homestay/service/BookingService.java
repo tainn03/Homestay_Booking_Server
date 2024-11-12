@@ -245,7 +245,7 @@ public class BookingService {
                 .collect(Collectors.toSet()));
         return bookings.stream()
                 .map(this::getBookingResponse)
-                .sorted(Comparator.comparing(BookingResponse::getCreatedAt).reversed())
+                .sorted(Comparator.comparing((BookingResponse br) -> Optional.ofNullable(br.getUpdatedAt()).orElse(br.getCreatedAt())))
                 .toList();
     }
 
