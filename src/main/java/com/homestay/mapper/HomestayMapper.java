@@ -18,7 +18,7 @@ public interface HomestayMapper {
     @Mapping(target = "typeHomestay", ignore = true)
     @Mapping(target = "nameHomestay", source = "name")
     Homestay toHomestay(HomestayRequest homestay);
-    
+
     @Mapping(target = "isFavorite", ignore = true)
     @Mapping(target = "userEmail", source = "user.email")
     @Mapping(target = "urlImages", expression = "java(homestay.getImages() != null ? homestay.getImages().stream().map(com.homestay.model.Image::getUrl).collect(java.util.stream.Collectors.toList()) : new java.util.ArrayList<>())")
@@ -29,6 +29,7 @@ public interface HomestayMapper {
     @Mapping(target = "cityName", source = "district.city.name")
     @Mapping(target = "amenities", ignore = true)
     @Mapping(target = "name", source = "nameHomestay")
+    @Mapping(target = "status", source = "status")
     HomestayResponse toHomestayResponse(Homestay homestay);
 
     @Mapping(target = "status", ignore = true)
