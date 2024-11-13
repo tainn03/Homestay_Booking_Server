@@ -12,6 +12,6 @@ import java.util.Optional;
 public interface TypeHomestayRepository extends JpaRepository<TypeHomestay, String> {
     Optional<TypeHomestay> findByName(String name);
 
-    @Query("SELECT t FROM TypeHomestay t WHERE t.name NOT IN ('Được ưa chuộng', 'Mới', 'Thật ấn tượng')")
+    @Query("SELECT t FROM TypeHomestay t WHERE t.name NOT IN ('Được ưu chuộng', 'Mới', 'Tất cả')")
     List<TypeHomestay> findAllExceptPopularNewImpressive();
 }
