@@ -476,8 +476,6 @@ public class HomestayService {
                 .build();
 
         homestay.getDiscounts().add(discount);
-        homestayRepository.save(homestay);
-
         return discountRepository.save(discount);
     }
 
@@ -605,5 +603,10 @@ public class HomestayService {
                     return toHomeStayResponseWithRelationship(homestay, response);
                 })
                 .collect(toList());
+    }
+
+    public String deleteHomestayById(String id) {
+        homestayRepository.deleteById(id);
+        return "Xóa homestay thành công";
     }
 }

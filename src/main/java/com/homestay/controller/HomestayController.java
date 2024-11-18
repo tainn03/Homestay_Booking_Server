@@ -165,4 +165,11 @@ public class HomestayController {
                 .result(homestayService.getFavoriteHomestay())
                 .build();
     }
+
+    @DeleteMapping
+    public ApiResponse<String> deleteHomestayById(@RequestParam String id) {
+        return ApiResponse.<String>builder()
+                .result(homestayService.deleteHomestayById(id))
+                .build();
+    }
 }
