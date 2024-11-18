@@ -70,6 +70,7 @@ public class ProjectSecurityConfig {
 //                        .ignoringRequestMatchers(request -> "POST".equals(request.getMethod()))
 //                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 )
+                .requiresChannel((requiresChannel) -> requiresChannel.anyRequest().requiresInsecure()) // http
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .logout(logout ->
