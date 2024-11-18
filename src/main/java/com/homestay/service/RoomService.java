@@ -38,6 +38,7 @@ public class RoomService {
     ImageRepository imageRepository;
     PriceCalendarRepository priceCalendarRepository;
     RoomMapper roomMapper;
+    private final DiscountRepository discountRepository;
 
     public RoomResponse addRoomImages(String nameRoom, List<MultipartFile> images, String homestayId) {
         Room room = roomRepository.findByNameAndHomestayId(nameRoom, homestayId)
@@ -230,9 +231,7 @@ public class RoomService {
                 .endDate(request.getEndDate())
                 .room(room)
                 .build();
-        room.getDiscounts().add(discount);
-        roomRepository.save(room);
-        return discount;
+        return discountRepository.save(discount);
     }
 
     public Discount updateRoomCustomDiscount(DiscountRequest request, String id) {
@@ -260,6 +259,7 @@ public class RoomService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.DISCOUNT_NOT_FOUND));
         room.getDiscounts().remove(discount);
         roomRepository.save(room);
+        discountRepository.delete(discount);
         return "Discount deleted successfully";
     }
 }
