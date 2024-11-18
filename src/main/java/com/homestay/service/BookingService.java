@@ -91,7 +91,7 @@ public class BookingService {
         } else {
             while (remainingGuests > 0) {
                 availableRooms.sort(Comparator.comparingInt(Room::getSize));
-                Room largestRoom = availableRooms.getLast();
+                Room largestRoom = availableRooms.get(availableRooms.size() - 1);
                 selectedRooms.add(largestRoom);
                 remainingGuests -= largestRoom.getSize();
                 availableRooms.remove(largestRoom);
@@ -111,6 +111,7 @@ public class BookingService {
         double originalCost = 0;
         double totalCost = 0;
         double totalDiscount = 0;
+        List<Discount> appliedDiscounts = new ArrayList<>();
         int totalNights = (int) ChronoUnit.DAYS.between(LocalDate.parse(checkIn), LocalDate.parse(checkOut));
         for (LocalDate date = LocalDate.parse(checkIn); !date.isEqual(LocalDate.parse(checkOut)); date = date.plusDays(1)) {
             LocalDate finalDate = date;
@@ -134,9 +135,11 @@ public class BookingService {
                             && !finalDate.isBefore(discount.getStartDate().toLocalDate())
                             && !finalDate.isAfter(discount.getEndDate().toLocalDate())) {
                         discountValue += discount.getValue();
+                        appliedDiscounts.add(discount);
                     } else if ((Objects.equals(discount.getType(), DiscountType.WEEKLY.toString()) && totalNights >= 7) ||
                             (Objects.equals(discount.getType(), DiscountType.MONTHLY.toString()) && totalNights >= 28)) {
                         discountValue += discount.getValue();
+                        appliedDiscounts.add(discount);
                     }
                 }
                 if (discountValue == 0) {
@@ -145,9 +148,11 @@ public class BookingService {
                                 && !finalDate.isBefore(discount.getStartDate().toLocalDate())
                                 && !finalDate.isAfter(discount.getEndDate().toLocalDate())) {
                             discountValue += discount.getValue();
+                            appliedDiscounts.add(discount);
                         } else if ((Objects.equals(discount.getType(), DiscountType.WEEKLY.toString()) && totalNights >= 7) ||
                                 (Objects.equals(discount.getType(), DiscountType.MONTHLY.toString()) && totalNights >= 28)) {
                             discountValue += discount.getValue();
+                            appliedDiscounts.add(discount);
                         }
                     }
                 }
@@ -177,7 +182,11 @@ public class BookingService {
             booking.setId(bookingRepository.save(booking).getId());
         }
 
-        return getBookingResponse(booking);
+        BookingResponse response = getBookingResponse(booking);
+        response.setDiscounts(appliedDiscounts.stream()
+                .map(discountMapper::toDiscountResponse)
+                .collect(Collectors.toSet()));
+        return response;
     }
 
     public BookingResponse getBooking(String id) {
@@ -270,7 +279,7 @@ public class BookingService {
         int remainingGuests = guests;
 
         // Get available rooms
-        List<Room> availableRooms = roomRepository.findAvailableRoomsByHomestayId(booking.getRooms().getFirst().getHomestay().getId(), LocalDate.parse(checkIn), LocalDate.parse(checkOut));
+        List<Room> availableRooms = roomRepository.findAvailableRoomsByHomestayId(booking.getRooms().get(0).getHomestay().getId(), LocalDate.parse(checkIn), LocalDate.parse(checkOut));
         selectedRooms.stream().map(Room::getId).forEach(roomId -> availableRooms.removeIf(room -> room.getId().equals(roomId)));
         availableRooms.addAll(selectedRooms);
         selectedRooms.clear();
@@ -290,7 +299,7 @@ public class BookingService {
         } else {
             while (remainingGuests > 0) {
                 availableRooms.sort(Comparator.comparingInt(Room::getSize));
-                Room largestRoom = availableRooms.getLast();
+                Room largestRoom = availableRooms.get(availableRooms.size() - 1);
                 selectedRooms.add(largestRoom);
                 remainingGuests -= largestRoom.getSize();
                 availableRooms.remove(largestRoom);
@@ -310,6 +319,7 @@ public class BookingService {
         double originalCost = 0;
         double totalCost = 0;
         double totalDiscount = 0;
+        List<Discount> appliedDiscounts = new ArrayList<>();
         int totalNights = (int) ChronoUnit.DAYS.between(LocalDate.parse(checkIn), LocalDate.parse(checkOut));
         for (LocalDate date = LocalDate.parse(checkIn); !date.isEqual(LocalDate.parse(checkOut)); date = date.plusDays(1)) {
             LocalDate finalDate = date;
@@ -333,9 +343,11 @@ public class BookingService {
                             && !finalDate.isBefore(discount.getStartDate().toLocalDate())
                             && !finalDate.isAfter(discount.getEndDate().toLocalDate())) {
                         discountValue += discount.getValue();
+                        appliedDiscounts.add(discount);
                     } else if ((Objects.equals(discount.getType(), DiscountType.WEEKLY.toString()) && totalNights >= 7) ||
                             (Objects.equals(discount.getType(), DiscountType.MONTHLY.toString()) && totalNights >= 28)) {
                         discountValue += discount.getValue();
+                        appliedDiscounts.add(discount);
                     }
                 }
                 if (discountValue == 0) {
@@ -344,9 +356,11 @@ public class BookingService {
                                 && !finalDate.isBefore(discount.getStartDate().toLocalDate())
                                 && !finalDate.isAfter(discount.getEndDate().toLocalDate())) {
                             discountValue += discount.getValue();
+                            appliedDiscounts.add(discount);
                         } else if ((Objects.equals(discount.getType(), DiscountType.WEEKLY.toString()) && totalNights >= 7) ||
                                 (Objects.equals(discount.getType(), DiscountType.MONTHLY.toString()) && totalNights >= 28)) {
                             discountValue += discount.getValue();
+                            appliedDiscounts.add(discount);
                         }
                     }
                 }
@@ -366,6 +380,10 @@ public class BookingService {
 
         bookingRepository.save(booking);
 
-        return getBookingResponse(booking);
+        BookingResponse response = getBookingResponse(booking);
+        response.setDiscounts(appliedDiscounts.stream()
+                .map(discountMapper::toDiscountResponse)
+                .collect(Collectors.toSet()));
+        return response;
     }
 }
