@@ -50,8 +50,10 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh")
-    public void refresh(HttpServletRequest request, HttpServletResponse response) {
-        service.refresh(request, response);
+    public ApiResponse<AuthenticationResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(service.refresh(request, response))
+                .build();
     }
 
     @PostMapping("/password")

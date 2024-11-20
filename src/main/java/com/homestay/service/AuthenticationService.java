@@ -155,25 +155,30 @@ public class AuthenticationService {
                 .build();
     }
 
-    public void refresh(HttpServletRequest request, HttpServletResponse response) {
+    public AuthenticationResponse refresh(HttpServletRequest request, HttpServletResponse response) {
         String authHeader = request.getHeader("Refresh-token");
-        String refreshToken;
-        String email;
         if (authHeader == null) {
-            return;
+            return null;
         }
-        refreshToken = authHeader;
-        email = jwtService.extractUsername(refreshToken);
+        String jwtToken = authHeader;
+        String email = jwtService.extractUsername(authHeader);
         if (email != null) {
             User user = userRepository.findByEmail(email).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-            if (jwtService.isValidToken(refreshToken, user)) {
-                String jwtToken = jwtService.generateToken(user);
+            if (jwtService.isValidToken(authHeader, user)) {
+                jwtToken = jwtService.generateToken(user);
                 revokeAllUserTokens(user);
                 saveUserToken(user, jwtToken);
                 response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
                 response.setStatus(200);
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             }
         }
+
+        return AuthenticationResponse.builder()
+                .accessToken(jwtToken)
+                .refreshToken(authHeader)
+                .build();
     }
 
     public void changePassword(ChangePasswordRequest request, Principal connectedUser) {
