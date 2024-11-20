@@ -219,6 +219,7 @@ public class RoomService {
 
         if (room.getDiscounts().stream()
                 .anyMatch(discount -> discount.getValue() == request.getValue() &&
+                        discount.getType().equals(request.getType()) &&
                         discount.getStartDate().equals(request.getStartDate()) &&
                         discount.getEndDate().equals(request.getEndDate()))) {
             throw new BusinessException(ErrorCode.DISCOUNT_ALREADY_EXIST);
