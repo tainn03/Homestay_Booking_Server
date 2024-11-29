@@ -57,7 +57,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/password")
-    public void changePassword(@RequestBody ChangePasswordRequest request, Principal connectedUser) throws IOException {
+    public void changePassword(@RequestBody ChangePasswordRequest request, Principal connectedUser) {
         service.changePassword(request, connectedUser);
     }
 
